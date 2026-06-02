@@ -120,6 +120,7 @@ export default function KalenderClient({
   const [events, setEvents]   = useState<EventItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm]       = useState(false);
+  const [editEventId, setEditEventId] = useState<string|null>(null); // null = new, string = editing
   const [viewEvent, setViewEvent]     = useState<EventItem|null>(null);
   const [feedToken, setFeedToken]     = useState(existingFeedToken);
   const [feedBusy, setFeedBusy]       = useState(false);
@@ -184,12 +185,39 @@ export default function KalenderClient({
   }
 
   /* ─ Form ─ */
+  function resetForm() {
+    setFTitle(""); setFLocation(""); setFRecurrence("none");
+    setFAllDay(false); setFTime("12:00"); setFEndTime("13:00");
+    setFParticipants([]); setEditEventId(null); setSelectedDay(null);
+  }
+
   function openAdd(day?: Date) {
+    resetForm();
     const d = day ?? new Date();
     setFDate(toDateStr(d)); setFEndDate(toDateStr(d));
-    setFTitle(""); setFLocation(""); setFRecurrence("none");
-    setFAllDay(false); setFTime("12:00"); setFEndTime("13:00"); setFParticipants([]);
-    setSelectedDay(null);
+    setShowForm(true);
+  }
+
+  async function openEdit(ev: EventItem) {
+    setViewEvent(null); // close detail sheet
+    // Pre-fill form from existing event
+    setEditEventId(ev.id);
+    setFTitle(ev.title);
+    setFLocation(ev.location ?? "");
+    setFRecurrence(ev.recurrence as "none"|"weekly"|"biweekly"|"monthly");
+    setFAllDay(ev.all_day);
+
+    const start = new Date(ev.start_at);
+    const end   = new Date(ev.end_at);
+    setFDate(toDateStr(start));
+    setFEndDate(toDateStr(end));
+    setFTime(`${String(start.getHours()).padStart(2,"0")}:${String(start.getMinutes()).padStart(2,"0")}`);
+    setFEndTime(`${String(end.getHours()).padStart(2,"0")}:${String(end.getMinutes()).padStart(2,"0")}`);
+
+    // Pre-fill participants
+    const { data: mems } = await supabase.from("event_members").select("user_id").eq("event_id", ev.id);
+    setFParticipants((mems ?? []).map(m => m.user_id));
+
     setShowForm(true);
   }
 
@@ -197,20 +225,37 @@ export default function KalenderClient({
     e.preventDefault();
     if (!fTitle.trim() || !householdId) return;
     setSaving(true);
+
     const start_at = fAllDay ? new Date(fDate+"T00:00:00").toISOString()
       : new Date(fDate+"T"+fTime).toISOString();
     const end_at = fAllDay ? new Date((fEndDate||fDate)+"T23:59:59").toISOString()
       : new Date((fEndDate||fDate)+"T"+fEndTime).toISOString();
 
-    const { data: ev } = await supabase.from("events").insert({
-      household_id: householdId, title: fTitle.trim(), start_at, end_at,
+    const payload = {
+      title: fTitle.trim(), start_at, end_at,
       all_day: fAllDay, color: "#12936b",
-      location: fLocation.trim() || null, recurrence: fRecurrence,
-    }).select().single();
+      location: fLocation.trim() || null,
+      recurrence: fRecurrence,
+    };
 
-    if (ev && fParticipants.length) {
-      await supabase.from("event_members").insert(fParticipants.map(uid => ({ event_id: ev.id, user_id: uid })));
+    if (editEventId) {
+      // UPDATE existing event
+      await supabase.from("events").update(payload).eq("id", editEventId);
+      // Replace participants
+      await supabase.from("event_members").delete().eq("event_id", editEventId);
+      if (fParticipants.length) {
+        await supabase.from("event_members").insert(fParticipants.map(uid => ({ event_id: editEventId, user_id: uid })));
+      }
+    } else {
+      // INSERT new event
+      const { data: ev } = await supabase.from("events")
+        .insert({ household_id: householdId, ...payload }).select().single();
+      if (ev && fParticipants.length) {
+        await supabase.from("event_members").insert(fParticipants.map(uid => ({ event_id: ev.id, user_id: uid })));
+      }
     }
+
+    resetForm();
     setSaving(false); setShowForm(false);
     await fetchEvents();
   }
@@ -588,10 +633,12 @@ export default function KalenderClient({
       {/* ── Add event sheet ── */}
       {showForm && (
         <div className="fixed inset-0 z-50 flex flex-col justify-end" style={{ background:"rgba(0,0,0,.4)", backdropFilter:"blur(4px)" }}
-          onClick={() => setShowForm(false)}>
+          onClick={() => { setShowForm(false); resetForm(); }}>
           <div className="bg-white rounded-t-[24px] p-5 pb-10 max-h-[92vh] overflow-y-auto shadow-2xl" onClick={e => e.stopPropagation()}>
             <div className="w-10 h-1 rounded-full mx-auto mb-5" style={{ background:"var(--border)" }} />
-            <h2 className="text-[19px] font-[700] mb-5" style={{ color:"var(--foreground)" }}>Ny hendelse</h2>
+            <h2 className="text-[19px] font-[700] mb-5" style={{ color:"var(--foreground)" }}>
+              {editEventId ? "Rediger hendelse" : "Ny hendelse"}
+            </h2>
             <form onSubmit={saveEvent} className="space-y-3">
               <input type="text" placeholder="Tittel *" value={fTitle} onChange={e=>setFTitle(e.target.value)} autoFocus required
                 className="w-full rounded-[13px] px-4 py-3 text-[15px] outline-none transition-colors"
@@ -692,7 +739,7 @@ export default function KalenderClient({
               <button type="submit" disabled={saving||!fTitle.trim()}
                 className="w-full py-3 text-white rounded-[13px] font-[600] text-[15px] disabled:opacity-40 hover:opacity-90 transition-all"
                 style={{ background:"var(--accent)" }}>
-                {saving ? "Lagrer…" : "Lagre hendelse"}
+                {saving ? "Lagrer…" : editEventId ? "Lagre endringer" : "Lagre hendelse"}
               </button>
             </form>
           </div>
@@ -730,13 +777,20 @@ export default function KalenderClient({
                 )}
               </div>
             </div>
-            <button onClick={() => deleteEvent(viewEvent.id)}
-              className="w-full mt-5 py-3 rounded-[13px] font-[550] text-[14px] transition-colors"
-              style={{ border:"1px solid #fecaca", color:"#ef4444" }}
-              onMouseEnter={e => (e.currentTarget.style.background="#fef2f2")}
-              onMouseLeave={e => (e.currentTarget.style.background="transparent")}>
-              Slett hendelse
-            </button>
+            <div className="flex gap-3 mt-5">
+              <button onClick={() => openEdit(viewEvent)}
+                className="flex-1 py-3 rounded-[13px] font-[600] text-[14px] transition-colors hover:opacity-90"
+                style={{ background:"var(--accent)", color:"white" }}>
+                ✏️ Rediger
+              </button>
+              <button onClick={() => deleteEvent(viewEvent.id)}
+                className="flex-1 py-3 rounded-[13px] font-[550] text-[14px] transition-colors"
+                style={{ border:"1px solid #fecaca", color:"#ef4444" }}
+                onMouseEnter={e => (e.currentTarget.style.background="#fef2f2")}
+                onMouseLeave={e => (e.currentTarget.style.background="transparent")}>
+                Slett
+              </button>
+            </div>
           </div>
         </div>
       )}
