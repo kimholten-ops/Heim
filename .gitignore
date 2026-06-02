@@ -1,0 +1,16 @@
+node_modules
+.next
+out
+.env.local
+.env*.local
+.DS_Store
+*.log
+tsconfig.tsbuildinfo
+public/swe-worker-*.js
+
+# next-pwa
+public/sw.js
+public/workbox-*.js
+public/worker-*.js
+public/sw.js.map
+public/fallback-*.js

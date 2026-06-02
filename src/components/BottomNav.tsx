@@ -1,0 +1,56 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Home, ShoppingCart, SquareCheck, Calendar, Users } from "lucide-react";
+import { useHousehold } from "@/components/HouseholdContext";
+import { useModuleSettings } from "@/lib/modules";
+import { cn } from "@/lib/utils";
+
+const ALL_TABS = [
+  { href: "/app",          label: "Hjem",     Icon: Home,         module: null },
+  { href: "/app/lister",   label: "Lister",   Icon: ShoppingCart, module: null },
+  { href: "/app/gjoremal", label: "Gjøremål", Icon: SquareCheck,  module: null },
+  { href: "/app/kalender", label: "Kalender", Icon: Calendar,     module: null },
+  { href: "/app/familie",  label: "Familie",  Icon: Users,        module: null },
+] as const;
+
+export default function BottomNav() {
+  const path = usePathname();
+  const { household } = useHousehold();
+  const { settings } = useModuleSettings(household?.id ?? null);
+
+  const tabs = ALL_TABS.filter(t => {
+    if (t.href === "/app/lister"   && "maaltider" in (settings ?? {})) return true;
+    return true; // All core tabs always visible; extras handled via shortcuts
+  });
+
+  return (
+    <nav className="fixed bottom-0 left-0 right-0 z-30" style={{ height: "82px" }}>
+      <div
+        className="max-w-[420px] mx-auto h-full flex px-[6px] pt-[10px] pb-[22px]"
+        style={{
+          background: "rgba(255,255,255,.86)",
+          backdropFilter: "blur(18px)",
+          WebkitBackdropFilter: "blur(18px)",
+          borderTop: "1px solid var(--border)",
+        }}
+      >
+        {tabs.map(({ href, label, Icon }) => {
+          const active = path === href || (href !== "/app" && path.startsWith(href));
+          return (
+            <Link
+              key={href}
+              href={href}
+              className="flex-1 flex flex-col items-center gap-1"
+              style={{ color: active ? "var(--accent)" : "var(--text-3)" }}
+            >
+              <Icon size={22} strokeWidth={1.8} />
+              <span className="text-[10.5px] font-[600]">{label}</span>
+            </Link>
+          );
+        })}
+      </div>
+    </nav>
+  );
+}

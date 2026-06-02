@@ -1,0 +1,10 @@
+{
+  "name": "Heim",
+  "short_name": "Heim",
+  "description": "Familieplanlegger",
+  "start_url": "/app",
+  "display": "standalone",
+  "background_color": "#f6f1e9",
+  "theme_color": "#3f5e52",
+  "icons": []
+}
