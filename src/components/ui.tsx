@@ -31,8 +31,9 @@ export function Chip({
     <button
       type="button"
       onClick={onClick}
+      style={{ paddingTop:"clamp(5px,1vh,7px)", paddingBottom:"clamp(5px,1vh,7px)" }}
       className={cn(
-        "inline-flex items-center gap-[7px] px-3 py-[7px] rounded-chip border text-[13px] font-[550] transition-colors",
+        "inline-flex items-center gap-[6px] px-3 rounded-chip border text-[12px] font-[550] transition-colors",
         "shadow-card",
         active
           ? "bg-fg text-white border-fg"
@@ -54,7 +55,7 @@ export function SectionLabel({
   title, href, linkText,
 }: { title: string; href?: string; linkText?: string }) {
   return (
-    <div className="flex items-center justify-between px-1 pb-2 pt-[6px]">
+    <div className="flex items-center justify-between px-1" style={{ paddingBottom:"clamp(6px,1.2vh,10px)", paddingTop:"clamp(4px,0.8vh,6px)" }}>
       <h2 className="text-[12px] font-[600] uppercase tracking-wide12 text-text-3">{title}</h2>
       {href && linkText && (
         <Link href={href} className="text-[13px] font-[600] text-accent flex items-center gap-[3px] hover:opacity-80 transition-opacity">
@@ -163,10 +164,11 @@ export function ShortcutTile({
   return (
     <Link
       href={href}
-      className="bg-surface border border-border rounded-tile shadow-card flex flex-col items-center gap-[9px] py-4 px-2 hover:bg-surface-2 active:scale-95 transition-all"
+      className="bg-surface border border-border rounded-tile shadow-card flex flex-col items-center px-2 hover:bg-surface-2 active:scale-95 transition-all"
+      style={{ gap:"clamp(6px,1.2vh,9px)", paddingTop:"clamp(10px,2vh,16px)", paddingBottom:"clamp(10px,2vh,16px)" }}
     >
       <span
-        className="w-[38px] h-[38px] rounded-[11px] flex items-center justify-center"
+        className="w-[34px] h-[34px] rounded-[10px] flex items-center justify-center"
         style={{ background: iconBg, color: iconColor }}
       >
         {icon}
@@ -239,13 +241,16 @@ export function AppHeader({
   kicker, name, date, right,
 }: { kicker: string; name: string; date: string; right?: React.ReactNode }) {
   return (
-    <div className="flex justify-between items-start px-2 pt-[14px] pb-4">
+    <div className="flex justify-between items-start px-2"
+      style={{ paddingTop:"var(--header-pt)", paddingBottom:"var(--header-pt)" }}>
       <div>
-        <p className="text-[12.5px] font-[600] text-text-3 tracking-[0.02em]">{kicker}</p>
-        <h1 className="text-[27px] font-[700] tracking-tight27 text-fg mt-[3px] leading-[1.05]">{name}</h1>
-        <p className="text-[13px] font-[450] text-text-2 mt-[5px]">{date}</p>
+        <p className="text-[12px] font-[600] text-text-3 tracking-[0.02em]">{kicker}</p>
+        <h1 className="font-[700] tracking-tight27 text-fg mt-[2px] leading-[1.05]"
+          style={{ fontSize:"var(--heading-size)" }}>{name}</h1>
+        <p className="font-[450] text-text-2 mt-[3px]"
+          style={{ fontSize:"clamp(11px,3vw,13px)" }}>{date}</p>
       </div>
-      {right && <div className="flex gap-2 mt-1">{right}</div>}
+      {right && <div className="flex gap-1.5 mt-1">{right}</div>}
     </div>
   );
 }

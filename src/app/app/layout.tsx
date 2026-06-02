@@ -46,7 +46,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     <HouseholdProvider
       value={{ meName, household: active, members: (members ?? []) as Member[], myHouseholds }}
     >
-      <div className="min-h-screen max-w-md mx-auto pb-24">{children}</div>
+      <div className="min-h-[100dvh] max-w-md mx-auto" style={{ paddingBottom:"clamp(60px,10vh,82px)" }}>{children}</div>
       <BottomNav />
     </HouseholdProvider>
   );

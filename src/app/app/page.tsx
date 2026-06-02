@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
@@ -15,7 +15,7 @@ import {
 import { useHousehold } from "@/components/HouseholdContext";
 import { useModuleSettings } from "@/lib/modules";
 
-/* ── Types ── */
+/* â”€â”€ Types â”€â”€ */
 type EventItem = {
   id: string; title: string; start_at: string; end_at: string;
   all_day: boolean; location: string | null; recurrence: string;
@@ -28,7 +28,7 @@ type TodoItem = {
   todo_lists: any;
 };
 
-/* ── Helpers ── */
+/* â”€â”€ Helpers â”€â”€ */
 function getGreeting() {
   const h = new Date().getHours();
   return h < 5 ? "God natt" : h < 12 ? "God morgen" : h < 17 ? "God dag" : "God kveld";
@@ -60,7 +60,7 @@ const ALL_SHORTCUTS = [
   { href:"/app/familie",   label:"Familie",   Icon:Users,        iconBg:"#f1edff",            iconColor:"var(--m-violet)",module:null       },
 ] as const;
 
-/* ── Component ── */
+/* â”€â”€ Component â”€â”€ */
 export default function HomePage() {
   const [supabase] = useState(() => createClient());
   const { meName, household, members } = useHousehold();
@@ -121,7 +121,7 @@ export default function HomePage() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  /* ── Member filter ── */
+  /* â”€â”€ Member filter â”€â”€ */
   const filterEvent = (ev: EventItem) => {
     if (!activeChip) return true;
     return ev.event_members.some(m => m.user_id === activeChip);
@@ -137,7 +137,7 @@ export default function HomePage() {
 
   return (
     <div className="max-w-[420px] mx-auto">
-      <div className="px-[18px] pb-28">
+      <div className="px-4 pb-24" style={{ paddingLeft:"clamp(12px,4vw,18px)", paddingRight:"clamp(12px,4vw,18px)" }}>
 
         {/* Header */}
         <AppHeader
@@ -146,9 +146,9 @@ export default function HomePage() {
           date={todayLabel()}
           right={
             <>
-              <IconButton><Bell size={19} strokeWidth={1.7} /></IconButton>
+              <IconButton><Bell size={18} strokeWidth={1.7} /></IconButton>
               <IconButton onClick={() => router.push("/login")}>
-                <LogOut size={18} strokeWidth={1.7} />
+                <LogOut size={17} strokeWidth={1.7} />
               </IconButton>
             </>
           }
@@ -156,7 +156,7 @@ export default function HomePage() {
 
         {/* Member filter chips */}
         {members.length > 0 && (
-          <div className="flex gap-2 pb-[18px] flex-wrap">
+          <div className="flex gap-2 flex-wrap" style={{ paddingBottom:"var(--chip-gap)" }}>
             <Chip name="Alle" active={activeChip === null} onClick={() => setActiveChip(null)} />
             {members.map((m, i) => (
               <Chip key={m.id} name={m.name} color={SPEC[i%SPEC.length]}
@@ -166,8 +166,8 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* ── I dag ── */}
-        <div className="mb-[22px]">
+        {/* â”€â”€ I dag â”€â”€ */}
+        <div style={{ marginBottom:"var(--section-gap)" }}>
           <SectionLabel title="I dag" href="/app/kalender" linkText="Kalender" />
           {loading ? (
             <div className="h-14 rounded-[18px] animate-pulse" style={{ background:"var(--surface-2)" }} />
@@ -184,8 +184,8 @@ export default function HomePage() {
                     <div className="flex-1 min-w-0">
                       <p className="text-[15px] font-[600]" style={{ color:"var(--foreground)" }}>{ev.title}</p>
                       <p className="text-[12.5px] mt-0.5" style={{ color:"var(--text-2)" }}>
-                        {ev.all_day ? "Hele dagen" : `${fmtTime(ev.start_at)}–${fmtTime(ev.end_at)}`}
-                        {ev.location && ` · 📍 ${ev.location}`}
+                        {ev.all_day ? "Hele dagen" : `${fmtTime(ev.start_at)}â€“${fmtTime(ev.end_at)}`}
+                        {ev.location && ` Â· ðŸ“ ${ev.location}`}
                       </p>
                     </div>
                     {parts.length > 0 && (
@@ -203,13 +203,13 @@ export default function HomePage() {
           )}
         </div>
 
-        {/* ── Gjøremål ── */}
-        <div className="mb-[22px]">
-          <SectionLabel title="Gjøremål" href="/app/gjoremal" linkText="Se alle" />
+        {/* â”€â”€ GjÃ¸remÃ¥l â”€â”€ */}
+        <div style={{ marginBottom:"var(--section-gap)" }}>
+          <SectionLabel title="GjÃ¸remÃ¥l" href="/app/gjoremal" linkText="Se alle" />
           {loading ? (
             <div className="h-20 rounded-[18px] animate-pulse" style={{ background:"var(--surface-2)" }} />
           ) : visibleTodos.length === 0 ? (
-            <Card><EmptyState icon={<SquareCheck size={18} strokeWidth={1.7} />} text="Ingen aktive gjøremål" /></Card>
+            <Card><EmptyState icon={<SquareCheck size={18} strokeWidth={1.7} />} text="Ingen aktive gjÃ¸remÃ¥l" /></Card>
           ) : (
             <Card>
               {visibleTodos.map((t, i) => {
@@ -225,7 +225,7 @@ export default function HomePage() {
                       <p className="text-[14.5px] font-[550] truncate" style={{ color:"var(--foreground)" }}>{t.title}</p>
                       <div className="flex items-center gap-2 text-[12px] flex-wrap" style={{ color:"var(--text-3)" }}>
                         {list && <span>{list.icon} {list.name}</span>}
-                        {due && <span style={{ color: due.over?"#ef4444":"var(--text-3)", fontWeight: due.over?"600":"400" }}>📅 {due.label}</span>}
+                        {due && <span style={{ color: due.over?"#ef4444":"var(--text-3)", fontWeight: due.over?"600":"400" }}>ðŸ“… {due.label}</span>}
                       </div>
                     </div>
                     {assignee && (
@@ -241,9 +241,9 @@ export default function HomePage() {
           )}
         </div>
 
-        {/* ── Resten av uken ── */}
+        {/* â”€â”€ Resten av uken â”€â”€ */}
         {(loading || visibleWeek.length > 0) && (
-          <div className="mb-[22px]">
+          <div style={{ marginBottom:"var(--section-gap)" }}>
             <SectionLabel title="Resten av uken" />
             {loading ? (
               <div className="h-16 rounded-[18px] animate-pulse" style={{ background:"var(--surface-2)" }} />
@@ -266,7 +266,7 @@ export default function HomePage() {
                         <p className="text-[15px] font-[600] truncate" style={{ color:"var(--foreground)" }}>{ev.title}</p>
                         <p className="text-[12.5px]" style={{ color:"var(--text-2)" }}>
                           {ev.all_day ? "Hele dagen" : fmtTime(ev.start_at)}
-                          {ev.location && ` · 📍 ${ev.location}`}
+                          {ev.location && ` Â· ðŸ“ ${ev.location}`}
                         </p>
                       </div>
                       {parts.length > 0 && (
@@ -284,8 +284,8 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* ── Snarveier ── */}
-        <div className="mb-[22px]">
+        {/* â”€â”€ Snarveier â”€â”€ */}
+        <div style={{ marginBottom:"var(--section-gap)" }}>
           <SectionLabel title="Snarveier" />
           <div className="grid grid-cols-3 gap-[10px]">
             {ALL_SHORTCUTS
@@ -298,7 +298,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* ── Varsler ── */}
+        {/* â”€â”€ Varsler â”€â”€ */}
         <NotificationRow href="/app/familie"
           icon={<Bell size={18} strokeWidth={1.7} />}
           title="Varsler"

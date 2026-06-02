@@ -26,10 +26,13 @@ export default function BottomNav() {
   });
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-30" style={{ height: "82px" }}>
+    <nav className="fixed bottom-0 left-0 right-0 z-30"
+      style={{ height:"clamp(60px,10vh,82px)" }}>
       <div
-        className="max-w-[420px] mx-auto h-full flex px-[6px] pt-[10px] pb-[22px]"
+        className="max-w-[420px] mx-auto h-full flex px-[6px]"
         style={{
+          paddingTop: "clamp(8px,1.5vh,10px)",
+          paddingBottom: "max(env(safe-area-inset-bottom,0px),clamp(8px,2.5vh,22px))",
           background: "rgba(255,255,255,.86)",
           backdropFilter: "blur(18px)",
           WebkitBackdropFilter: "blur(18px)",
