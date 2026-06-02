@@ -170,11 +170,19 @@ export default function KalenderClient({
   const icsUrl     = feedToken ? `${origin}/api/ics/${feedToken}` : null;
   const webcalUrl  = icsUrl ? icsUrl.replace(/^https?:\/\//, "webcal://") : null;
 
+  const [feedError, setFeedError] = useState<string | null>(null);
+
   async function generateFeed() {
     if (!householdId) return;
     setFeedBusy(true);
-    const { data: token } = await supabase.rpc("create_calendar_feed", { p_label: "Heim-kalender" });
-    setFeedToken(token as string);
+    setFeedError(null);
+    const { data: token, error } = await supabase.rpc("create_calendar_feed", { p_label: "Heim-kalender" });
+    if (error) {
+      console.error("create_calendar_feed error:", error);
+      setFeedError(error.message ?? "Kunne ikke generere URL. Prøv igjen.");
+    } else {
+      setFeedToken(token as string);
+    }
     setFeedBusy(false);
   }
   async function copy(type: "url"|"webcal") {
@@ -592,6 +600,12 @@ export default function KalenderClient({
               {!feedToken ? (
                 <>
                   <p className="text-[13px] mb-3" style={{ color:"var(--text-2)" }}>Abonner på Heim-kalenderen i iPhone/iPad. Enveis, automatisk oppdatering.</p>
+                  {feedError && (
+                    <div className="mb-3 px-3 py-2 rounded-[10px] text-[13px]"
+                      style={{ background:"#fef2f2", color:"#ef4444", border:"1px solid #fecaca" }}>
+                      {feedError}
+                    </div>
+                  )}
                   <button onClick={generateFeed} disabled={feedBusy||!householdId}
                     className="w-full flex items-center justify-center gap-2 py-3 rounded-[13px] text-white font-[600] text-[15px] hover:opacity-90 disabled:opacity-40 transition-all"
                     style={{ background:"var(--accent)" }}>
