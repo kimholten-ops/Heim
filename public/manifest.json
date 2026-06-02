@@ -1,10 +1,37 @@
 {
   "name": "Heim",
   "short_name": "Heim",
-  "description": "Familieplanlegger",
+  "description": "Delt familieplanlegger — kalender, lister og gjøremål",
   "start_url": "/app",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#f6f1e9",
-  "theme_color": "#3f5e52",
-  "icons": []
+  "orientation": "portrait-primary",
+  "background_color": "#f5f6f8",
+  "theme_color": "#12936b",
+  "icons": [
+    {
+      "src": "/heim-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/heim-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/heim-192-maskable.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/heim-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
 }
