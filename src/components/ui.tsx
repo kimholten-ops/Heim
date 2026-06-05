@@ -100,7 +100,7 @@ export function TodoRow({
   title, sub, barColor = "var(--m-amber)",
   checked = false, onToggle,
 }: {
-  title: string; sub?: string; barColor?: string;
+  title: string; sub?: React.ReactNode; barColor?: string;
   checked?: boolean; onToggle?: () => void;
 }) {
   return (

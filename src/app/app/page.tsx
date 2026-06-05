@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import {
   AppHeader, IconButton, Chip, SectionLabel, Card,
-  EmptyState, ShortcutTile, NotificationRow,
+  EmptyState, ShortcutTile, NotificationRow, TodoRow, EventRow,
 } from "@/components/ui";
 import { useHousehold } from "@/components/HouseholdContext";
 import { useModuleSettings } from "@/lib/modules";
@@ -146,7 +146,7 @@ export default function HomePage() {
           date={todayLabel()}
           right={
             <>
-              <IconButton><Bell size={18} strokeWidth={1.7} /></IconButton>
+              <IconButton badgeDot><Bell size={18} strokeWidth={1.7} /></IconButton>
               <IconButton onClick={() => router.push("/login")}>
                 <LogOut size={17} strokeWidth={1.7} />
               </IconButton>
@@ -157,7 +157,7 @@ export default function HomePage() {
         {/* Member filter chips */}
         {members.length > 0 && (
           <div className="flex gap-2 flex-wrap" style={{ paddingBottom:"var(--chip-gap)" }}>
-            <Chip name="Alle" active={activeChip === null} onClick={() => setActiveChip(null)} />
+            <Chip name="Alle" color="#d6dae1" active={activeChip === null} onClick={() => setActiveChip(null)} />
             {members.map((m, i) => (
               <Chip key={m.id} name={m.name} color={SPEC[i%SPEC.length]}
                 active={activeChip === m.id}
@@ -166,7 +166,7 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* â”€â”€ I dag â”€â”€ */}
+        {/* I dag */}
         <div style={{ marginBottom:"var(--section-gap)" }}>
           <SectionLabel title="I dag" href="/app/kalender" linkText="Kalender" />
           {loading ? (
@@ -184,8 +184,8 @@ export default function HomePage() {
                     <div className="flex-1 min-w-0">
                       <p className="text-[15px] font-[600]" style={{ color:"var(--foreground)" }}>{ev.title}</p>
                       <p className="text-[12.5px] mt-0.5" style={{ color:"var(--text-2)" }}>
-                        {ev.all_day ? "Hele dagen" : `${fmtTime(ev.start_at)}â€“${fmtTime(ev.end_at)}`}
-                        {ev.location && ` Â· ðŸ“ ${ev.location}`}
+                        {ev.all_day ? "Hele dagen" : `${fmtTime(ev.start_at)}–${fmtTime(ev.end_at)}`}
+                        {ev.location && ` · ${ev.location}`}
                       </p>
                     </div>
                     {parts.length > 0 && (
@@ -203,13 +203,13 @@ export default function HomePage() {
           )}
         </div>
 
-        {/* â”€â”€ GjÃ¸remÃ¥l â”€â”€ */}
+        {/* Gjøremål */}
         <div style={{ marginBottom:"var(--section-gap)" }}>
-          <SectionLabel title="GjÃ¸remÃ¥l" href="/app/gjoremal" linkText="Se alle" />
+          <SectionLabel title="Gjøremål" href="/app/gjoremal" linkText="Se alle" />
           {loading ? (
             <div className="h-20 rounded-[18px] animate-pulse" style={{ background:"var(--surface-2)" }} />
           ) : visibleTodos.length === 0 ? (
-            <Card><EmptyState icon={<SquareCheck size={18} strokeWidth={1.7} />} text="Ingen aktive gjÃ¸remÃ¥l" /></Card>
+            <Card><EmptyState icon={<SquareCheck size={18} strokeWidth={1.7} />} text="Ingen aktive gjøremål" /></Card>
           ) : (
             <Card>
               {visibleTodos.map((t, i) => {
@@ -217,23 +217,35 @@ export default function HomePage() {
                 const list = t.todo_lists as any;
                 const due  = t.due_date ? dueBadge(t.due_date) : null;
                 const assignee = t.assigned_to ? members.find(m => m.id === t.assigned_to) : null;
+
+                const parts = [];
+                if (list) parts.push(list.name); // Removed emoji icon
+                if (due) parts.push(<span key="due" style={{ color: due.over ? "#ef4444" : "inherit", fontWeight: due.over ? 600 : "inherit" }}>{due.label}</span>);
+
                 return (
-                  <Link key={t.id} href="/app/gjoremal"
-                    className={`flex items-center gap-3 px-4 py-3 hover:bg-[var(--surface-2)] transition-colors ${i>0?"border-t border-[var(--border)]":""}`}>
-                    <div className="w-1.5 self-stretch rounded-full flex-shrink-0" style={{ background: PRIORITY_COLOR[t.priority] }} />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[14.5px] font-[550] truncate" style={{ color:"var(--foreground)" }}>{t.title}</p>
-                      <div className="flex items-center gap-2 text-[12px] flex-wrap" style={{ color:"var(--text-3)" }}>
-                        {list && <span>{list.icon} {list.name}</span>}
-                        {due && <span style={{ color: due.over?"#ef4444":"var(--text-3)", fontWeight: due.over?"600":"400" }}>ðŸ“… {due.label}</span>}
-                      </div>
-                    </div>
-                    {assignee && (
-                      <span className="w-[22px] h-[22px] rounded-full flex items-center justify-center text-[10px] font-[700] text-white flex-shrink-0"
-                        style={{ background: memberColor[assignee.id] ?? "var(--accent)" }}>
-                        {assignee.name[0]?.toUpperCase()}
-                      </span>
-                    )}
+                  <Link key={t.id} href="/app/gjoremal" className={i > 0 ? "block border-t border-[var(--border)]" : "block"}>
+                    <TodoRow
+                      title={t.title}
+                      barColor={PRIORITY_COLOR[t.priority]}
+                      checked={false}
+                      sub={
+                        <span className="flex items-center gap-1.5">
+                          {assignee && (
+                            <>
+                              <span className="w-1.5 h-1.5 rounded-full" style={{ background: memberColor[assignee.id] ?? "var(--accent)" }} />
+                              <span>{assignee.name}</span>
+                              {(parts.length > 0) && <span>·</span>}
+                            </>
+                          )}
+                          {parts.map((p, idx) => (
+                            <span key={idx} className="flex items-center gap-1.5">
+                              {p}
+                              {idx < parts.length - 1 && <span>·</span>}
+                            </span>
+                          ))}
+                        </span>
+                      }
+                    />
                   </Link>
                 );
               })}
@@ -241,7 +253,7 @@ export default function HomePage() {
           )}
         </div>
 
-        {/* â”€â”€ Resten av uken â”€â”€ */}
+        {/* Resten av uken */}
         {(loading || visibleWeek.length > 0) && (
           <div style={{ marginBottom:"var(--section-gap)" }}>
             <SectionLabel title="Resten av uken" />
@@ -250,32 +262,19 @@ export default function HomePage() {
             ) : (
               <Card>
                 {visibleWeek.map((ev, i) => {
-                  const d    = new Date(ev.start_at);
-                  const parts = ev.event_members.map(m => ({ id:m.user_id, color: memberColor[m.user_id]??"var(--accent)" }));
+                  const d = new Date(ev.start_at);
+                  const firstMemberColor = memberColor[ev.event_members[0]?.user_id];
+
                   return (
-                    <Link key={ev.id} href="/app/kalender"
-                      className={`flex items-center gap-3 px-4 py-3 hover:bg-[var(--surface-2)] transition-colors ${i>0?"border-t border-[var(--border)]":""}`}>
-                      <div className="w-10 h-10 rounded-[11px] flex flex-col items-center justify-center flex-shrink-0"
-                        style={{ background:"var(--surface-2)" }}>
-                        <span className="text-[16px] font-[700] leading-none" style={{ color:"var(--foreground)" }}>{d.getDate()}</span>
-                        <span className="text-[9px] font-[600] uppercase mt-[1px]" style={{ color:"var(--text-3)" }}>
-                          {d.toLocaleDateString("nb-NO",{weekday:"short"})}
-                        </span>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[15px] font-[600] truncate" style={{ color:"var(--foreground)" }}>{ev.title}</p>
-                        <p className="text-[12.5px]" style={{ color:"var(--text-2)" }}>
-                          {ev.all_day ? "Hele dagen" : fmtTime(ev.start_at)}
-                          {ev.location && ` Â· ðŸ“ ${ev.location}`}
-                        </p>
-                      </div>
-                      {parts.length > 0 && (
-                        <div className="flex -space-x-1.5">
-                          {parts.slice(0,3).map(m => (
-                            <span key={m.id} className="w-[20px] h-[20px] rounded-full border-2 border-white" style={{ background:m.color }} />
-                          ))}
-                        </div>
-                      )}
+                    <Link key={ev.id} href="/app/kalender" className={i > 0 ? "block border-t border-[var(--border)]" : "block"}>
+                      <EventRow
+                        day={d.getDate()}
+                        weekday={d.toLocaleDateString("nb-NO", { weekday: "short" })}
+                        title={ev.title}
+                        sub={ev.all_day ? "Hele dagen" : `${fmtTime(ev.start_at)}${ev.location ? ` · ${ev.location}` : ""}`}
+                        dotColor={firstMemberColor}
+                        divider={false} // Handled by Link wrapper
+                      />
                     </Link>
                   );
                 })}
@@ -284,7 +283,7 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* â”€â”€ Snarveier â”€â”€ */}
+        {/* Snarveier */}
         <div style={{ marginBottom:"var(--section-gap)" }}>
           <SectionLabel title="Snarveier" />
           <div className="grid grid-cols-3 gap-[10px]">
