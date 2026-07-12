@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import dns from "node:dns/promises";
 import { createClient } from "@/lib/supabase/server";
+import { safeFetchText } from "@/lib/safe-fetch";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -17,60 +18,12 @@ type ImportedRecipe = {
 const MAX_BYTES = 2 * 1024 * 1024;
 const FETCH_TIMEOUT_MS = 10_000;
 
-function isPrivateIp(ip: string): boolean {
-  if (ip.includes(".")) {
-    const parts = ip.split(".").map(Number);
-    if (parts[0] === 10) return true;
-    if (parts[0] === 127) return true;
-    if (parts[0] === 0) return true;
-    if (parts[0] === 169 && parts[1] === 254) return true;
-    if (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) return true;
-    if (parts[0] === 192 && parts[1] === 168) return true;
-    return false;
-  }
-  const lower = ip.toLowerCase();
-  return lower === "::1" || lower.startsWith("fc") || lower.startsWith("fd") || lower.startsWith("fe80");
-}
-
 async function safeFetchHtml(rawUrl: string): Promise<string> {
-  let parsed: URL;
-  try {
-    parsed = new URL(rawUrl);
-  } catch {
-    throw new Error("Ugyldig lenke.");
-  }
-  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
-    throw new Error("Kun http/https-lenker støttes.");
-  }
-  const addresses = await dns.lookup(parsed.hostname, { all: true }).catch(() => []);
-  if (addresses.length === 0 || addresses.some((a) => isPrivateIp(a.address))) {
-    throw new Error("Denne adressen kan ikke hentes.");
-  }
-
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
-  try {
-    const res = await fetch(parsed.toString(), {
-      signal: controller.signal,
-      redirect: "follow",
-      headers: { "User-Agent": "Heim/1.0 (+https://heim-virid.vercel.app)" },
-    });
-    if (!res.ok) throw new Error(`Nettsiden svarte med feil (${res.status}).`);
-    const reader = res.body?.getReader();
-    if (!reader) return await res.text();
-    const chunks: Uint8Array[] = [];
-    let received = 0;
-    for (;;) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      received += value.byteLength;
-      if (received > MAX_BYTES) throw new Error("Siden er for stor.");
-      chunks.push(value);
-    }
-    return Buffer.concat(chunks).toString("utf-8");
-  } finally {
-    clearTimeout(timeout);
-  }
+  return safeFetchText(rawUrl, {
+    maxBytes: MAX_BYTES,
+    timeoutMs: FETCH_TIMEOUT_MS,
+    userAgent: "Heim/1.0 (+https://heim-virid.vercel.app)",
+  });
 }
 
 function extractJsonLdBlocks(html: string): unknown[] {
@@ -269,6 +222,9 @@ export async function POST(req: NextRequest) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Ikke innlogget." }, { status: 401 });
+
+  const allowed = await checkRateLimit(supabase, "recipe-import", 20, 1440);
+  if (!allowed) return NextResponse.json({ error: "For mange importer i dag. Prøv igjen i morgen." }, { status: 429 });
 
   let url = "";
   try {

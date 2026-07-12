@@ -1,68 +1,11 @@
-import dns from "node:dns/promises";
 import ICAL from "ical.js";
 import { createClient } from "@/lib/supabase/server";
+import { safeFetchText } from "@/lib/safe-fetch";
 
 const MAX_BYTES = 5 * 1024 * 1024;
 const FETCH_TIMEOUT_MS = 15_000;
 const WINDOW_PAST_MONTHS = 1;
 const WINDOW_FUTURE_MONTHS = 12;
-
-function isPrivateIp(ip: string): boolean {
-  if (ip.includes(".")) {
-    const parts = ip.split(".").map(Number);
-    if (parts[0] === 10) return true;
-    if (parts[0] === 127) return true;
-    if (parts[0] === 0) return true;
-    if (parts[0] === 169 && parts[1] === 254) return true;
-    if (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) return true;
-    if (parts[0] === 192 && parts[1] === 168) return true;
-    return false;
-  }
-  const lower = ip.toLowerCase();
-  return lower === "::1" || lower.startsWith("fc") || lower.startsWith("fd") || lower.startsWith("fe80");
-}
-
-async function safeFetchText(rawUrl: string): Promise<string> {
-  const httpUrl = rawUrl.replace(/^webcal:\/\//i, "https://");
-  let parsed: URL;
-  try {
-    parsed = new URL(httpUrl);
-  } catch {
-    throw new Error("Ugyldig lenke.");
-  }
-  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
-    throw new Error("Kun http/https/webcal-lenker støttes.");
-  }
-  const addresses = await dns.lookup(parsed.hostname, { all: true }).catch(() => []);
-  if (addresses.length === 0 || addresses.some((a) => isPrivateIp(a.address))) {
-    throw new Error("Denne adressen kan ikke hentes.");
-  }
-
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
-  try {
-    const res = await fetch(parsed.toString(), {
-      signal: controller.signal,
-      redirect: "follow",
-      headers: { "User-Agent": "Heim/1.0 (+https://heim-virid.vercel.app)" },
-    });
-    if (!res.ok) throw new Error(`Kilden svarte med feil (${res.status}).`);
-    const reader = res.body?.getReader();
-    if (!reader) return await res.text();
-    const chunks: Uint8Array[] = [];
-    let received = 0;
-    for (;;) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      received += value.byteLength;
-      if (received > MAX_BYTES) throw new Error("Kalenderfilen er for stor.");
-      chunks.push(value);
-    }
-    return Buffer.concat(chunks).toString("utf-8");
-  } finally {
-    clearTimeout(timeout);
-  }
-}
 
 type EventRow = {
   household_id: string;
@@ -156,7 +99,11 @@ export async function syncCalendarImport(importId: string): Promise<{ ok: true; 
 
   let rows: EventRow[];
   try {
-    const text = await safeFetchText(imp.source_url);
+    const text = await safeFetchText(imp.source_url, {
+      maxBytes: MAX_BYTES,
+      timeoutMs: FETCH_TIMEOUT_MS,
+      userAgent: "Heim/1.0 (+https://heim-virid.vercel.app)",
+    });
     rows = toRows(text, imp.household_id, imp.id, imp.color);
   } catch (e) {
     const message = e instanceof Error ? e.message : "Klarte ikke hente eller lese kalenderen.";

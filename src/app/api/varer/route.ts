@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -38,6 +39,11 @@ export async function GET(req: NextRequest) {
 
   const apiKey = process.env.KASSALAPP_API_KEY;
   if (!apiKey) return NextResponse.json({ products: [] });
+
+  // Rate-limitert stille (som manglende nøkkel) — autofullføring skal aldri vise feil,
+  // bare slutte å foreslå.
+  const allowed = await checkRateLimit(supabase, "varer", 300, 60);
+  if (!allowed) return NextResponse.json({ products: [] });
 
   const cacheKey = q.toLowerCase();
   const cached = cache.get(cacheKey);

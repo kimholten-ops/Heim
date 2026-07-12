@@ -127,6 +127,7 @@ export type Database = {
       get_feed_events: { Args: { p_token: string }; Returns: { event_id: string; title: string; location: string | null; notes: string | null; start_at: string; end_at: string; all_day: boolean; recurrence: string }[] };
       generate_meal_shopping_list_heim: { Args: { p_week_start: string }; Returns: string };
       rename_member: { Args: { p_member_id: string; p_name: string }; Returns: undefined };
+      check_rate_limit: { Args: { p_endpoint: string; p_max: number; p_window_minutes: number }; Returns: boolean };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;

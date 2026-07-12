@@ -20,6 +20,11 @@ export default function LoginClient() {
     setError(null);
     setInfo(null);
     try {
+      if (mode === "up" && password.length < 8) {
+        setError("Passordet må være minst 8 tegn.");
+        setBusy(false);
+        return;
+      }
       if (mode === "up") {
         const { data, error } = await supabase.auth.signUp({
           email,
@@ -73,13 +78,18 @@ export default function LoginClient() {
           onChange={(e) => setEmail(e.target.value)}
         />
         <input
-          className="w-full mb-4 rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 outline-none"
+          className="w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 outline-none"
           placeholder="Passord"
           type="password"
+          minLength={mode === "up" ? 8 : undefined}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && submit()}
         />
+        {mode === "up" && (
+          <p className="text-stone-400 text-xs mt-1.5 mb-4">Minst 8 tegn.</p>
+        )}
+        {mode === "in" && <div className="mb-4" />}
 
         {error && <p className="text-rose-600 text-sm mb-3">{error}</p>}
         {info && <p className="text-emerald-700 text-sm mb-3">{info}</p>}
