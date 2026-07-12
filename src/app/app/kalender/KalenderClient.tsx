@@ -16,8 +16,7 @@ type CalView = "agenda" | "3day" | "week" | "month";
 type EventItem = {
   id: string; title: string; start_at: string; end_at: string;
   all_day: boolean; color: string; location: string | null; recurrence: string;
-  event_members: { user_id: string }[];
-  event_children: { child_id: string }[];
+  event_members: { member_id: string }[];
 };
 
 /* ── Constants ── */
@@ -154,7 +153,7 @@ export default function KalenderClient({
     const { start, end } = getRange(view, anchor);
     const { data } = await supabase
       .from("events")
-      .select("id,title,start_at,end_at,all_day,color,location,recurrence,event_members(user_id),event_children(child_id)")
+      .select("id,title,start_at,end_at,all_day,color,location,recurrence,event_members(member_id)")
       .eq("household_id", householdId)
       .gte("start_at", start.toISOString())
       .lte("start_at", end.toISOString())
@@ -223,8 +222,8 @@ export default function KalenderClient({
     setFEndTime(`${String(end.getHours()).padStart(2,"0")}:${String(end.getMinutes()).padStart(2,"0")}`);
 
     // Pre-fill participants
-    const { data: mems } = await supabase.from("event_members").select("user_id").eq("event_id", ev.id);
-    setFParticipants((mems ?? []).map(m => m.user_id));
+    const { data: mems } = await supabase.from("event_members").select("member_id").eq("event_id", ev.id);
+    setFParticipants((mems ?? []).map(m => m.member_id));
 
     setShowForm(true);
   }
@@ -252,14 +251,14 @@ export default function KalenderClient({
       // Replace participants
       await supabase.from("event_members").delete().eq("event_id", editEventId);
       if (fParticipants.length) {
-        await supabase.from("event_members").insert(fParticipants.map(uid => ({ event_id: editEventId, user_id: uid })));
+        await supabase.from("event_members").insert(fParticipants.map(mid => ({ event_id: editEventId, member_id: mid })));
       }
     } else {
       // INSERT new event
       const { data: ev } = await supabase.from("events")
         .insert({ household_id: householdId, ...payload }).select().single();
       if (ev && fParticipants.length) {
-        await supabase.from("event_members").insert(fParticipants.map(uid => ({ event_id: ev.id, user_id: uid })));
+        await supabase.from("event_members").insert(fParticipants.map(mid => ({ event_id: ev.id, member_id: mid })));
       }
     }
 
@@ -281,7 +280,7 @@ export default function KalenderClient({
   }
 
   function getParticipants(ev: EventItem) {
-    return ev.event_members.map(m => memberMap[m.user_id]).filter(Boolean);
+    return ev.event_members.map(m => memberMap[m.member_id]).filter(Boolean);
   }
   function dotColor(ev: EventItem) {
     return getParticipants(ev)[0]?.color ?? "var(--accent)";

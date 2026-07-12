@@ -2,7 +2,7 @@
 //
 // Disse kan (og bør) autogenereres mot din egen database med:
 //   npm run gen-types
-// Filen her er et korrekt utgangspunkt som matcher migrasjonene 0001–0003,
+// Filen her er et korrekt utgangspunkt som matcher migrasjonene 0001–0005,
 // slik at appen er typesikker før du har kjørt generatoren.
 
 export type Json = string | number | boolean | null | { [key: string]: Json } | Json[];
@@ -73,15 +73,9 @@ export type Database = {
         Relationships: []
       }
       event_members: {
-        Row:    { event_id: string; user_id: string }
-        Insert: { event_id: string; user_id: string }
-        Update: { event_id?: string; user_id?: string }
-        Relationships: []
-      }
-      event_children: {
-        Row:    { event_id: string; child_id: string }
-        Insert: { event_id: string; child_id: string }
-        Update: { event_id?: string; child_id?: string }
+        Row:    { event_id: string; member_id: string }
+        Insert: { event_id: string; member_id: string }
+        Update: { event_id?: string; member_id?: string }
         Relationships: []
       }
       todo_lists: {
@@ -91,9 +85,9 @@ export type Database = {
         Relationships: []
       }
       todos: {
-        Row:    { id: string; todo_list_id: string; household_id: string; title: string; notes: string | null; due_date: string | null; priority: 'low'|'normal'|'high'; assigned_to: string | null; assigned_to_child_id: string | null; completed: boolean; completed_at: string | null; reward_points: number; approval_status: string; created_by: string | null; created_at: string }
-        Insert: { id?: string; todo_list_id: string; household_id: string; title: string; notes?: string | null; due_date?: string | null; priority?: 'low'|'normal'|'high'; assigned_to?: string | null; assigned_to_child_id?: string | null; completed?: boolean; completed_at?: string | null; reward_points?: number; approval_status?: string; created_by?: string | null; created_at?: string }
-        Update: { id?: string; todo_list_id?: string; household_id?: string; title?: string; notes?: string | null; due_date?: string | null; priority?: 'low'|'normal'|'high'; assigned_to?: string | null; assigned_to_child_id?: string | null; completed?: boolean; completed_at?: string | null; reward_points?: number; approval_status?: string; created_by?: string | null; created_at?: string }
+        Row:    { id: string; todo_list_id: string; household_id: string; title: string; notes: string | null; due_date: string | null; priority: 'low'|'normal'|'high'; assigned_to: string | null; completed: boolean; completed_at: string | null; created_by: string | null; created_at: string }
+        Insert: { id?: string; todo_list_id: string; household_id: string; title: string; notes?: string | null; due_date?: string | null; priority?: 'low'|'normal'|'high'; assigned_to?: string | null; completed?: boolean; completed_at?: string | null; created_by?: string | null; created_at?: string }
+        Update: { id?: string; todo_list_id?: string; household_id?: string; title?: string; notes?: string | null; due_date?: string | null; priority?: 'low'|'normal'|'high'; assigned_to?: string | null; completed?: boolean; completed_at?: string | null; created_by?: string | null; created_at?: string }
         Relationships: []
       }
       calendar_feeds: {

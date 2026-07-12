@@ -11,7 +11,7 @@ type TodoList = { id: string; name: string; icon: string; color: string };
 type Todo = {
   id: string; todo_list_id: string; title: string;
   priority: "low" | "normal" | "high"; due_date: string | null;
-  assigned_to: string | null; assigned_to_child_id: string | null;
+  assigned_to: string | null;
   completed: boolean;
 };
 
@@ -114,13 +114,11 @@ export default function GjoremalClient({
     const assigneeIds = fAssignees.length === 0 ? [null] : fAssignees;
 
     for (const assigneeId of assigneeIds) {
-      const member = assigneeId ? members.find(m => m.id === assigneeId) : null;
       await supabase.from("todos").insert({
         todo_list_id: activeList, household_id: householdId,
         title: fTitle.trim(), priority: fPriority,
         due_date: fDue || null,
-        assigned_to: (member && member.role !== "child") ? assigneeId : null,
-        assigned_to_child_id: (member && member.role === "child") ? assigneeId : null,
+        assigned_to: assigneeId,
       });
     }
 
@@ -142,7 +140,7 @@ export default function GjoremalClient({
 
   // Apply member filter
   const visibleTodos = memberFilter
-    ? todos.filter(t => t.assigned_to === memberFilter || t.assigned_to_child_id === memberFilter)
+    ? todos.filter(t => t.assigned_to === memberFilter)
     : todos;
 
   const open = visibleTodos.filter(t => !t.completed).sort((a,b) =>
@@ -232,7 +230,7 @@ export default function GjoremalClient({
               {open.length > 0 ? (
                 <Card>
                   {open.map((todo, i) => {
-                    const assignedId = todo.assigned_to ?? todo.assigned_to_child_id;
+                    const assignedId = todo.assigned_to;
                     const member = assignedId ? memberMap[assignedId] : null;
                     const due = todo.due_date ? dueBadge(todo.due_date) : null;
                     return (
