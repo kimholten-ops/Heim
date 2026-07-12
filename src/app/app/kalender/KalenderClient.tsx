@@ -5,11 +5,10 @@ import { createClient } from "@/lib/supabase/client";
 import { useHousehold } from "@/components/HouseholdContext";
 import {
   Calendar, Smartphone, Copy, Check, RefreshCw,
-  Plus, X, MapPin, RefreshCcw, ChevronLeft, ChevronRight, Sparkles,
+  Plus, X, MapPin, RefreshCcw, ChevronLeft, ChevronRight,
 } from "lucide-react";
 import { Card, SectionLabel } from "@/components/ui";
 import { cn } from "@/lib/utils";
-import SmartAddPanel from "./SmartAddPanel";
 
 /* ── Types ── */
 type CalView = "agenda" | "3day" | "week" | "month";
@@ -127,7 +126,6 @@ export default function KalenderClient({
   const [copied, setCopied]           = useState<"url"|"webcal"|null>(null);
   const [selectedDay, setSelectedDay] = useState<Date|null>(null);
   const [saving, setSaving]           = useState(false);
-  const [addMode, setAddMode]         = useState<"manual"|"smart">("manual");
 
   // Form state
   const [fTitle, setFTitle]         = useState("");
@@ -198,7 +196,6 @@ export default function KalenderClient({
     setFTitle(""); setFLocation(""); setFRecurrence("none");
     setFAllDay(false); setFTime("12:00"); setFEndTime("13:00");
     setFParticipants([]); setEditEventId(null); setSelectedDay(null);
-    setAddMode("manual");
   }
 
   function openAdd(day?: Date) {
@@ -655,34 +652,6 @@ export default function KalenderClient({
             <h2 className="text-[19px] font-[700] mb-5" style={{ color:"var(--foreground)" }}>
               {editEventId ? "Rediger hendelse" : "Ny hendelse"}
             </h2>
-
-            {!editEventId && (
-              <div className="flex gap-2 mb-4 p-1 rounded-[13px]" style={{ background:"var(--surface-2)" }}>
-                {([
-                  { key: "manual" as const, label: "Manuelt" },
-                  { key: "smart" as const, label: "✨ Smart Add" },
-                ]).map(tab => (
-                  <button key={tab.key} type="button" onClick={() => setAddMode(tab.key)}
-                    className={cn("flex-1 py-2 rounded-[10px] text-[13.5px] font-[600] transition-all",
-                      addMode === tab.key ? "shadow-card" : "")}
-                    style={{
-                      background: addMode === tab.key ? "var(--surface)" : "transparent",
-                      color: addMode === tab.key ? "var(--foreground)" : "var(--text-3)",
-                    }}>
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {!editEventId && addMode === "smart" && householdId ? (
-              <SmartAddPanel
-                householdId={householdId}
-                members={members}
-                onCancel={() => { setShowForm(false); resetForm(); }}
-                onAdded={async () => { setShowForm(false); resetForm(); await fetchEvents(); }}
-              />
-            ) : (
             <form onSubmit={saveEvent} className="space-y-3">
               <input type="text" placeholder="Tittel *" value={fTitle} onChange={e=>setFTitle(e.target.value)} autoFocus required
                 className="w-full rounded-[13px] px-4 py-3 text-[15px] outline-none transition-colors"
@@ -786,7 +755,6 @@ export default function KalenderClient({
                 {saving ? "Lagrer…" : editEventId ? "Lagre endringer" : "Lagre hendelse"}
               </button>
             </form>
-            )}
           </div>
         </div>
       )}
