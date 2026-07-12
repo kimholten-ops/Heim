@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { safeFetchText } from "@/lib/safe-fetch";
-import { checkRateLimit } from "@/lib/rate-limit";
+import { checkRateLimit, checkIpRateLimit, getClientIp } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -225,6 +225,9 @@ export async function POST(req: NextRequest) {
 
   const allowed = await checkRateLimit(supabase, "recipe-import", 20, 1440);
   if (!allowed) return NextResponse.json({ error: "For mange importer i dag. Prøv igjen i morgen." }, { status: 429 });
+
+  const ipAllowed = await checkIpRateLimit(getClientIp(req), "recipe-import", 60, 1440);
+  if (!ipAllowed) return NextResponse.json({ error: "For mange importer fra denne tilkoblingen i dag. Prøv igjen i morgen." }, { status: 429 });
 
   let url = "";
   try {

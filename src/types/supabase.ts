@@ -48,6 +48,12 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["list_items"]["Insert"]>;
         Relationships: [];
       };
+      ip_rate_limits: {
+        Row: { id: string; ip_address: string; endpoint: string; created_at: string };
+        Insert: { id?: string; ip_address: string; endpoint: string; created_at?: string };
+        Update: Partial<Database["public"]["Tables"]["ip_rate_limits"]["Insert"]>;
+        Relationships: [];
+      };
       profiles: {
         Row: { id: string; display_name: string | null; active_household_id: string | null } & Timestamps;
         Insert: { id: string; display_name?: string | null; active_household_id?: string | null; created_at?: string };

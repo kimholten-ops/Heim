@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { syncCalendarImport } from "@/lib/calendar-import-sync";
-import { checkRateLimit } from "@/lib/rate-limit";
+import { checkRateLimit, checkIpRateLimit, getClientIp } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -12,6 +12,9 @@ export async function POST(req: NextRequest) {
 
   const allowed = await checkRateLimit(supabase, "calendar-imports-sync", 30, 60);
   if (!allowed) return NextResponse.json({ error: "For mange synk-forsøk. Vent litt og prøv igjen." }, { status: 429 });
+
+  const ipAllowed = await checkIpRateLimit(getClientIp(req), "calendar-imports-sync", 100, 60);
+  if (!ipAllowed) return NextResponse.json({ error: "For mange synk-forsøk fra denne tilkoblingen. Vent litt og prøv igjen." }, { status: 429 });
 
   let importId = "";
   try {
