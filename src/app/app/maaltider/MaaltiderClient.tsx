@@ -4,7 +4,7 @@ import { useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useHousehold } from "@/components/HouseholdContext";
 import { useRouter } from "next/navigation";
-import { Plus, X, ChevronLeft, ChevronRight, ShoppingCart, BookOpen, Link as LinkIcon, Wand2, Clock, Users } from "lucide-react";
+import { Plus, X, ChevronLeft, ChevronRight, ShoppingCart, BookOpen, Link as LinkIcon, Wand2, Clock, Users, Search } from "lucide-react";
 import { Card, SectionLabel, EmptyState } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
@@ -58,16 +58,27 @@ export default function MaaltiderClient({
   const [weekStart, setWeekStart] = useState(() => getMonday(new Date()));
   const [recipes, setRecipes] = useState<Recipe[]>(initialRecipes as Recipe[]);
   const [meals, setMeals] = useState<Meal[]>(initialMeals as Meal[]);
-  const [generating, setGenerating] = useState(false);
 
   // Meal edit sheet
   const [editDay, setEditDay] = useState<string | null>(null);
   const [editMeal, setEditMeal] = useState<Meal | null>(null);
   const [mTitle, setMTitle] = useState("");
   const [mRecipeId, setMRecipeId] = useState<string>("");
+  const [mRecipeSearch, setMRecipeSearch] = useState("");
   const [mCookId, setMCookId] = useState<string>("");
   const [mNotes, setMNotes] = useState("");
   const [mSaving, setMSaving] = useState(false);
+
+  // Recipe bank search
+  const [recipeSearch, setRecipeSearch] = useState("");
+
+  // Add ingredients to shopping list
+  const [addToList, setAddToList] = useState<{ lines: string[]; label: string } | null>(null);
+  const [shoppingLists, setShoppingLists] = useState<{ id: string; name: string }[] | null>(null);
+  const [selectedListId, setSelectedListId] = useState<string>("");
+  const [newListName, setNewListName] = useState("");
+  const [addingToList, setAddingToList] = useState(false);
+  const [addToListDone, setAddToListDone] = useState(false);
 
   // Recipe sheet
   const [showRecipeForm, setShowRecipeForm] = useState(false);
@@ -107,6 +118,7 @@ export default function MaaltiderClient({
     setEditMeal(existing ?? null);
     setMTitle(existing?.title ?? "");
     setMRecipeId(existing?.recipe_id ?? "");
+    setMRecipeSearch("");
     setMCookId(existing?.cook_id ?? "");
     setMNotes(existing?.notes ?? "");
   }
@@ -143,14 +155,57 @@ export default function MaaltiderClient({
     await fetchMeals();
   }
 
-  async function generateList() {
-    if (!householdId) return;
-    setGenerating(true);
-    const { data: listId, error } = await supabase.rpc("generate_meal_shopping_list_heim", {
-      p_week_start: toDateStr(weekStart),
+  function ingredientLines(ings: Ingredient[]): string[] {
+    return (ings ?? [])
+      .filter(i => i.name?.trim())
+      .map(i => [i.amount, i.unit, i.name].filter(Boolean).join(" ").trim());
+  }
+
+  async function openAddToList(lines: string[], label: string) {
+    if (lines.length === 0) return;
+    setAddToList({ lines, label });
+    setNewListName(""); setAddToListDone(false);
+    if (shoppingLists === null && householdId) {
+      const { data } = await supabase.from("lists").select("id, name")
+        .eq("household_id", householdId).eq("type", "shopping").order("created_at");
+      const found = data ?? [];
+      setShoppingLists(found);
+      setSelectedListId(found.length > 0 ? found[0].id : "__new__");
+    } else {
+      setSelectedListId(shoppingLists && shoppingLists.length > 0 ? shoppingLists[0].id : "__new__");
+    }
+  }
+
+  async function confirmAddToList() {
+    if (!addToList || !householdId || !selectedListId) return;
+    setAddingToList(true);
+    let listId = selectedListId;
+    if (listId === "__new__") {
+      const n = newListName.trim() || "Handleliste";
+      const { data } = await supabase.from("lists").insert({ household_id: householdId, name: n, type: "shopping" }).select().single();
+      if (!data) { setAddingToList(false); return; }
+      const created = data as { id: string; name: string };
+      listId = created.id;
+      setShoppingLists(prev => [...(prev ?? []), created]);
+    }
+    const rows = addToList.lines.map(text => ({ id: crypto.randomUUID(), list_id: listId, text }));
+    await supabase.from("list_items").insert(rows);
+    setSelectedListId(listId);
+    setAddingToList(false);
+    setAddToListDone(true);
+  }
+
+  function generateList() {
+    const weekMeals = meals.filter(m => {
+      const d = new Date(m.date);
+      return d >= weekStart && d <= addDays(weekStart, 6) && m.recipe_id;
     });
-    setGenerating(false);
-    if (!error && listId) router.push(`/app/lister`);
+    const lines = weekMeals.flatMap(m => {
+      const recipe = recipes.find(r => r.id === m.recipe_id);
+      return recipe ? ingredientLines(recipe.ingredients) : [];
+    });
+    if (lines.length === 0) { alert("Ingen av middagene denne uken har oppskrift med ingredienser."); return; }
+    openAddToList(lines, `Ukesplanen (${fmtWeek(weekStart)})`);
   }
 
   // ── Recipe form ──
@@ -329,10 +384,10 @@ export default function MaaltiderClient({
 
         {/* Generate shopping list */}
         {hasMeals && (
-          <button onClick={generateList} disabled={generating}
-            className="w-full flex items-center justify-center gap-2 py-3 bg-accent text-white rounded-[13px] font-[600] text-[15px] hover:opacity-90 disabled:opacity-50 active:scale-[.98] transition-all">
+          <button onClick={generateList}
+            className="w-full flex items-center justify-center gap-2 py-3 bg-accent text-white rounded-[13px] font-[600] text-[15px] hover:opacity-90 active:scale-[.98] transition-all">
             <ShoppingCart size={17} strokeWidth={2} />
-            {generating ? "Genererer handleliste…" : "Generer handleliste fra uken"}
+            Legg ingredienser til handleliste
           </button>
         )}
 
@@ -352,8 +407,24 @@ export default function MaaltiderClient({
                 text="Ingen oppskrifter ennå — legg til din første." />
             </Card>
           ) : (
+            <>
+              {recipes.length > 5 && (
+                <div className="relative mb-2">
+                  <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-3" />
+                  <input type="text" placeholder="Søk i oppskrifter…" value={recipeSearch}
+                    onChange={e => setRecipeSearch(e.target.value)}
+                    className="w-full rounded-[13px] border border-border bg-surface pl-9 pr-4 py-2.5 text-[14px] placeholder:text-text-3 outline-none focus:border-accent" />
+                </div>
+              )}
+              {(() => {
+                const q = recipeSearch.trim().toLowerCase();
+                const filtered = q ? recipes.filter(r => r.title.toLowerCase().includes(q)) : recipes;
+                if (filtered.length === 0) {
+                  return <p className="text-[13px] text-text-3 px-1 py-3">Ingen oppskrifter matcher «{recipeSearch}».</p>;
+                }
+                return (
             <div className="grid grid-cols-2 gap-2">
-              {recipes.map(r => (
+              {filtered.map(r => (
                 <button key={r.id} onClick={() => setViewRecipe(r)}
                   className="bg-surface border border-border rounded-[16px] shadow-card overflow-hidden text-left hover:shadow-md active:scale-[.98] transition-all">
                   {r.image_url && (
@@ -373,6 +444,9 @@ export default function MaaltiderClient({
                 </button>
               ))}
             </div>
+                );
+              })()}
+            </>
           )}
         </div>
       </div>
@@ -396,13 +470,23 @@ export default function MaaltiderClient({
               {/* Recipe picker */}
               <div>
                 <p className="text-[11px] font-[600] text-text-3 mb-2 uppercase tracking-wide12">Velg fra oppskriftsbank</p>
+                {recipes.length > 5 && (
+                  <div className="relative mb-2">
+                    <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-3" />
+                    <input type="text" placeholder="Søk…" value={mRecipeSearch}
+                      onChange={e => setMRecipeSearch(e.target.value)}
+                      className="w-full rounded-[10px] border border-border bg-surface pl-8 pr-3 py-2 text-[13.5px] placeholder:text-text-3 outline-none focus:border-accent" />
+                  </div>
+                )}
                 <div className="flex flex-wrap gap-2">
                   <button type="button" onClick={() => setMRecipeId("")}
                     className={cn("px-3 py-1.5 rounded-chip border text-[13px] font-[550] transition-all",
                       !mRecipeId ? "bg-fg text-white border-fg" : "border-border text-fg")}>
                     Ingen
                   </button>
-                  {recipes.map(r => (
+                  {recipes
+                    .filter(r => !mRecipeSearch.trim() || r.title.toLowerCase().includes(mRecipeSearch.trim().toLowerCase()))
+                    .map(r => (
                     <button key={r.id} type="button" onClick={() => { setMRecipeId(r.id); setMTitle(""); }}
                       className={cn("px-3 py-1.5 rounded-chip border text-[13px] font-[550] transition-all",
                         mRecipeId === r.id ? "bg-fg text-white border-fg" : "border-border text-fg hover:bg-surface-2")}>
@@ -500,7 +584,13 @@ export default function MaaltiderClient({
 
             {(viewRecipe.ingredients?.length ?? 0) > 0 && (
               <div className="mb-4">
-                <p className="text-[11px] font-[600] text-text-3 uppercase tracking-wide12 mb-2">Ingredienser</p>
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-[11px] font-[600] text-text-3 uppercase tracking-wide12">Ingredienser</p>
+                  <button onClick={() => openAddToList(ingredientLines(viewRecipe.ingredients), viewRecipe.title)}
+                    className="flex items-center gap-1 text-[12.5px] font-[600] text-accent hover:opacity-80 transition-opacity">
+                    <ShoppingCart size={12} strokeWidth={2} /> Legg til handleliste
+                  </button>
+                </div>
                 <div className="bg-surface-2 rounded-[13px] divide-y divide-border overflow-hidden">
                   {viewRecipe.ingredients.map((ing, i) => (
                     <div key={i} className="flex items-center gap-2 px-4 py-2.5 text-[14px] text-fg">
@@ -616,6 +706,58 @@ export default function MaaltiderClient({
                 {rSaving ? "Lagrer…" : editRecipe ? "Oppdater oppskrift" : "Legg til oppskrift"}
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── Add to shopping list sheet ── */}
+      {addToList && (
+        <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/40 backdrop-blur-sm" onClick={() => setAddToList(null)}>
+          <div className="bg-white rounded-t-[24px] p-5 pb-10 shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
+            {addToListDone ? (
+              <>
+                <h2 className="text-[19px] font-[700] text-fg mb-2">Lagt til!</h2>
+                <p className="text-[14px] text-text-2 mb-5">
+                  {addToList.lines.length} {addToList.lines.length === 1 ? "vare er" : "varer er"} lagt til handlelisten fra {addToList.label}.
+                </p>
+                <button onClick={() => { setAddToList(null); router.push("/app/lister"); }}
+                  className="w-full py-3 bg-accent text-white rounded-[13px] font-[600] text-[15px] hover:opacity-90 transition-all">
+                  Åpne handleliste
+                </button>
+              </>
+            ) : (
+              <>
+                <h2 className="text-[19px] font-[700] text-fg mb-1">Legg til handleliste</h2>
+                <p className="text-[13px] text-text-3 mb-4">{addToList.lines.length} ingredienser fra {addToList.label}</p>
+                {shoppingLists === null ? (
+                  <p className="text-[13px] text-text-3 mb-3">Laster lister…</p>
+                ) : (
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {shoppingLists.map(l => (
+                      <button key={l.id} type="button" onClick={() => setSelectedListId(l.id)}
+                        className={cn("px-3 py-1.5 rounded-chip border text-[13px] font-[550] transition-all",
+                          selectedListId === l.id ? "bg-fg text-white border-fg" : "border-border text-fg hover:bg-surface-2")}>
+                        {l.name}
+                      </button>
+                    ))}
+                    <button type="button" onClick={() => setSelectedListId("__new__")}
+                      className={cn("px-3 py-1.5 rounded-chip border text-[13px] font-[550] flex items-center gap-1 transition-all",
+                        selectedListId === "__new__" ? "bg-fg text-white border-fg" : "border-dashed border-border text-text-3 hover:text-accent hover:border-accent")}>
+                      <Plus size={12} /> Ny liste
+                    </button>
+                  </div>
+                )}
+                {selectedListId === "__new__" && (
+                  <input autoFocus placeholder="Navn på ny liste" value={newListName} onChange={e => setNewListName(e.target.value)}
+                    className="w-full rounded-[13px] border border-border px-4 py-2.5 text-[15px] placeholder:text-text-3 outline-none focus:border-accent mb-3" />
+                )}
+                <button onClick={confirmAddToList} disabled={addingToList || !selectedListId || shoppingLists === null}
+                  className="w-full py-3 bg-accent text-white rounded-[13px] font-[600] text-[15px] disabled:opacity-40 hover:opacity-90 transition-all">
+                  {addingToList ? "Legger til…" : `Legg til ${addToList.lines.length} varer`}
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}
