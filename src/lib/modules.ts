@@ -3,11 +3,10 @@
 import { useState, useEffect, useCallback } from "react";
 
 export type ModuleSettings = {
-  ukepenger: boolean;
   maaltider: boolean;
 };
 
-const DEFAULTS: ModuleSettings = { ukepenger: true, maaltider: true };
+const DEFAULTS: ModuleSettings = { maaltider: true };
 
 function key(hid: string) { return `heim-modules-${hid}`; }
 

@@ -6,11 +6,11 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import {
   Bell, LogOut, ShoppingCart, SquareCheck, Calendar,
-  Utensils, Wallet, Users, ChevronRight, MapPin, Leaf,
+  Utensils, Users, ChevronRight, MapPin, Leaf,
 } from "lucide-react";
 import {
   AppHeader, IconButton, Chip, SectionLabel, Card,
-  EmptyState, ShortcutTile, NotificationRow,
+  EmptyState, ShortcutTile,
 } from "@/components/ui";
 import { useHousehold } from "@/components/HouseholdContext";
 import { useModuleSettings } from "@/lib/modules";
@@ -56,7 +56,6 @@ const ALL_SHORTCUTS = [
   { href:"/app/gjoremal",  label:"Gjøremål",  Icon:SquareCheck,  iconBg:"#e7f4ee",            iconColor:"var(--accent)",  module:null       },
   { href:"/app/kalender",  label:"Kalender",  Icon:Calendar,     iconBg:"#eef0f7",            iconColor:"#5b6bd6",        module:null       },
   { href:"/app/maaltider", label:"Måltider",  Icon:Utensils,     iconBg:"#fdeee2",            iconColor:"var(--m-coral)", module:"maaltider"},
-  { href:"/app/familie",   label:"Ukepenger", Icon:Wallet,       iconBg:"#fef3e0",            iconColor:"#d9920a",        module:"ukepenger"},
   { href:"/app/familie",   label:"Familie",   Icon:Users,        iconBg:"#f1edff",            iconColor:"var(--m-violet)",module:null       },
 ] as const;
 
@@ -305,12 +304,6 @@ export default function HomePage() {
               ))}
           </div>
         </div>
-
-        {/* ── Varsler ── */}
-        <NotificationRow href="/app/familie"
-          icon={<Bell size={18} strokeWidth={1.7} />}
-          title="Varsler"
-          sub="Tildelinger, godkjenninger og hendelser" />
 
       </div>
     </div>

@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useHousehold, type Member } from "@/components/HouseholdContext";
 import { Avatar, Card, SectionLabel } from "@/components/ui";
+import IosCalendarFeed from "@/components/IosCalendarFeed";
 import { signOut } from "@/app/app/actions";
-import { LogOut, Copy, Check, UserPlus, Baby } from "lucide-react";
+import { LogOut, Copy, Check, UserPlus, Baby, Pencil, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useModuleSettings } from "@/lib/modules";
 
@@ -237,7 +238,6 @@ export default function FamiliePage() {
           <Card>
             {([
               { key: "maaltider" as const, label: "Måltider", sub: "Måltidsplanlegging og oppskriftsbank" },
-              { key: "ukepenger" as const, label: "Ukepenger", sub: "Belønningspoeng og sparemål for barn" },
             ]).map(({ key, label, sub }, i) => (
               <div key={key} className={cn("flex items-center justify-between px-4 py-3", i > 0 && "border-t border-border")}>
                 <div>
@@ -262,6 +262,8 @@ export default function FamiliePage() {
           </p>
         </div>
 
+        <IosCalendarFeed householdId={household?.id ?? null} />
+
         {/* Leave */}
         <button
           onClick={leave} disabled={busy}
@@ -275,17 +277,63 @@ export default function FamiliePage() {
 }
 
 function MemberRow({ m, divider }: { m: Member; divider: boolean }) {
+  const router = useRouter();
+  const [supabase] = useState(() => createClient());
+  const [editing, setEditing] = useState(false);
+  const [name, setName] = useState(m.name);
+  const [saving, setSaving] = useState(false);
+
+  async function save() {
+    const n = name.trim();
+    if (!n || n === m.name) { setEditing(false); setName(m.name); return; }
+    setSaving(true);
+    const { error } = await supabase.rpc("rename_member", { p_member_id: m.id, p_name: n });
+    setSaving(false);
+    if (error) { setName(m.name); return; }
+    setEditing(false);
+    router.refresh();
+  }
+
+  function cancel() { setName(m.name); setEditing(false); }
+
   return (
     <div className={cn("flex items-center gap-3 px-4 py-3", divider && "border-t border-border")}>
       <Avatar name={m.name} color={m.color} size={34} />
-      <div className="flex-1">
-        <p className="text-[15px] font-[550] text-fg">{m.name}</p>
+      <div className="flex-1 min-w-0">
+        {editing ? (
+          <input
+            autoFocus
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") save(); if (e.key === "Escape") cancel(); }}
+            disabled={saving}
+            className="w-full text-[15px] font-[550] text-fg bg-surface-2 rounded-[8px] px-2 py-1 -mx-2 outline-none focus:ring-1 focus:ring-accent"
+          />
+        ) : (
+          <p className="text-[15px] font-[550] text-fg truncate">{m.name}</p>
+        )}
         <p className="text-[12.5px] text-text-3">{m.role === "adult" ? "Voksen" : "Barn"}</p>
       </div>
-      <span
-        className="w-2 h-2 rounded-full flex-shrink-0"
-        style={{ background: m.color }}
-      />
+      {editing ? (
+        <div className="flex items-center gap-1 flex-shrink-0">
+          <button onClick={save} disabled={saving} className="p-1.5 text-accent hover:opacity-80 disabled:opacity-40 transition-opacity">
+            <Check size={16} strokeWidth={2.2} />
+          </button>
+          <button onClick={cancel} disabled={saving} className="p-1.5 text-text-3 hover:text-fg transition-colors">
+            <X size={16} strokeWidth={2.2} />
+          </button>
+        </div>
+      ) : (
+        <>
+          <button onClick={() => setEditing(true)} className="p-1.5 text-text-3 hover:text-accent transition-colors flex-shrink-0">
+            <Pencil size={14} strokeWidth={2} />
+          </button>
+          <span
+            className="w-2 h-2 rounded-full flex-shrink-0"
+            style={{ background: m.color }}
+          />
+        </>
+      )}
     </div>
   );
 }
