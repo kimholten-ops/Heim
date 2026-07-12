@@ -24,7 +24,7 @@ export default async function MaaltiderPage() {
     weekEnd.setDate(weekEnd.getDate() + 13); // 2 weeks ahead
 
     const [{ data: r }, { data: m }] = await Promise.all([
-      supabase.from("recipes").select("id, title, body, url, ingredients, times_used")
+      supabase.from("recipes").select("id, title, body, url, image_url, servings, total_time_minutes, ingredients, times_used")
         .eq("household_id", hid).order("times_used", { ascending: false }),
       supabase.from("meals").select("id, date, title, cook_id, notes, recipe_id")
         .eq("household_id", hid)

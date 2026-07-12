@@ -4,12 +4,13 @@ import { useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useHousehold } from "@/components/HouseholdContext";
 import { useRouter } from "next/navigation";
-import { Plus, X, ChevronLeft, ChevronRight, ShoppingCart, BookOpen, Link as LinkIcon } from "lucide-react";
+import { Plus, X, ChevronLeft, ChevronRight, ShoppingCart, BookOpen, Link as LinkIcon, Wand2, Clock, Users } from "lucide-react";
 import { Card, SectionLabel, EmptyState } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
 type Recipe = {
   id: string; title: string; body: string | null; url: string | null;
+  image_url: string | null; servings: number | null; total_time_minutes: number | null;
   ingredients: Ingredient[]; times_used: number;
 };
 type Meal = {
@@ -74,9 +75,18 @@ export default function MaaltiderClient({
   const [rTitle, setRTitle] = useState("");
   const [rBody, setRBody] = useState("");
   const [rUrl, setRUrl] = useState("");
+  const [rImageUrl, setRImageUrl] = useState<string | null>(null);
+  const [rServings, setRServings] = useState<string>("");
+  const [rTotalTime, setRTotalTime] = useState<string>("");
   const [rIngredients, setRIngredients] = useState<Ingredient[]>([]);
   const [rSaving, setRSaving] = useState(false);
   const [viewRecipe, setViewRecipe] = useState<Recipe | null>(null);
+
+  // Import from URL
+  const [showImport, setShowImport] = useState(false);
+  const [importUrl, setImportUrl] = useState("");
+  const [importing, setImporting] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
 
   const memberColorMap = Object.fromEntries(members.map((m, i) => [m.id, PALETTE[i % PALETTE.length]]));
 
@@ -145,13 +155,46 @@ export default function MaaltiderClient({
 
   // ── Recipe form ──
   function openNewRecipe() {
-    setEditRecipe(null); setRTitle(""); setRBody(""); setRUrl(""); setRIngredients([]);
+    setEditRecipe(null); setRTitle(""); setRBody(""); setRUrl("");
+    setRImageUrl(null); setRServings(""); setRTotalTime(""); setRIngredients([]);
+    setShowImport(false); setImportUrl(""); setImportError(null);
     setShowRecipeForm(true);
   }
   function openEditRecipe(r: Recipe) {
     setEditRecipe(r); setRTitle(r.title); setRBody(r.body ?? "");
-    setRUrl(r.url ?? ""); setRIngredients([...(r.ingredients ?? [])]);
+    setRUrl(r.url ?? ""); setRImageUrl(r.image_url ?? null);
+    setRServings(r.servings != null ? String(r.servings) : "");
+    setRTotalTime(r.total_time_minutes != null ? String(r.total_time_minutes) : "");
+    setRIngredients([...(r.ingredients ?? [])]);
+    setShowImport(false); setImportUrl(""); setImportError(null);
     setShowRecipeForm(true);
+  }
+
+  async function importFromUrl() {
+    if (!importUrl.trim()) return;
+    setImporting(true); setImportError(null);
+    try {
+      const res = await fetch("/api/recipe-import", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ url: importUrl.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setImportError(data?.error ?? "Klarte ikke hente oppskriften."); return; }
+      const r = data.recipe;
+      setRTitle(r.title ?? "");
+      setRBody(r.body ?? "");
+      setRUrl(r.url ?? importUrl.trim());
+      setRImageUrl(r.image_url ?? null);
+      setRServings(r.servings != null ? String(r.servings) : "");
+      setRTotalTime(r.total_time_minutes != null ? String(r.total_time_minutes) : "");
+      setRIngredients(Array.isArray(r.ingredients) && r.ingredients.length ? r.ingredients : []);
+      setShowImport(false);
+    } catch {
+      setImportError("Klarte ikke hente oppskriften. Sjekk lenken og prøv igjen.");
+    } finally {
+      setImporting(false);
+    }
   }
 
   async function saveRecipe(e: React.FormEvent) {
@@ -161,6 +204,9 @@ export default function MaaltiderClient({
     const payload = {
       household_id: householdId, title: rTitle.trim(),
       body: rBody.trim() || null, url: rUrl.trim() || null,
+      image_url: rImageUrl || null,
+      servings: rServings.trim() ? Number(rServings) : null,
+      total_time_minutes: rTotalTime.trim() ? Number(rTotalTime) : null,
       ingredients: rIngredients.filter(i => i.name.trim()),
     };
     if (editRecipe) {
@@ -309,13 +355,21 @@ export default function MaaltiderClient({
             <div className="grid grid-cols-2 gap-2">
               {recipes.map(r => (
                 <button key={r.id} onClick={() => setViewRecipe(r)}
-                  className="bg-surface border border-border rounded-[16px] shadow-card p-3.5 text-left hover:shadow-md active:scale-[.98] transition-all">
-                  <p className="text-[14.5px] font-[600] text-fg leading-tight truncate">{r.title}</p>
-                  <p className="text-[12px] text-text-3 mt-1">
-                    {r.ingredients?.length ?? 0} ingredienser
-                    {r.times_used > 0 && <span className="ml-1">· {r.times_used}× brukt</span>}
-                  </p>
-                  {r.url && <span className="flex items-center gap-1 text-[11px] text-accent mt-1"><LinkIcon size={10} /> Lenke</span>}
+                  className="bg-surface border border-border rounded-[16px] shadow-card overflow-hidden text-left hover:shadow-md active:scale-[.98] transition-all">
+                  {r.image_url && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={r.image_url} alt="" className="w-full h-24 object-cover" />
+                  )}
+                  <div className="p-3.5">
+                    <p className="text-[14.5px] font-[600] text-fg leading-tight truncate">{r.title}</p>
+                    <div className="flex items-center gap-2 flex-wrap text-[12px] text-text-3 mt-1">
+                      {r.servings && <span className="flex items-center gap-1"><Users size={10} /> {r.servings}</span>}
+                      {r.total_time_minutes && <span className="flex items-center gap-1"><Clock size={10} /> {r.total_time_minutes} min</span>}
+                      {!r.servings && !r.total_time_minutes && <span>{r.ingredients?.length ?? 0} ingredienser</span>}
+                      {r.times_used > 0 && <span>· {r.times_used}× brukt</span>}
+                    </div>
+                    {r.url && <span className="flex items-center gap-1 text-[11px] text-accent mt-1"><LinkIcon size={10} /> Lenke</span>}
+                  </div>
                 </button>
               ))}
             </div>
@@ -412,7 +466,11 @@ export default function MaaltiderClient({
         <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/40 backdrop-blur-sm" onClick={() => setViewRecipe(null)}>
           <div className="bg-white rounded-t-[24px] p-5 pb-10 max-h-[88vh] overflow-y-auto shadow-2xl" onClick={e => e.stopPropagation()}>
             <div className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
-            <div className="flex items-start justify-between mb-4">
+            {viewRecipe.image_url && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={viewRecipe.image_url} alt="" className="w-full h-40 object-cover rounded-[14px] mb-4" />
+            )}
+            <div className="flex items-start justify-between mb-2">
               <h2 className="text-[21px] font-[700] text-fg flex-1 mr-3">{viewRecipe.title}</h2>
               <div className="flex gap-2">
                 <button onClick={() => openEditRecipe(viewRecipe)}
@@ -425,6 +483,13 @@ export default function MaaltiderClient({
                 </button>
               </div>
             </div>
+
+            {(viewRecipe.servings || viewRecipe.total_time_minutes) && (
+              <div className="flex items-center gap-3 text-[13px] text-text-2 mb-4">
+                {viewRecipe.servings && <span className="flex items-center gap-1"><Users size={13} /> {viewRecipe.servings} porsjoner</span>}
+                {viewRecipe.total_time_minutes && <span className="flex items-center gap-1"><Clock size={13} /> {viewRecipe.total_time_minutes} min</span>}
+              </div>
+            )}
 
             {viewRecipe.url && (
               <a href={viewRecipe.url} target="_blank" rel="noopener noreferrer"
@@ -466,13 +531,50 @@ export default function MaaltiderClient({
         <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/40 backdrop-blur-sm" onClick={() => { setShowRecipeForm(false); setEditRecipe(null); }}>
           <div className="bg-white rounded-t-[24px] p-5 pb-10 max-h-[92vh] overflow-y-auto shadow-2xl" onClick={e => e.stopPropagation()}>
             <div className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
-            <h2 className="text-[19px] font-[700] text-fg mb-5">
+            <h2 className="text-[19px] font-[700] text-fg mb-4">
               {editRecipe ? "Rediger oppskrift" : "Ny oppskrift"}
             </h2>
 
+            {!editRecipe && (
+              <div className="mb-4">
+                {!showImport ? (
+                  <button type="button" onClick={() => setShowImport(true)}
+                    className="w-full flex items-center justify-center gap-2 py-2.5 rounded-[13px] border border-dashed border-accent/40 text-accent text-[13.5px] font-[600] hover:bg-accent-weak transition-colors">
+                    <Wand2 size={14} strokeWidth={2} /> Importer fra lenke
+                  </button>
+                ) : (
+                  <div className="bg-surface-2 rounded-[13px] p-3">
+                    <div className="flex gap-2">
+                      <input type="url" placeholder="Lim inn lenke til oppskrift" value={importUrl}
+                        onChange={e => setImportUrl(e.target.value)} autoFocus
+                        className="flex-1 rounded-[10px] border border-border bg-white px-3 py-2 text-[14px] placeholder:text-text-3 outline-none focus:border-accent" />
+                      <button type="button" onClick={importFromUrl} disabled={importing || !importUrl.trim()}
+                        className="px-4 rounded-[10px] bg-accent text-white text-[13.5px] font-[600] disabled:opacity-40 hover:opacity-90 transition-all">
+                        {importing ? "Henter…" : "Hent"}
+                      </button>
+                    </div>
+                    {importError && <p className="text-[12.5px] text-rose-500 mt-2">{importError}</p>}
+                    <p className="text-[11.5px] text-text-3 mt-2">Henter tittel, ingredienser og fremgangsmåte automatisk der det er mulig — sjekk gjerne over før du lagrer.</p>
+                  </div>
+                )}
+              </div>
+            )}
+
             <form onSubmit={saveRecipe} className="space-y-3">
-              <input type="text" placeholder="Navn på rett *" value={rTitle} onChange={e => setRTitle(e.target.value)} required autoFocus
+              {rImageUrl && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={rImageUrl} alt="" className="w-full h-32 object-cover rounded-[13px]" />
+              )}
+
+              <input type="text" placeholder="Navn på rett *" value={rTitle} onChange={e => setRTitle(e.target.value)} required
                 className="w-full rounded-[13px] border border-border px-4 py-3 text-[15px] placeholder:text-text-3 outline-none focus:border-accent" />
+
+              <div className="flex gap-2">
+                <input type="number" min={1} placeholder="Porsjoner" value={rServings} onChange={e => setRServings(e.target.value)}
+                  className="w-1/2 rounded-[13px] border border-border px-4 py-3 text-[15px] placeholder:text-text-3 outline-none focus:border-accent" />
+                <input type="number" min={1} placeholder="Minutter" value={rTotalTime} onChange={e => setRTotalTime(e.target.value)}
+                  className="w-1/2 rounded-[13px] border border-border px-4 py-3 text-[15px] placeholder:text-text-3 outline-none focus:border-accent" />
+              </div>
 
               <input type="url" placeholder="Lenke til oppskrift (valgfritt)" value={rUrl} onChange={e => setRUrl(e.target.value)}
                 className="w-full rounded-[13px] border border-border px-4 py-3 text-[15px] placeholder:text-text-3 outline-none focus:border-accent" />

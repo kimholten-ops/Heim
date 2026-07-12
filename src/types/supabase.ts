@@ -39,10 +39,10 @@ export type Database = {
       list_items: {
         Row: {
           id: string; list_id: string; text: string; done: boolean;
-          assignee_id: string | null; created_at: string; updated_at: string;
+          assignee_id: string | null; product: unknown; created_at: string; updated_at: string;
         };
         Insert: {
-          id?: string; list_id: string; text: string; done?: boolean;
+          id?: string; list_id: string; text: string; done?: boolean; product?: unknown;
           assignee_id?: string | null; created_at?: string; updated_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["list_items"]["Insert"]>;
@@ -55,9 +55,9 @@ export type Database = {
         Relationships: [];
       };
       recipes: {
-        Row:    { id: string; household_id: string; title: string; body: string | null; url: string | null; ingredients: unknown; times_used: number; created_by: string | null; created_at: string }
-        Insert: { id?: string; household_id: string; title: string; body?: string | null; url?: string | null; ingredients?: unknown; times_used?: number; created_by?: string | null; created_at?: string }
-        Update: { id?: string; household_id?: string; title?: string; body?: string | null; url?: string | null; ingredients?: unknown; times_used?: number; created_by?: string | null; created_at?: string }
+        Row:    { id: string; household_id: string; title: string; body: string | null; url: string | null; image_url: string | null; servings: number | null; total_time_minutes: number | null; ingredients: unknown; times_used: number; created_by: string | null; created_at: string }
+        Insert: { id?: string; household_id: string; title: string; body?: string | null; url?: string | null; image_url?: string | null; servings?: number | null; total_time_minutes?: number | null; ingredients?: unknown; times_used?: number; created_by?: string | null; created_at?: string }
+        Update: { id?: string; household_id?: string; title?: string; body?: string | null; url?: string | null; image_url?: string | null; servings?: number | null; total_time_minutes?: number | null; ingredients?: unknown; times_used?: number; created_by?: string | null; created_at?: string }
         Relationships: []
       }
       meals: {
