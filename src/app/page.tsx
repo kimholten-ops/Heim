@@ -217,6 +217,7 @@ export default function LandingPage() {
             <span className="text-[13px]" style={{ color: "var(--text-3)" }}>— Delt familieplanlegger</span>
           </div>
           <div className="flex items-center gap-5 text-[13px]" style={{ color: "var(--text-3)" }}>
+            <Link href="/artikler" className="hover:text-[var(--foreground)] transition-colors">Artikler</Link>
             <Link href="/privacy" className="hover:text-[var(--foreground)] transition-colors">Personvern</Link>
             <Link href="/terms" className="hover:text-[var(--foreground)] transition-colors">Vilkår</Link>
             <Link href="/roadmap" className="hover:text-[var(--foreground)] transition-colors">Roadmap</Link>
