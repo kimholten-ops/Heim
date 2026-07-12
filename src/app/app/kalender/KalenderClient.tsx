@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useHousehold } from "@/components/HouseholdContext";
 import {
   Calendar,
-  Plus, X, MapPin, RefreshCcw, ChevronLeft, ChevronRight,
+  Plus, X, MapPin, RefreshCcw, ChevronLeft, ChevronRight, Rss,
 } from "lucide-react";
 import { Card, SectionLabel } from "@/components/ui";
 import { cn } from "@/lib/utils";
@@ -16,6 +16,8 @@ type CalView = "agenda" | "3day" | "week" | "month";
 type EventItem = {
   id: string; title: string; start_at: string; end_at: string;
   all_day: boolean; color: string; location: string | null; recurrence: string;
+  import_id: string | null;
+  calendar_imports: { label: string } | { label: string }[] | null;
   event_members: { member_id: string }[];
 };
 
@@ -150,7 +152,7 @@ export default function KalenderClient({
     const { start, end } = getRange(view, anchor);
     const { data } = await supabase
       .from("events")
-      .select("id,title,start_at,end_at,all_day,color,location,recurrence,event_members(member_id)")
+      .select("id,title,start_at,end_at,all_day,color,location,recurrence,import_id,calendar_imports(label),event_members(member_id)")
       .eq("household_id", householdId)
       .gte("start_at", start.toISOString())
       .lte("start_at", end.toISOString())
@@ -253,7 +255,15 @@ export default function KalenderClient({
     return ev.event_members.map(m => memberMap[m.member_id]).filter(Boolean);
   }
   function dotColor(ev: EventItem) {
+    if (ev.import_id) return ev.color;
     return getParticipants(ev)[0]?.color ?? "var(--accent)";
+  }
+
+  function importLabel(ev: EventItem): string | null {
+    if (!ev.import_id) return null;
+    const rel = ev.calendar_imports;
+    if (!rel) return null;
+    return Array.isArray(rel) ? rel[0]?.label ?? null : rel.label ?? null;
   }
 
   /* ─ Day row used in agenda / 3-day / week views ─ */
@@ -304,6 +314,9 @@ export default function KalenderClient({
                       )}
                       {ev.recurrence !== "none" && RECURRENCE_LABELS[ev.recurrence] && (
                         <span className="flex items-center gap-0.5">· <RefreshCcw size={11} strokeWidth={2} /> {RECURRENCE_LABELS[ev.recurrence]}</span>
+                      )}
+                      {importLabel(ev) && (
+                        <span className="flex items-center gap-0.5">· <Rss size={11} strokeWidth={2} /> {importLabel(ev)}</span>
                       )}
                     </p>
                   </div>
@@ -457,6 +470,9 @@ export default function KalenderClient({
                                 )}
                                 {ev.recurrence !== "none" && RECURRENCE_LABELS[ev.recurrence] && (
                                   <span className="flex items-center gap-0.5">· <RefreshCcw size={11} strokeWidth={2} /> {RECURRENCE_LABELS[ev.recurrence]}</span>
+                                )}
+                                {importLabel(ev) && (
+                                  <span className="flex items-center gap-0.5">· <Rss size={11} strokeWidth={2} /> {importLabel(ev)}</span>
                                 )}
                               </p>
                             </div>
@@ -713,6 +729,11 @@ export default function KalenderClient({
                     <RefreshCcw size={12} strokeWidth={2} /> {RECURRENCE_LABELS[viewEvent.recurrence]}
                   </p>
                 )}
+                {importLabel(viewEvent) && (
+                  <p className="text-[13px] mt-0.5 flex items-center gap-1.5" style={{ color:"var(--text-3)" }}>
+                    <Rss size={12} strokeWidth={2} /> Importert fra {importLabel(viewEvent)}
+                  </p>
+                )}
                 {getParticipants(viewEvent).length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-3">
                     {getParticipants(viewEvent).map(m => (
@@ -726,20 +747,33 @@ export default function KalenderClient({
                 )}
               </div>
             </div>
-            <div className="flex gap-3 mt-5">
-              <button onClick={() => openEdit(viewEvent)}
-                className="flex-1 py-3 rounded-[13px] font-[600] text-[14px] transition-colors hover:opacity-90"
-                style={{ background:"var(--accent)", color:"white" }}>
-                Rediger
-              </button>
-              <button onClick={() => deleteEvent(viewEvent.id)}
-                className="flex-1 py-3 rounded-[13px] font-[550] text-[14px] transition-colors"
-                style={{ border:"1px solid #fecaca", color:"#ef4444" }}
-                onMouseEnter={e => (e.currentTarget.style.background="#fef2f2")}
-                onMouseLeave={e => (e.currentTarget.style.background="transparent")}>
-                Slett
-              </button>
-            </div>
+            {viewEvent.import_id ? (
+              <div className="mt-5">
+                <p className="text-[12.5px] mb-3" style={{ color:"var(--text-3)" }}>
+                  Importerte hendelser kan ikke redigeres i Heim — fjern eller rediger dem i kildekalenderen.
+                </p>
+                <button onClick={() => setViewEvent(null)}
+                  className="w-full py-3 rounded-[13px] font-[600] text-[14px] transition-colors hover:opacity-90"
+                  style={{ background:"var(--surface-2)", color:"var(--foreground)" }}>
+                  Lukk
+                </button>
+              </div>
+            ) : (
+              <div className="flex gap-3 mt-5">
+                <button onClick={() => openEdit(viewEvent)}
+                  className="flex-1 py-3 rounded-[13px] font-[600] text-[14px] transition-colors hover:opacity-90"
+                  style={{ background:"var(--accent)", color:"white" }}>
+                  Rediger
+                </button>
+                <button onClick={() => deleteEvent(viewEvent.id)}
+                  className="flex-1 py-3 rounded-[13px] font-[550] text-[14px] transition-colors"
+                  style={{ border:"1px solid #fecaca", color:"#ef4444" }}
+                  onMouseEnter={e => (e.currentTarget.style.background="#fef2f2")}
+                  onMouseLeave={e => (e.currentTarget.style.background="transparent")}>
+                  Slett
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

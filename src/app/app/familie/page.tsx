@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useHousehold, type Member } from "@/components/HouseholdContext";
 import { Avatar, Card, SectionLabel } from "@/components/ui";
 import IosCalendarFeed from "@/components/IosCalendarFeed";
+import CalendarImports from "@/components/CalendarImports";
 import { signOut } from "@/app/app/actions";
 import { LogOut, Copy, Check, UserPlus, Baby, Pencil, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -263,6 +264,8 @@ export default function FamiliePage() {
         </div>
 
         <IosCalendarFeed householdId={household?.id ?? null} />
+
+        <CalendarImports householdId={household?.id ?? null} />
 
         {/* Leave */}
         <button

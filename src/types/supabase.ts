@@ -67,9 +67,15 @@ export type Database = {
         Relationships: []
       }
       events: {
-        Row:    { id: string; household_id: string; title: string; description: string | null; location: string | null; notes: string | null; start_at: string; end_at: string; all_day: boolean; color: string; recurrence: string; created_by: string | null; created_at: string }
-        Insert: { id?: string; household_id: string; title: string; description?: string | null; location?: string | null; notes?: string | null; start_at: string; end_at: string; all_day?: boolean; color?: string; recurrence?: string; created_by?: string | null; created_at?: string }
-        Update: { id?: string; household_id?: string; title?: string; description?: string | null; location?: string | null; notes?: string | null; start_at?: string; end_at?: string; all_day?: boolean; color?: string; recurrence?: string; created_by?: string | null; created_at?: string }
+        Row:    { id: string; household_id: string; title: string; description: string | null; location: string | null; notes: string | null; start_at: string; end_at: string; all_day: boolean; color: string; recurrence: string; import_id: string | null; external_uid: string | null; created_by: string | null; created_at: string }
+        Insert: { id?: string; household_id: string; title: string; description?: string | null; location?: string | null; notes?: string | null; start_at: string; end_at: string; all_day?: boolean; color?: string; recurrence?: string; import_id?: string | null; external_uid?: string | null; created_by?: string | null; created_at?: string }
+        Update: { id?: string; household_id?: string; title?: string; description?: string | null; location?: string | null; notes?: string | null; start_at?: string; end_at?: string; all_day?: boolean; color?: string; recurrence?: string; import_id?: string | null; external_uid?: string | null; created_by?: string | null; created_at?: string }
+        Relationships: []
+      }
+      calendar_imports: {
+        Row:    { id: string; household_id: string; label: string; source_url: string; color: string; last_synced_at: string | null; last_error: string | null; created_by: string | null; created_at: string }
+        Insert: { id?: string; household_id: string; label: string; source_url: string; color?: string; last_synced_at?: string | null; last_error?: string | null; created_by?: string | null; created_at?: string }
+        Update: { id?: string; household_id?: string; label?: string; source_url?: string; color?: string; last_synced_at?: string | null; last_error?: string | null; created_by?: string | null; created_at?: string }
         Relationships: []
       }
       event_members: {
