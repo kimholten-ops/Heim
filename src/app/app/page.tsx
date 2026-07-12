@@ -6,7 +6,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import {
   Bell, LogOut, ShoppingCart, SquareCheck, Calendar,
-  Utensils, Wallet, Users, ChevronRight,
+  Utensils, Wallet, Users, ChevronRight, MapPin, Leaf,
 } from "lucide-react";
 import {
   AppHeader, IconButton, Chip, SectionLabel, Card,
@@ -15,11 +15,11 @@ import {
 import { useHousehold } from "@/components/HouseholdContext";
 import { useModuleSettings } from "@/lib/modules";
 
-/* â”€â”€ Types â”€â”€ */
+/* ── Types ── */
 type EventItem = {
   id: string; title: string; start_at: string; end_at: string;
   all_day: boolean; location: string | null; recurrence: string;
-  event_members: { user_id: string }[];
+  event_members: { member_id: string }[];
 };
 type TodoItem = {
   id: string; title: string; priority: "low"|"normal"|"high";
@@ -28,7 +28,7 @@ type TodoItem = {
   todo_lists: any;
 };
 
-/* â”€â”€ Helpers â”€â”€ */
+/* ── Helpers ── */
 function getGreeting() {
   const h = new Date().getHours();
   return h < 5 ? "God natt" : h < 12 ? "God morgen" : h < 17 ? "God dag" : "God kveld";
@@ -60,7 +60,7 @@ const ALL_SHORTCUTS = [
   { href:"/app/familie",   label:"Familie",   Icon:Users,        iconBg:"#f1edff",            iconColor:"var(--m-violet)",module:null       },
 ] as const;
 
-/* â”€â”€ Component â”€â”€ */
+/* ── Component ── */
 export default function HomePage() {
   const [supabase] = useState(() => createClient());
   const { meName, household, members } = useHousehold();
@@ -89,13 +89,13 @@ export default function HomePage() {
 
     const [{ data: te }, { data: we }, { data: td }] = await Promise.all([
       supabase.from("events")
-        .select("id,title,start_at,end_at,all_day,location,recurrence,event_members(user_id)")
+        .select("id,title,start_at,end_at,all_day,location,recurrence,event_members(member_id)")
         .eq("household_id", household.id)
         .gte("start_at", todayStart.toISOString())
         .lte("start_at", todayEnd.toISOString())
         .order("start_at"),
       supabase.from("events")
-        .select("id,title,start_at,end_at,all_day,location,recurrence,event_members(user_id)")
+        .select("id,title,start_at,end_at,all_day,location,recurrence,event_members(member_id)")
         .eq("household_id", household.id)
         .gt("start_at", todayEnd.toISOString())
         .lte("start_at", weekEnd.toISOString())
@@ -121,10 +121,10 @@ export default function HomePage() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  /* â”€â”€ Member filter â”€â”€ */
+  /* ── Member filter ── */
   const filterEvent = (ev: EventItem) => {
     if (!activeChip) return true;
-    return ev.event_members.some(m => m.user_id === activeChip);
+    return ev.event_members.some(m => m.member_id === activeChip);
   };
   const filterTodo = (t: TodoItem) => {
     if (!activeChip) return true;
@@ -166,26 +166,28 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* â”€â”€ I dag â”€â”€ */}
+        {/* ── I dag ── */}
         <div style={{ marginBottom:"var(--section-gap)" }}>
           <SectionLabel title="I dag" href="/app/kalender" linkText="Kalender" />
           {loading ? (
             <div className="h-14 rounded-[18px] animate-pulse" style={{ background:"var(--surface-2)" }} />
           ) : visibleToday.length === 0 ? (
-            <Card><EmptyState icon={<Calendar size={18} strokeWidth={1.7} />} text="Ingen hendelser i dag" /></Card>
+            <Card><EmptyState icon={<Leaf size={18} strokeWidth={1.7} />} text="Ingenting planlagt — nyt roen" /></Card>
           ) : (
             <Card>
               {visibleToday.map((ev, i) => {
-                const parts = ev.event_members.map(m => ({ id: m.user_id, name: memberName[m.user_id]??'?', color: memberColor[m.user_id]??"var(--accent)" }));
+                const parts = ev.event_members.map(m => ({ id: m.member_id, name: memberName[m.member_id]??'?', color: memberColor[m.member_id]??"var(--accent)" }));
                 return (
                   <Link key={ev.id} href="/app/kalender"
                     className={`flex items-center gap-3 px-4 py-3 hover:bg-[var(--surface-2)] transition-colors ${i>0?"border-t border-[var(--border)]":""}`}>
                     <div className="w-1 self-stretch rounded-full flex-shrink-0" style={{ background: parts[0]?.color ?? "var(--accent)" }} />
                     <div className="flex-1 min-w-0">
                       <p className="text-[15px] font-[600]" style={{ color:"var(--foreground)" }}>{ev.title}</p>
-                      <p className="text-[12.5px] mt-0.5" style={{ color:"var(--text-2)" }}>
-                        {ev.all_day ? "Hele dagen" : `${fmtTime(ev.start_at)}â€“${fmtTime(ev.end_at)}`}
-                        {ev.location && ` Â· ðŸ“ ${ev.location}`}
+                      <p className="text-[12.5px] mt-0.5 flex items-center gap-1 flex-wrap" style={{ color:"var(--text-2)" }}>
+                        {ev.all_day ? "Hele dagen" : `${fmtTime(ev.start_at)}–${fmtTime(ev.end_at)}`}
+                        {ev.location && (
+                          <span className="flex items-center gap-0.5">· <MapPin size={11} strokeWidth={2} /> {ev.location}</span>
+                        )}
                       </p>
                     </div>
                     {parts.length > 0 && (
@@ -203,13 +205,13 @@ export default function HomePage() {
           )}
         </div>
 
-        {/* â”€â”€ GjÃ¸remÃ¥l â”€â”€ */}
+        {/* ── Gjøremål ── */}
         <div style={{ marginBottom:"var(--section-gap)" }}>
-          <SectionLabel title="GjÃ¸remÃ¥l" href="/app/gjoremal" linkText="Se alle" />
+          <SectionLabel title="Gjøremål" href="/app/gjoremal" linkText="Se alle" />
           {loading ? (
             <div className="h-20 rounded-[18px] animate-pulse" style={{ background:"var(--surface-2)" }} />
           ) : visibleTodos.length === 0 ? (
-            <Card><EmptyState icon={<SquareCheck size={18} strokeWidth={1.7} />} text="Ingen aktive gjÃ¸remÃ¥l" /></Card>
+            <Card><EmptyState icon={<SquareCheck size={18} strokeWidth={1.7} />} text="Ingen aktive gjøremål" /></Card>
           ) : (
             <Card>
               {visibleTodos.map((t, i) => {
@@ -225,7 +227,11 @@ export default function HomePage() {
                       <p className="text-[14.5px] font-[550] truncate" style={{ color:"var(--foreground)" }}>{t.title}</p>
                       <div className="flex items-center gap-2 text-[12px] flex-wrap" style={{ color:"var(--text-3)" }}>
                         {list && <span>{list.icon} {list.name}</span>}
-                        {due && <span style={{ color: due.over?"#ef4444":"var(--text-3)", fontWeight: due.over?"600":"400" }}>ðŸ“… {due.label}</span>}
+                        {due && (
+                          <span className="flex items-center gap-0.5" style={{ color: due.over?"#ef4444":"var(--text-3)", fontWeight: due.over?"600":"400" }}>
+                            <Calendar size={11} strokeWidth={2} /> {due.label}
+                          </span>
+                        )}
                       </div>
                     </div>
                     {assignee && (
@@ -241,7 +247,7 @@ export default function HomePage() {
           )}
         </div>
 
-        {/* â”€â”€ Resten av uken â”€â”€ */}
+        {/* ── Resten av uken ── */}
         {(loading || visibleWeek.length > 0) && (
           <div style={{ marginBottom:"var(--section-gap)" }}>
             <SectionLabel title="Resten av uken" />
@@ -251,7 +257,7 @@ export default function HomePage() {
               <Card>
                 {visibleWeek.map((ev, i) => {
                   const d    = new Date(ev.start_at);
-                  const parts = ev.event_members.map(m => ({ id:m.user_id, color: memberColor[m.user_id]??"var(--accent)" }));
+                  const parts = ev.event_members.map(m => ({ id:m.member_id, color: memberColor[m.member_id]??"var(--accent)" }));
                   return (
                     <Link key={ev.id} href="/app/kalender"
                       className={`flex items-center gap-3 px-4 py-3 hover:bg-[var(--surface-2)] transition-colors ${i>0?"border-t border-[var(--border)]":""}`}>
@@ -264,9 +270,11 @@ export default function HomePage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-[15px] font-[600] truncate" style={{ color:"var(--foreground)" }}>{ev.title}</p>
-                        <p className="text-[12.5px]" style={{ color:"var(--text-2)" }}>
+                        <p className="text-[12.5px] flex items-center gap-1 flex-wrap" style={{ color:"var(--text-2)" }}>
                           {ev.all_day ? "Hele dagen" : fmtTime(ev.start_at)}
-                          {ev.location && ` Â· ðŸ“ ${ev.location}`}
+                          {ev.location && (
+                            <span className="flex items-center gap-0.5">· <MapPin size={11} strokeWidth={2} /> {ev.location}</span>
+                          )}
                         </p>
                       </div>
                       {parts.length > 0 && (
@@ -284,7 +292,7 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* â”€â”€ Snarveier â”€â”€ */}
+        {/* ── Snarveier ── */}
         <div style={{ marginBottom:"var(--section-gap)" }}>
           <SectionLabel title="Snarveier" />
           <div className="grid grid-cols-3 gap-[10px]">
@@ -298,7 +306,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* â”€â”€ Varsler â”€â”€ */}
+        {/* ── Varsler ── */}
         <NotificationRow href="/app/familie"
           icon={<Bell size={18} strokeWidth={1.7} />}
           title="Varsler"
