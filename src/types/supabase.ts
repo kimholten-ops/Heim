@@ -120,6 +120,7 @@ export type Database = {
       create_calendar_feed: { Args: { p_label?: string }; Returns: string };
       get_feed_events: { Args: { p_token: string }; Returns: { event_id: string; title: string; location: string | null; notes: string | null; start_at: string; end_at: string; all_day: boolean; recurrence: string }[] };
       generate_meal_shopping_list_heim: { Args: { p_week_start: string }; Returns: string };
+      rename_member: { Args: { p_member_id: string; p_name: string }; Returns: undefined };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
