@@ -16,8 +16,8 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: { default: "Heim — Delt familieplanlegger", template: "%s | Heim" },
-  description: "Kalender, handlelister og gjøremål — sanntids-synk for hele familien. Norsk, GDPR-kompatibel, gratis.",
+  title: { default: "Heim — familiekalender, handleliste og gjøremål. Gratis.", template: "%s | Heim" },
+  description: "Norsk familieapp med delt kalender, handlelister og gjøremål i sanntid. Moderne design, ingen annonser, helt gratis.",
   manifest: "/manifest.json",
   metadataBase: new URL(BASE_URL),
 
@@ -40,8 +40,8 @@ export const metadata: Metadata = {
   },
 
   openGraph: {
-    title: "Heim — Delt familieplanlegger",
-    description: "Planlegg familien sammen. Sanntids-synk på alle enheter.",
+    title: "Heim — familiekalender, handleliste og gjøremål. Gratis.",
+    description: "Norsk familieapp med delt kalender, handlelister og gjøremål i sanntid. Moderne design, ingen annonser, helt gratis.",
     url: BASE_URL,
     siteName: "Heim",
     locale: "no_NO",
@@ -50,8 +50,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary",
-    title: "Heim — Delt familieplanlegger",
-    description: "Planlegg familien sammen. Sanntids-synk på alle enheter.",
+    title: "Heim — familiekalender, handleliste og gjøremål. Gratis.",
+    description: "Norsk familieapp med delt kalender, handlelister og gjøremål i sanntid. Moderne design, ingen annonser, helt gratis.",
     images: ["/heim-512.png"],
   },
   robots: { index: true, follow: true },

@@ -1,6 +1,7 @@
+import { Fragment } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Calendar, ShoppingCart, SquareCheck, Users, Zap, Globe, Lock, ArrowRight, ChevronRight } from "lucide-react";
+import { Calendar, ShoppingCart, SquareCheck, Users, Zap, Globe, Lock, ArrowRight, ChevronRight, Utensils, Check, Minus } from "lucide-react";
 
 export default function LandingPage() {
   return (
@@ -56,6 +57,9 @@ export default function LandingPage() {
             Logg inn <ChevronRight size={16} />
           </Link>
         </div>
+        <p className="text-[13px] mt-4" style={{ color: "var(--text-3)" }}>
+          Ingen betalingsmur. Ingen annonser.
+        </p>
       </section>
 
       {/* App preview strip */}
@@ -64,13 +68,16 @@ export default function LandingPage() {
           <div className="bg-gradient-to-b from-[var(--surface-2)] to-white h-3" />
           <div className="px-8 py-10 flex flex-wrap gap-4 justify-center">
             {[
-              { icon: "📅", label: "Kalender", sub: "Hvem gjør hva og når" },
-              { icon: "🛒", label: "Lister", sub: "Handle aldri feil vare" },
-              { icon: "✅", label: "Gjøremål", sub: "Del ansvar i familien" },
-              { icon: "🍽️", label: "Måltider", sub: "Planlegg ukens middager" },
-            ].map(({ icon, label, sub }) => (
+              { Icon: Calendar, label: "Kalender", sub: "Hvem gjør hva og når" },
+              { Icon: ShoppingCart, label: "Lister", sub: "Handle aldri feil vare" },
+              { Icon: SquareCheck, label: "Gjøremål", sub: "Del ansvar i familien" },
+              { Icon: Utensils, label: "Måltider", sub: "Planlegg ukens middager" },
+            ].map(({ Icon, label, sub }) => (
               <div key={label} className="flex items-center gap-3 px-4 py-3 rounded-[14px] border border-[var(--border)] min-w-[160px]">
-                <span className="text-2xl">{icon}</span>
+                <div className="w-9 h-9 rounded-[10px] flex items-center justify-center flex-shrink-0"
+                  style={{ background: "var(--accent-weak)", color: "var(--accent)" }}>
+                  <Icon size={18} strokeWidth={1.8} />
+                </div>
                 <div>
                   <p className="text-[14px] font-[700]">{label}</p>
                   <p className="text-[12px]" style={{ color: "var(--text-3)" }}>{sub}</p>
@@ -127,6 +134,61 @@ export default function LandingPage() {
             ))}
           </div>
         </div>
+      </section>
+
+      {/* Comparison */}
+      <section className="max-w-5xl mx-auto px-5 mb-20">
+        <h2 className="text-[28px] font-[700] tracking-[-0.02em] text-center mb-3">
+          Hvorfor bytte fra Cozi eller en norsk konkurrent?
+        </h2>
+        <p className="text-[15px] text-center max-w-lg mx-auto mb-10" style={{ color: "var(--text-2)" }}>
+          Vår egen, nøkterne vurdering — basert på offentlig tilgjengelig informasjon per juli 2026.
+        </p>
+        <div className="rounded-[20px] border border-[var(--border)] overflow-hidden bg-white">
+          <div className="grid grid-cols-4 text-[13px] sm:text-[14px]">
+            <div className="px-3 sm:px-5 py-4 font-[600]" style={{ color: "var(--text-3)" }} />
+            <div className="px-3 sm:px-5 py-4 font-[800] text-center border-l border-[var(--border)]" style={{ background: "var(--accent-weak)", color: "var(--accent)" }}>Heim</div>
+            <div className="px-3 sm:px-5 py-4 font-[700] text-center border-l border-[var(--border)]" style={{ color: "var(--text-2)" }}>Cozi</div>
+            <div className="px-3 sm:px-5 py-4 font-[700] text-center border-l border-[var(--border)]" style={{ color: "var(--text-2)" }}>Norske alternativer</div>
+
+            {[
+              { label: "Gratis uten begrensninger", heim: true, cozi: "Begrenset gratisversjon", other: "Vanligvis abonnement" },
+              { label: "Sanntids-synk", heim: true, cozi: "Delvis", other: "Varierer" },
+              { label: "Moderne design", heim: true, cozi: "Eldre grensesnitt", other: "Varierer" },
+              { label: "Norsk språk", heim: true, cozi: false, other: "Ofte" },
+              { label: "Data i EU (GDPR)", heim: true, cozi: "Ikke oppgitt", other: "Varierer" },
+            ].map((row, i) => (
+              <Fragment key={row.label}>
+                <div className={`px-3 sm:px-5 py-4 text-[13px] font-[550] flex items-center ${i>0?"border-t":""}`}
+                  style={{ borderColor: "var(--border)", color: "var(--foreground)" }}>{row.label}</div>
+                <div className={`px-3 py-4 border-l flex items-center justify-center ${i>0?"border-t":""}`}
+                  style={{ borderColor: "var(--border)", background: "var(--accent-weak)" }}>
+                  {row.heim === true
+                    ? <Check size={18} strokeWidth={2.5} style={{ color: "var(--accent)" }} />
+                    : <span className="text-[12.5px] text-center" style={{ color: "var(--text-2)" }}>{row.heim}</span>}
+                </div>
+                <div className={`px-3 py-4 border-l flex items-center justify-center ${i>0?"border-t":""}`} style={{ borderColor: "var(--border)" }}>
+                  {row.cozi === false
+                    ? <Minus size={16} strokeWidth={2.5} style={{ color: "var(--text-3)" }} />
+                    : <span className="text-[12.5px] text-center" style={{ color: "var(--text-3)" }}>{row.cozi}</span>}
+                </div>
+                <div className={`px-3 py-4 border-l flex items-center justify-center ${i>0?"border-t":""}`} style={{ borderColor: "var(--border)" }}>
+                  <span className="text-[12.5px] text-center" style={{ color: "var(--text-3)" }}>{row.other}</span>
+                </div>
+              </Fragment>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Why free */}
+      <section className="max-w-3xl mx-auto px-5 mb-20 text-center">
+        <h2 className="text-[24px] font-[700] tracking-[-0.02em] mb-4">Derfor er Heim gratis</h2>
+        <p className="text-[15px] leading-relaxed" style={{ color: "var(--text-2)" }}>
+          Heim er bygget av en familie i Norge, for egen bruk — og delt med andre familier som vil ha
+          det samme. Ingen investorer å tilfredsstille, ingen annonser å selge inn, ingen data å selge
+          videre. Bare en app vi selv bruker hver dag, som vi tror andre familier også vil sette pris på.
+        </p>
       </section>
 
       {/* CTA */}
