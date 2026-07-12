@@ -1,7 +1,6 @@
-import { Fragment } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Calendar, ShoppingCart, SquareCheck, Users, Zap, Globe, Lock, ArrowRight, ChevronRight, Utensils, Check, Minus } from "lucide-react";
+import { Calendar, ShoppingCart, SquareCheck, Users, Zap, Globe, Lock, ArrowRight, ChevronRight, Utensils, Check } from "lucide-react";
 
 export default function LandingPage() {
   return (
@@ -63,28 +62,22 @@ export default function LandingPage() {
       </section>
 
       {/* App preview strip */}
-      <div className="max-w-5xl mx-auto px-5 mb-20">
-        <div className="rounded-[24px] overflow-hidden border border-[var(--border)] shadow-xl bg-white">
-          <div className="bg-gradient-to-b from-[var(--surface-2)] to-white h-3" />
-          <div className="px-8 py-10 flex flex-wrap gap-4 justify-center">
-            {[
-              { Icon: Calendar, label: "Kalender", sub: "Hvem gjør hva og når" },
-              { Icon: ShoppingCart, label: "Lister", sub: "Handle aldri feil vare" },
-              { Icon: SquareCheck, label: "Gjøremål", sub: "Del ansvar i familien" },
-              { Icon: Utensils, label: "Måltider", sub: "Planlegg ukens middager" },
-            ].map(({ Icon, label, sub }) => (
-              <div key={label} className="flex items-center gap-3 px-4 py-3 rounded-[14px] border border-[var(--border)] min-w-[160px]">
-                <div className="w-9 h-9 rounded-[10px] flex items-center justify-center flex-shrink-0"
-                  style={{ background: "var(--accent-weak)", color: "var(--accent)" }}>
-                  <Icon size={18} strokeWidth={1.8} />
-                </div>
-                <div>
-                  <p className="text-[14px] font-[700]">{label}</p>
-                  <p className="text-[12px]" style={{ color: "var(--text-3)" }}>{sub}</p>
-                </div>
+      <div className="max-w-3xl mx-auto px-5 mb-20">
+        <div className="rounded-[18px] border border-[var(--border)] bg-white flex flex-col sm:flex-row divide-y sm:divide-y-0 sm:divide-x divide-[var(--border)]">
+          {[
+            { Icon: Calendar, label: "Kalender", sub: "Hvem gjør hva og når" },
+            { Icon: ShoppingCart, label: "Lister", sub: "Handle aldri feil vare" },
+            { Icon: SquareCheck, label: "Gjøremål", sub: "Del ansvar i familien" },
+            { Icon: Utensils, label: "Måltider", sub: "Planlegg ukens middager" },
+          ].map(({ Icon, label, sub }) => (
+            <div key={label} className="flex-1 flex items-center gap-2.5 px-5 py-4">
+              <Icon size={16} strokeWidth={2} style={{ color: "var(--accent)" }} className="flex-shrink-0" />
+              <div>
+                <p className="text-[13.5px] font-[700] leading-tight">{label}</p>
+                <p className="text-[11.5px] leading-tight" style={{ color: "var(--text-3)" }}>{sub}</p>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -124,11 +117,10 @@ export default function LandingPage() {
               { Icon: Zap, label: "Sanntids-synk", desc: "Endringer dukker opp instantly på alle enheter — ingen refresh." },
             ].map(({ Icon, label, desc }) => (
               <div key={label} className="px-6 py-6">
-                <div className="w-9 h-9 rounded-[10px] flex items-center justify-center mb-3"
-                  style={{ background: "var(--accent-weak)", color: "var(--accent)" }}>
-                  <Icon size={18} strokeWidth={1.8} />
-                </div>
-                <p className="text-[15px] font-[700] mb-1">{label}</p>
+                <p className="text-[15px] font-[700] mb-1 flex items-center gap-2">
+                  <Icon size={16} strokeWidth={2.2} style={{ color: "var(--accent)" }} />
+                  {label}
+                </p>
                 <p className="text-[13.5px] leading-relaxed" style={{ color: "var(--text-2)" }}>{desc}</p>
               </div>
             ))}
@@ -137,47 +129,29 @@ export default function LandingPage() {
       </section>
 
       {/* Comparison */}
-      <section className="max-w-5xl mx-auto px-5 mb-20">
+      <section className="max-w-2xl mx-auto px-5 mb-20">
         <h2 className="text-[28px] font-[700] tracking-[-0.02em] text-center mb-3">
           Hvorfor bytte fra Cozi eller en norsk konkurrent?
         </h2>
-        <p className="text-[15px] text-center max-w-lg mx-auto mb-10" style={{ color: "var(--text-2)" }}>
+        <p className="text-[15px] text-center mb-10" style={{ color: "var(--text-2)" }}>
           Vår egen, nøkterne vurdering — basert på offentlig tilgjengelig informasjon per juli 2026.
         </p>
-        <div className="rounded-[20px] border border-[var(--border)] overflow-hidden bg-white">
-          <div className="grid grid-cols-4 text-[13px] sm:text-[14px]">
-            <div className="px-3 sm:px-5 py-4 font-[600]" style={{ color: "var(--text-3)" }} />
-            <div className="px-3 sm:px-5 py-4 font-[800] text-center border-l border-[var(--border)]" style={{ background: "var(--accent-weak)", color: "var(--accent)" }}>Heim</div>
-            <div className="px-3 sm:px-5 py-4 font-[700] text-center border-l border-[var(--border)]" style={{ color: "var(--text-2)" }}>Cozi</div>
-            <div className="px-3 sm:px-5 py-4 font-[700] text-center border-l border-[var(--border)]" style={{ color: "var(--text-2)" }}>Norske alternativer</div>
-
-            {[
-              { label: "Gratis uten begrensninger", heim: true, cozi: "Begrenset gratisversjon", other: "Vanligvis abonnement" },
-              { label: "Sanntids-synk", heim: true, cozi: "Delvis", other: "Varierer" },
-              { label: "Moderne design", heim: true, cozi: "Eldre grensesnitt", other: "Varierer" },
-              { label: "Norsk språk", heim: true, cozi: false, other: "Ofte" },
-              { label: "Data i EU (GDPR)", heim: true, cozi: "Ikke oppgitt", other: "Varierer" },
-            ].map((row, i) => (
-              <Fragment key={row.label}>
-                <div className={`px-3 sm:px-5 py-4 text-[13px] font-[550] flex items-center ${i>0?"border-t":""}`}
-                  style={{ borderColor: "var(--border)", color: "var(--foreground)" }}>{row.label}</div>
-                <div className={`px-3 py-4 border-l flex items-center justify-center ${i>0?"border-t":""}`}
-                  style={{ borderColor: "var(--border)", background: "var(--accent-weak)" }}>
-                  {row.heim === true
-                    ? <Check size={18} strokeWidth={2.5} style={{ color: "var(--accent)" }} />
-                    : <span className="text-[12.5px] text-center" style={{ color: "var(--text-2)" }}>{row.heim}</span>}
-                </div>
-                <div className={`px-3 py-4 border-l flex items-center justify-center ${i>0?"border-t":""}`} style={{ borderColor: "var(--border)" }}>
-                  {row.cozi === false
-                    ? <Minus size={16} strokeWidth={2.5} style={{ color: "var(--text-3)" }} />
-                    : <span className="text-[12.5px] text-center" style={{ color: "var(--text-3)" }}>{row.cozi}</span>}
-                </div>
-                <div className={`px-3 py-4 border-l flex items-center justify-center ${i>0?"border-t":""}`} style={{ borderColor: "var(--border)" }}>
-                  <span className="text-[12.5px] text-center" style={{ color: "var(--text-3)" }}>{row.other}</span>
-                </div>
-              </Fragment>
-            ))}
-          </div>
+        <div>
+          {[
+            { label: "Gratis uten begrensninger", note: "Cozi låser kalenderen til 30 dager frem i tid med mindre du betaler for Gold. Norske alternativer tar som regel et månedsabonnement. Heim er gratis, uten grense." },
+            { label: "Sanntids-synk", note: "Krysser noen av handlelisten, ser resten av familien det med det samme — ikke etter en manuell oppdatering." },
+            { label: "Moderne design", note: "Bygget i 2026, ikke vedlikeholdt siden 2010." },
+            { label: "Norsk språk", note: "Grensesnitt, kundeservice og norske helligdager — ikke oversatt fra engelsk." },
+            { label: "Data i EU", note: "Supabase i Frankfurt. GDPR-kompatibelt fra dag én." },
+          ].map((row, i) => (
+            <div key={row.label} className={`flex gap-4 py-5 ${i>0 ? "border-t" : ""}`} style={{ borderColor: "var(--border)" }}>
+              <Check size={18} strokeWidth={2.5} className="flex-shrink-0 mt-0.5" style={{ color: "var(--accent)" }} />
+              <div>
+                <p className="text-[15.5px] font-[700] mb-1">{row.label}</p>
+                <p className="text-[14px] leading-relaxed" style={{ color: "var(--text-2)" }}>{row.note}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 
