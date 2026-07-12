@@ -286,7 +286,7 @@ export default function MaaltiderClient({
           <button onClick={generateList} disabled={generating}
             className="w-full flex items-center justify-center gap-2 py-3 bg-accent text-white rounded-[13px] font-[600] text-[15px] hover:opacity-90 disabled:opacity-50 active:scale-[.98] transition-all">
             <ShoppingCart size={17} strokeWidth={2} />
-            {generating ? "Genererer handleliste…" : "🛒 Generer handleliste fra uken"}
+            {generating ? "Genererer handleliste…" : "Generer handleliste fra uken"}
           </button>
         )}
 
@@ -394,7 +394,7 @@ export default function MaaltiderClient({
               )}
 
               {/* Notes */}
-              <input type="text" placeholder="📝 Notat (valgfritt, f.eks. glutenfri)" value={mNotes}
+              <input type="text" placeholder="Notat (valgfritt, f.eks. glutenfri)" value={mNotes}
                 onChange={e => setMNotes(e.target.value)}
                 className="w-full rounded-[13px] border border-border px-4 py-3 text-[15px] placeholder:text-text-3 outline-none focus:border-accent" />
 
@@ -474,10 +474,10 @@ export default function MaaltiderClient({
               <input type="text" placeholder="Navn på rett *" value={rTitle} onChange={e => setRTitle(e.target.value)} required autoFocus
                 className="w-full rounded-[13px] border border-border px-4 py-3 text-[15px] placeholder:text-text-3 outline-none focus:border-accent" />
 
-              <input type="url" placeholder="🔗 Lenke til oppskrift (valgfritt)" value={rUrl} onChange={e => setRUrl(e.target.value)}
+              <input type="url" placeholder="Lenke til oppskrift (valgfritt)" value={rUrl} onChange={e => setRUrl(e.target.value)}
                 className="w-full rounded-[13px] border border-border px-4 py-3 text-[15px] placeholder:text-text-3 outline-none focus:border-accent" />
 
-              <textarea placeholder="📝 Fremgangsmåte (valgfritt)" value={rBody} onChange={e => setRBody(e.target.value)} rows={3}
+              <textarea placeholder="Fremgangsmåte (valgfritt)" value={rBody} onChange={e => setRBody(e.target.value)} rows={3}
                 className="w-full rounded-[13px] border border-border px-4 py-3 text-[15px] placeholder:text-text-3 outline-none focus:border-accent resize-none" />
 
               {/* Ingredients */}

@@ -319,10 +319,6 @@ export default function KalenderClient({
             style={{ boxShadow:"0 1px 2px rgba(20,22,28,.04),0 2px 8px rgba(20,22,28,.05)" }}>
             {dayEvs.map((ev, i) => {
               const parts = getParticipants(ev);
-              const sub: string[] = [];
-              if (ev.all_day) sub.push("Hele dagen"); else sub.push(`${fmtTime(ev.start_at)}–${fmtTime(ev.end_at)}`);
-              if (ev.location) sub.push(`📍 ${ev.location}`);
-              if (ev.recurrence !== "none" && RECURRENCE_LABELS[ev.recurrence]) sub.push(`🔁 ${RECURRENCE_LABELS[ev.recurrence]}`);
 
               return (
                 <button key={ev.id} onClick={() => setViewEvent(ev)}
@@ -331,7 +327,15 @@ export default function KalenderClient({
                   <div className="w-1 self-stretch rounded-full flex-shrink-0 mt-0.5" style={{ background: dotColor(ev) }} />
                   <div className="flex-1 min-w-0">
                     <p className="text-[15px] font-[600] text-[var(--foreground)]">{ev.title}</p>
-                    <p className="text-[12.5px] text-[var(--text-2)] mt-0.5">{sub.join("  ·  ")}</p>
+                    <p className="text-[12.5px] text-[var(--text-2)] mt-0.5 flex items-center gap-1 flex-wrap">
+                      <span>{ev.all_day ? "Hele dagen" : `${fmtTime(ev.start_at)}–${fmtTime(ev.end_at)}`}</span>
+                      {ev.location && (
+                        <span className="flex items-center gap-0.5">· <MapPin size={11} strokeWidth={2} /> {ev.location}</span>
+                      )}
+                      {ev.recurrence !== "none" && RECURRENCE_LABELS[ev.recurrence] && (
+                        <span className="flex items-center gap-0.5">· <RefreshCcw size={11} strokeWidth={2} /> {RECURRENCE_LABELS[ev.recurrence]}</span>
+                      )}
+                    </p>
                   </div>
                   {parts.length > 0 && (
                     <div className="flex -space-x-1 flex-shrink-0">
@@ -476,10 +480,14 @@ export default function KalenderClient({
                             <div className="w-1 self-stretch rounded-full mt-0.5" style={{ background: dotColor(ev) }} />
                             <div className="flex-1 min-w-0">
                               <p className="text-[15px] font-[600]" style={{ color:"var(--foreground)" }}>{ev.title}</p>
-                              <p className="text-[12.5px] mt-0.5" style={{ color:"var(--text-2)" }}>
-                                {ev.all_day ? "Hele dagen" : `${fmtTime(ev.start_at)}–${fmtTime(ev.end_at)}`}
-                                {ev.location && ` · 📍 ${ev.location}`}
-                                {ev.recurrence !== "none" && RECURRENCE_LABELS[ev.recurrence] && ` · 🔁 ${RECURRENCE_LABELS[ev.recurrence]}`}
+                              <p className="text-[12.5px] mt-0.5 flex items-center gap-1 flex-wrap" style={{ color:"var(--text-2)" }}>
+                                <span>{ev.all_day ? "Hele dagen" : `${fmtTime(ev.start_at)}–${fmtTime(ev.end_at)}`}</span>
+                                {ev.location && (
+                                  <span className="flex items-center gap-0.5">· <MapPin size={11} strokeWidth={2} /> {ev.location}</span>
+                                )}
+                                {ev.recurrence !== "none" && RECURRENCE_LABELS[ev.recurrence] && (
+                                  <span className="flex items-center gap-0.5">· <RefreshCcw size={11} strokeWidth={2} /> {RECURRENCE_LABELS[ev.recurrence]}</span>
+                                )}
                               </p>
                             </div>
                             {parts.length > 0 && (
@@ -575,9 +583,11 @@ export default function KalenderClient({
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-[14px] font-[600] truncate" style={{ color:"var(--foreground)" }}>{ev.title}</p>
-                            <p className="text-[12px]" style={{ color:"var(--text-2)" }}>
-                              {ev.all_day ? "Hele dagen" : fmtTime(ev.start_at)}
-                              {ev.location && ` · 📍 ${ev.location}`}
+                            <p className="text-[12px] flex items-center gap-1 flex-wrap" style={{ color:"var(--text-2)" }}>
+                              <span>{ev.all_day ? "Hele dagen" : fmtTime(ev.start_at)}</span>
+                              {ev.location && (
+                                <span className="flex items-center gap-0.5">· <MapPin size={10} strokeWidth={2} /> {ev.location}</span>
+                              )}
                             </p>
                           </div>
                           <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: dotColor(ev) }} />
@@ -593,7 +603,7 @@ export default function KalenderClient({
 
         {/* iOS feed section */}
         <div className="mt-6">
-          <SectionLabel title="📱 iOS Kalender-abonnement" />
+          <SectionLabel title="iOS Kalender-abonnement" />
           <Card>
             <div className="px-4 py-4">
               {!feedToken ? (
@@ -773,9 +783,15 @@ export default function KalenderClient({
                   {new Date(viewEvent.start_at).toLocaleDateString("nb-NO",{weekday:"long",day:"numeric",month:"long"})}
                   {!viewEvent.all_day && ` · ${fmtTime(viewEvent.start_at)}–${fmtTime(viewEvent.end_at)}`}
                 </p>
-                {viewEvent.location && <p className="text-[13.5px] mt-1" style={{ color:"var(--text-2)" }}>📍 {viewEvent.location}</p>}
+                {viewEvent.location && (
+                  <p className="text-[13.5px] mt-1 flex items-center gap-1.5" style={{ color:"var(--text-2)" }}>
+                    <MapPin size={13} strokeWidth={2} /> {viewEvent.location}
+                  </p>
+                )}
                 {viewEvent.recurrence !== "none" && RECURRENCE_LABELS[viewEvent.recurrence] && (
-                  <p className="text-[13px] mt-0.5" style={{ color:"var(--text-3)" }}>🔁 {RECURRENCE_LABELS[viewEvent.recurrence]}</p>
+                  <p className="text-[13px] mt-0.5 flex items-center gap-1.5" style={{ color:"var(--text-3)" }}>
+                    <RefreshCcw size={12} strokeWidth={2} /> {RECURRENCE_LABELS[viewEvent.recurrence]}
+                  </p>
                 )}
                 {getParticipants(viewEvent).length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-3">
@@ -794,7 +810,7 @@ export default function KalenderClient({
               <button onClick={() => openEdit(viewEvent)}
                 className="flex-1 py-3 rounded-[13px] font-[600] text-[14px] transition-colors hover:opacity-90"
                 style={{ background:"var(--accent)", color:"white" }}>
-                ✏️ Rediger
+                Rediger
               </button>
               <button onClick={() => deleteEvent(viewEvent.id)}
                 className="flex-1 py-3 rounded-[13px] font-[550] text-[14px] transition-colors"
