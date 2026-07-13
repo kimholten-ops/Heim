@@ -18,6 +18,10 @@ export default async function ListerPage() {
   const hid = profile?.active_household_id;
   if (!hid) redirect("/app");
 
+  const { data: me } = await supabase.from("members")
+    .select("household_role").eq("household_id", hid).eq("auth_user_id", user.id).maybeSingle();
+  if (me?.household_role === "gjest") redirect("/app");
+
   const { data: lists } = await supabase
     .from("lists")
     .select("id, name, type")

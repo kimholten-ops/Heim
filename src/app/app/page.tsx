@@ -17,6 +17,7 @@ import { useModuleSettings } from "@/lib/modules";
 import { buildDailyBriefing } from "@/lib/daily-briefing";
 import { checkEventReminders } from "@/lib/notifications";
 import NotificationBell from "@/components/NotificationBell";
+import { GUEST_HIDDEN_HREFS } from "@/lib/guest-access";
 
 /* ── Types ── */
 type EventItem = {
@@ -65,7 +66,7 @@ const ALL_SHORTCUTS = [
 /* ── Component ── */
 export default function HomePage() {
   const [supabase] = useState(() => createClient());
-  const { meName, household, members } = useHousehold();
+  const { meName, household, members, myHouseholdRole } = useHousehold();
   const router = useRouter();
   const { settings: moduleSettings } = useModuleSettings(household?.id ?? null);
 
@@ -329,6 +330,7 @@ export default function HomePage() {
           <div className="grid grid-cols-3 gap-[10px]">
             {ALL_SHORTCUTS
               .filter(s => !s.module || moduleSettings[s.module as keyof typeof moduleSettings])
+              .filter(s => myHouseholdRole !== "gjest" || !GUEST_HIDDEN_HREFS.has(s.href))
               .map(({ href, label, Icon, iconBg, iconColor }) => (
                 <ShortcutTile key={label} href={href} label={label}
                   icon={<Icon size={19} strokeWidth={1.7} />}

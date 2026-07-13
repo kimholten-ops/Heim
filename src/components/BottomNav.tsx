@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, ShoppingCart, SquareCheck, Calendar, Users } from "lucide-react";
 import { useHousehold } from "@/components/HouseholdContext";
-import { useModuleSettings } from "@/lib/modules";
+import { GUEST_HIDDEN_HREFS } from "@/lib/guest-access";
 import { cn } from "@/lib/utils";
 
 const ALL_TABS = [
@@ -17,12 +17,11 @@ const ALL_TABS = [
 
 export default function BottomNav() {
   const path = usePathname();
-  const { household } = useHousehold();
-  const { settings } = useModuleSettings(household?.id ?? null);
+  const { myHouseholdRole } = useHousehold();
 
   const tabs = ALL_TABS.filter(t => {
-    if (t.href === "/app/lister"   && "maaltider" in (settings ?? {})) return true;
-    return true; // All core tabs always visible; extras handled via shortcuts
+    if (myHouseholdRole === "gjest" && GUEST_HIDDEN_HREFS.has(t.href)) return false;
+    return true;
   });
 
   return (

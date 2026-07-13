@@ -13,12 +13,14 @@ import { cn } from "@/lib/utils";
 import { useModuleSettings } from "@/lib/modules";
 
 export default function FamiliePage() {
-  const { household, members, myHouseholds } = useHousehold();
+  const { household, members, myHouseholds, myHouseholdRole } = useHousehold();
   const { settings, update: updateModules } = useModuleSettings(household?.id ?? null);
   const router = useRouter();
   const [supabase] = useState(() => createClient());
+  const isGuest = myHouseholdRole === "gjest";
 
   const [invite, setInvite] = useState<string | null>(null);
+  const [inviteRole, setInviteRole] = useState<"medlem" | "gjest">("medlem");
   const [copied, setCopied] = useState(false);
   const [code, setCode] = useState("");
   const [childName, setChildName] = useState("");
@@ -30,7 +32,7 @@ export default function FamiliePage() {
 
   async function genInvite() {
     setBusy(true); setMsg(null);
-    const { data, error } = await supabase.rpc("create_invite", { p_ttl_hours: 168 });
+    const { data, error } = await supabase.rpc("create_invite", { p_ttl_hours: 168, p_role: inviteRole });
     setBusy(false);
     if (error) setMsg(error.message);
     else setInvite(data as string);
@@ -124,28 +126,31 @@ export default function FamiliePage() {
             )}
 
             {/* Add child */}
-            <div className="border-t border-border mt-1 px-4 py-3 flex gap-2">
-              <div className="w-[22px] h-[22px] rounded-full flex-shrink-0 bg-surface-2 flex items-center justify-center">
-                <Baby size={13} className="text-text-3" />
+            {!isGuest && (
+              <div className="border-t border-border mt-1 px-4 py-3 flex gap-2">
+                <div className="w-[22px] h-[22px] rounded-full flex-shrink-0 bg-surface-2 flex items-center justify-center">
+                  <Baby size={13} className="text-text-3" />
+                </div>
+                <input
+                  className="flex-1 bg-transparent text-[15px] text-fg placeholder:text-text-3 outline-none"
+                  placeholder="Legg til barn…"
+                  value={childName}
+                  onChange={(e) => setChildName(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && addChild()}
+                />
+                {childName.trim() && (
+                  <button onClick={addChild} disabled={busy}
+                    className="text-accent text-[13px] font-[600] hover:opacity-80 transition-opacity disabled:opacity-40">
+                    Legg til
+                  </button>
+                )}
               </div>
-              <input
-                className="flex-1 bg-transparent text-[15px] text-fg placeholder:text-text-3 outline-none"
-                placeholder="Legg til barn…"
-                value={childName}
-                onChange={(e) => setChildName(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && addChild()}
-              />
-              {childName.trim() && (
-                <button onClick={addChild} disabled={busy}
-                  className="text-accent text-[13px] font-[600] hover:opacity-80 transition-opacity disabled:opacity-40">
-                  Legg til
-                </button>
-              )}
-            </div>
+            )}
           </Card>
         </div>
 
         {/* Invite */}
+        {!isGuest && (
         <div>
           <SectionLabel title="Inviter noen" />
           <Card>
@@ -155,6 +160,23 @@ export default function FamiliePage() {
                   <p className="text-[13px] text-text-2 mb-3">
                     Lager en engangskode som utløper etter 7 dager.
                   </p>
+                  <div className="flex gap-2 mb-3">
+                    <button type="button" onClick={() => setInviteRole("medlem")}
+                      className={cn("flex-1 py-2 text-[13px] rounded-[11px] border-2 font-[550] transition-all",
+                        inviteRole === "medlem" ? "border-accent text-accent bg-accent-weak" : "border-border text-text-2")}>
+                      Fullt medlem
+                    </button>
+                    <button type="button" onClick={() => setInviteRole("gjest")}
+                      className={cn("flex-1 py-2 text-[13px] rounded-[11px] border-2 font-[550] transition-all",
+                        inviteRole === "gjest" ? "border-accent text-accent bg-accent-weak" : "border-border text-text-2")}>
+                      Gjest
+                    </button>
+                  </div>
+                  {inviteRole === "gjest" && (
+                    <p className="text-[12px] text-text-3 mb-3">
+                      Gjester ser kalenderen, men har ikke tilgang til lister, gjøremål eller familie-innstillinger.
+                    </p>
+                  )}
                   <button
                     onClick={genInvite} disabled={busy}
                     className="w-full flex items-center justify-center gap-2 py-3 bg-accent text-white rounded-[13px] font-[600] text-[15px] hover:opacity-90 active:scale-[.98] disabled:opacity-40 transition-all"
@@ -186,6 +208,7 @@ export default function FamiliePage() {
             </div>
           </Card>
         </div>
+        )}
 
         {/* Join */}
         <div>
@@ -281,10 +304,12 @@ export default function FamiliePage() {
 
 function MemberRow({ m, divider }: { m: Member; divider: boolean }) {
   const router = useRouter();
+  const { myHouseholdRole } = useHousehold();
   const [supabase] = useState(() => createClient());
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(m.name);
   const [saving, setSaving] = useState(false);
+  const canEdit = myHouseholdRole === "medlem";
 
   async function save() {
     const n = name.trim();
@@ -315,7 +340,12 @@ function MemberRow({ m, divider }: { m: Member; divider: boolean }) {
         ) : (
           <p className="text-[15px] font-[550] text-fg truncate">{m.name}</p>
         )}
-        <p className="text-[12.5px] text-text-3">{m.role === "adult" ? "Voksen" : "Barn"}</p>
+        <p className="text-[12.5px] text-text-3 flex items-center gap-1.5">
+          {m.role === "adult" ? "Voksen" : "Barn"}
+          {m.household_role === "gjest" && (
+            <span className="text-[10px] font-[700] uppercase tracking-wide12 text-accent bg-accent-weak rounded-chip px-1.5 py-[1px]">Gjest</span>
+          )}
+        </p>
       </div>
       {editing ? (
         <div className="flex items-center gap-1 flex-shrink-0">
@@ -328,9 +358,11 @@ function MemberRow({ m, divider }: { m: Member; divider: boolean }) {
         </div>
       ) : (
         <>
+          {canEdit && (
           <button onClick={() => setEditing(true)} className="p-1.5 text-text-3 hover:text-accent transition-colors flex-shrink-0">
             <Pencil size={14} strokeWidth={2} />
           </button>
+          )}
           <span
             className="w-2 h-2 rounded-full flex-shrink-0"
             style={{ background: m.color }}

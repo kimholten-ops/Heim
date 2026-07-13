@@ -22,10 +22,12 @@ export type Database = {
         Row: {
           id: string; household_id: string; auth_user_id: string | null;
           name: string; color: string; role: string; can_login: boolean;
+          household_role: "medlem" | "gjest";
         } & Timestamps;
         Insert: {
           id?: string; household_id: string; auth_user_id?: string | null;
           name: string; color?: string; role?: string; can_login?: boolean; created_at?: string;
+          household_role?: "medlem" | "gjest";
         };
         Update: Partial<Database["public"]["Tables"]["members"]["Insert"]>;
         Relationships: [];
@@ -118,10 +120,12 @@ export type Database = {
         Row: {
           id: string; household_id: string; code: string; created_by: string | null;
           expires_at: string; used_at: string | null; created_at: string;
+          household_role: "medlem" | "gjest";
         };
         Insert: {
           id?: string; household_id: string; code: string; created_by?: string | null;
           expires_at?: string; used_at?: string | null; created_at?: string;
+          household_role?: "medlem" | "gjest";
         };
         Update: Partial<Database["public"]["Tables"]["household_invites"]["Insert"]>;
         Relationships: [];
@@ -141,7 +145,7 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
-      create_invite: { Args: { p_ttl_hours?: number }; Returns: string };
+      create_invite: { Args: { p_ttl_hours?: number; p_role?: "medlem" | "gjest" }; Returns: string };
       join_household: { Args: { p_code: string }; Returns: string };
       set_active_household: { Args: { p_hid: string }; Returns: undefined };
       add_child: { Args: { p_name: string; p_color: string }; Returns: string };

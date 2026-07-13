@@ -4,12 +4,14 @@ import { createContext, useContext } from "react";
 
 export type Member = {
   id: string; name: string; color: string; role: string; can_login: boolean;
+  household_role: "medlem" | "gjest";
 };
 export type HouseholdRef = { id: string; name: string };
 
 export type HouseholdCtx = {
   meName: string;
   myMemberId: string | null;
+  myHouseholdRole: "medlem" | "gjest";
   household: HouseholdRef;
   members: Member[];
   myHouseholds: HouseholdRef[];

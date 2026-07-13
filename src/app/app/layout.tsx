@@ -38,18 +38,20 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   const { data: members } = await supabase
     .from("members")
-    .select("id, name, color, role, can_login, auth_user_id")
+    .select("id, name, color, role, can_login, auth_user_id, household_role")
     .eq("household_id", active.id)
     .order("role");
 
-  const myMemberId = (members ?? []).find((m) => m.auth_user_id === user.id)?.id ?? null;
+  const me = (members ?? []).find((m) => m.auth_user_id === user.id);
+  const myMemberId = me?.id ?? null;
+  const myHouseholdRole = me?.household_role ?? "medlem";
   const publicMembers: Member[] = (members ?? []).map(
-    ({ id, name, color, role, can_login }) => ({ id, name, color, role, can_login })
+    ({ id, name, color, role, can_login, household_role }) => ({ id, name, color, role, can_login, household_role })
   );
 
   return (
     <HouseholdProvider
-      value={{ meName, myMemberId, household: active, members: publicMembers, myHouseholds }}
+      value={{ meName, myMemberId, myHouseholdRole, household: active, members: publicMembers, myHouseholds }}
     >
       <div className="min-h-[100dvh] max-w-md mx-auto" style={{ paddingBottom:"clamp(60px,10vh,82px)" }}>{children}</div>
       <BottomNav />

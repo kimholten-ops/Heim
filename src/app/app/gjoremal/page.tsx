@@ -15,6 +15,10 @@ export default async function GjoremalPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let todoLists: any[] = [];
   if (hid) {
+    const { data: me } = await supabase.from("members")
+      .select("household_role").eq("household_id", hid).eq("auth_user_id", user.id).maybeSingle();
+    if (me?.household_role === "gjest") redirect("/app");
+
     const { data } = await supabase.from("todo_lists")
       .select("id, name, icon, color").eq("household_id", hid).order("created_at");
     todoLists = data ?? [];
