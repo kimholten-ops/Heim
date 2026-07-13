@@ -5,10 +5,11 @@ import { createClient } from "@/lib/supabase/client";
 import { useHousehold } from "@/components/HouseholdContext";
 import {
   Calendar,
-  Plus, X, MapPin, RefreshCcw, ChevronLeft, ChevronRight, Rss,
+  Plus, X, MapPin, RefreshCcw, ChevronLeft, ChevronRight, Rss, ClipboardPaste, Trash2,
 } from "lucide-react";
 import { Card, SectionLabel } from "@/components/ui";
 import { cn } from "@/lib/utils";
+import { parseSmartAddText, type SmartAddCandidate } from "@/lib/smart-add-parse";
 
 /* ── Types ── */
 type CalView = "agenda" | "3day" | "week" | "month";
@@ -20,6 +21,8 @@ type EventItem = {
   calendar_imports: { label: string } | { label: string }[] | null;
   event_members: { member_id: string }[];
 };
+
+type SmartAddRow = SmartAddCandidate & { id: string; checked: boolean };
 
 /* ── Constants ── */
 const VIEWS: { key: CalView; label: string }[] = [
@@ -41,6 +44,39 @@ const RECURRENCE_OPTIONS = [
   { value: "biweekly", label: "Annenhver uke" },
   { value: "monthly",  label: "Månedlig" },
 ] as const;
+
+function SmartAddRowCard({ row, onChange, onRemove }: {
+  row: SmartAddRow; onChange: (patch: Partial<SmartAddRow>) => void; onRemove: () => void;
+}) {
+  return (
+    <div className="rounded-[13px] p-3" style={{ border:"1px solid var(--border)", background: row.date ? "var(--surface)" : "var(--surface-2)" }}>
+      <div className="flex items-start gap-2">
+        <input type="checkbox" checked={row.checked} disabled={!row.date}
+          onChange={e => onChange({ checked: e.target.checked })}
+          className="w-5 h-5 rounded accent-[var(--accent)] mt-1 flex-shrink-0" />
+        <div className="flex-1 space-y-1.5 min-w-0">
+          <input type="text" value={row.title} onChange={e => onChange({ title: e.target.value })}
+            className="w-full text-[14.5px] font-[600] outline-none bg-transparent" style={{ color:"var(--foreground)" }} />
+          <div className="grid grid-cols-3 gap-1.5">
+            <input type="date" value={row.date ?? ""}
+              onChange={e => onChange({ date: e.target.value || null, checked: e.target.value ? row.checked : false })}
+              className="rounded-[8px] px-1.5 py-1.5 text-[12px] outline-none" style={{ border:"1px solid var(--border)" }} />
+            <input type="time" value={row.startTime ?? ""} onChange={e => onChange({ startTime: e.target.value || null })}
+              className="rounded-[8px] px-1.5 py-1.5 text-[12px] outline-none" style={{ border:"1px solid var(--border)" }} />
+            <input type="time" value={row.endTime ?? ""} onChange={e => onChange({ endTime: e.target.value || null })}
+              className="rounded-[8px] px-1.5 py-1.5 text-[12px] outline-none" style={{ border:"1px solid var(--border)" }} />
+          </div>
+          <input type="text" placeholder="Sted (valgfritt)" value={row.location ?? ""} onChange={e => onChange({ location: e.target.value || null })}
+            className="w-full rounded-[8px] px-2 py-1.5 text-[12.5px] outline-none" style={{ border:"1px solid var(--border)" }} />
+        </div>
+        <button type="button" onClick={onRemove} className="p-1 flex-shrink-0 transition-colors hover:opacity-70"
+          style={{ color:"var(--text-3)" }}>
+          <Trash2 size={14} />
+        </button>
+      </div>
+    </div>
+  );
+}
 
 /* ── Helpers ── */
 function toDateStr(d: Date) {
@@ -137,6 +173,13 @@ export default function KalenderClient({
   const [fRecurrence, setFRecurrence] = useState<"none"|"weekly"|"biweekly"|"monthly">("none");
   const [fParticipants, setFParticipants] = useState<string[]>([]);
 
+  // Smart Add — regelbasert tekstgjenkjenning, ingen AI
+  const [smartAddMode, setSmartAddMode] = useState(false);
+  const [smartAddText, setSmartAddText] = useState("");
+  const [smartAddRows, setSmartAddRows] = useState<SmartAddRow[]>([]);
+  const [smartAddParticipants, setSmartAddParticipants] = useState<string[]>([]);
+  const [smartAddSaving, setSmartAddSaving] = useState(false);
+
   const allMemberIds = members.map(m => m.id);
   const allSelected  = fParticipants.length === members.length && members.length > 0;
 
@@ -168,6 +211,63 @@ export default function KalenderClient({
     setFTitle(""); setFLocation(""); setFRecurrence("none");
     setFAllDay(false); setFTime("12:00"); setFEndTime("13:00");
     setFParticipants([]); setEditEventId(null); setSelectedDay(null);
+    resetSmartAdd();
+  }
+
+  /* ─ Smart Add ─ */
+  function resetSmartAdd() {
+    setSmartAddMode(false); setSmartAddText(""); setSmartAddRows([]);
+    setSmartAddParticipants([]); setSmartAddSaving(false);
+  }
+
+  function runSmartAddParse() {
+    const parsed = parseSmartAddText(smartAddText);
+    setSmartAddRows(parsed.map(c => ({ ...c, id: crypto.randomUUID(), checked: c.confidence === "high" })));
+  }
+
+  function updateSmartAddRow(id: string, patch: Partial<SmartAddRow>) {
+    setSmartAddRows(rows => rows.map(r => r.id === id ? { ...r, ...patch } : r));
+  }
+
+  function removeSmartAddRow(id: string) {
+    setSmartAddRows(rows => rows.filter(r => r.id !== id));
+  }
+
+  function addOneHour(time: string): string {
+    const [h, m] = time.split(":").map(Number);
+    return `${String(Math.min(h + 1, 23)).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+  }
+
+  async function saveSmartAddRows() {
+    if (!householdId) return;
+    const toSave = smartAddRows.filter(r => r.checked && r.date);
+    if (toSave.length === 0) return;
+    setSmartAddSaving(true);
+
+    for (const row of toSave) {
+      const date = row.date!;
+      const allDay = !row.startTime;
+      const start_at = allDay
+        ? new Date(`${date}T00:00:00`).toISOString()
+        : new Date(`${date}T${row.startTime}`).toISOString();
+      const end_at = allDay
+        ? new Date(`${date}T23:59:59`).toISOString()
+        : new Date(`${date}T${row.endTime ?? addOneHour(row.startTime!)}`).toISOString();
+
+      const { data: ev } = await supabase.from("events").insert({
+        id: crypto.randomUUID(), household_id: householdId, title: row.title,
+        start_at, end_at, all_day: allDay, color: "#12936b",
+        location: row.location, recurrence: "none",
+      }).select().single();
+      if (ev && smartAddParticipants.length) {
+        await supabase.from("event_members").insert(smartAddParticipants.map(mid => ({ event_id: ev.id, member_id: mid })));
+      }
+    }
+
+    setSmartAddSaving(false);
+    resetForm();
+    setShowForm(false);
+    await fetchEvents();
   }
 
   function openAdd(day?: Date) {
@@ -595,9 +695,113 @@ export default function KalenderClient({
           onClick={() => { setShowForm(false); resetForm(); }}>
           <div className="bg-white rounded-t-[24px] p-5 pb-10 max-h-[92vh] overflow-y-auto shadow-2xl" onClick={e => e.stopPropagation()}>
             <div className="w-10 h-1 rounded-full mx-auto mb-5" style={{ background:"var(--border)" }} />
-            <h2 className="text-[19px] font-[700] mb-5" style={{ color:"var(--foreground)" }}>
+            <h2 className="text-[19px] font-[700] mb-4" style={{ color:"var(--foreground)" }}>
               {editEventId ? "Rediger hendelse" : "Ny hendelse"}
             </h2>
+
+            {!editEventId && !smartAddMode && (
+              <button type="button" onClick={() => setSmartAddMode(true)}
+                className="w-full flex items-center justify-center gap-2 py-2.5 mb-4 rounded-[13px] border border-dashed text-[13.5px] font-[600] transition-colors"
+                style={{ borderColor:"var(--accent)", color:"var(--accent)" }}>
+                <ClipboardPaste size={14} strokeWidth={2} /> Lim inn tekst
+              </button>
+            )}
+
+            {smartAddMode ? (
+              <div className="space-y-3">
+                {smartAddRows.length === 0 ? (
+                  <>
+                    <textarea rows={6} value={smartAddText} onChange={e => setSmartAddText(e.target.value)} autoFocus
+                      placeholder="Lim inn teksten her — f.eks. fra en e-post om ukeplanen"
+                      className="w-full rounded-[13px] px-4 py-3 text-[14.5px] outline-none resize-none"
+                      style={{ border:"1px solid var(--border)" }} />
+                    <p className="text-[12px]" style={{ color:"var(--text-3)" }}>
+                      Vi prøver å finne datoer og tidspunkt automatisk — sjekk alltid gjennom forslagene.
+                    </p>
+                    <div className="flex gap-2">
+                      <button type="button" onClick={runSmartAddParse} disabled={!smartAddText.trim()}
+                        className="flex-1 py-3 rounded-[13px] text-white font-[600] text-[15px] disabled:opacity-40 hover:opacity-90 transition-all"
+                        style={{ background:"var(--accent)" }}>
+                        Tolk tekst
+                      </button>
+                      <button type="button" onClick={resetSmartAdd}
+                        className="px-4 py-3 rounded-[13px] text-[14px] transition-colors"
+                        style={{ border:"1px solid var(--border)", color:"var(--text-2)" }}>
+                        Avbryt
+                      </button>
+                    </div>
+                  </>
+                ) : (() => {
+                  const withDate = smartAddRows.filter(r => r.date);
+                  const withoutDate = smartAddRows.filter(r => !r.date);
+                  const checkedCount = smartAddRows.filter(r => r.checked && r.date).length;
+                  return (
+                    <>
+                      {smartAddRows.length === 0 ? (
+                        <p className="text-[13.5px] text-center py-4" style={{ color:"var(--text-3)" }}>
+                          Fant ingenting å foreslå. Prøv å fylle ut skjemaet direkte i stedet.
+                        </p>
+                      ) : (
+                        <>
+                          {withDate.map(row => (
+                            <SmartAddRowCard key={row.id} row={row}
+                              onChange={p => updateSmartAddRow(row.id, p)}
+                              onRemove={() => removeSmartAddRow(row.id)} />
+                          ))}
+                          {withoutDate.length > 0 && (
+                            <div className="space-y-2">
+                              <p className="text-[11px] font-[600] uppercase tracking-[0.07em] pt-1" style={{ color:"var(--text-3)" }}>
+                                Usikre linjer — fyll inn dato for å ta med
+                              </p>
+                              {withoutDate.map(row => (
+                                <SmartAddRowCard key={row.id} row={row}
+                                  onChange={p => updateSmartAddRow(row.id, p)}
+                                  onRemove={() => removeSmartAddRow(row.id)} />
+                              ))}
+                            </div>
+                          )}
+                          {members.length > 0 && (
+                            <div>
+                              <p className="text-[11px] font-[600] uppercase tracking-[0.07em] mb-2" style={{ color:"var(--text-3)" }}>
+                                Hvem deltar? (gjelder valgte hendelser)
+                              </p>
+                              <div className="flex flex-wrap gap-2">
+                                {members.map(m => {
+                                  const sel = smartAddParticipants.includes(m.id);
+                                  return (
+                                    <button key={m.id} type="button"
+                                      onClick={() => setSmartAddParticipants(p => sel ? p.filter(x => x !== m.id) : [...p, m.id])}
+                                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-[550] transition-all"
+                                      style={{
+                                        border:`1px solid ${sel?m.color:"var(--border)"}`,
+                                        background:sel?m.color:"transparent",
+                                        color:sel?"white":"var(--foreground)",
+                                      }}>
+                                      <span className="w-[18px] h-[18px] rounded-full flex items-center justify-center text-[10px] text-white font-[700]"
+                                        style={{ background:m.color }}>{m.name[0]?.toUpperCase()}</span>
+                                      {m.name.split(" ")[0]}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+                          <button type="button" onClick={saveSmartAddRows} disabled={smartAddSaving || checkedCount === 0}
+                            className="w-full py-3 rounded-[13px] text-white font-[600] text-[15px] disabled:opacity-40 hover:opacity-90 transition-all"
+                            style={{ background:"var(--accent)" }}>
+                            {smartAddSaving ? "Legger til…" : `Legg til ${checkedCount} hendelser`}
+                          </button>
+                          <button type="button" onClick={resetSmartAdd}
+                            className="w-full py-2 text-[13px] transition-colors" style={{ color:"var(--text-3)" }}>
+                            Avbryt
+                          </button>
+                        </>
+                      )}
+                    </>
+                  );
+                })()}
+              </div>
+            ) : (
             <form onSubmit={saveEvent} className="space-y-3">
               <input type="text" placeholder="Tittel *" value={fTitle} onChange={e=>setFTitle(e.target.value)} autoFocus required
                 className="w-full rounded-[13px] px-4 py-3 text-[15px] outline-none transition-colors"
@@ -701,6 +905,7 @@ export default function KalenderClient({
                 {saving ? "Lagrer…" : editEventId ? "Lagre endringer" : "Lagre hendelse"}
               </button>
             </form>
+            )}
           </div>
         </div>
       )}
