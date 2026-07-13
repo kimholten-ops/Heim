@@ -6,7 +6,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import {
   Bell, LogOut, ShoppingCart, SquareCheck, Calendar,
-  Utensils, Users, ChevronRight, MapPin, Leaf,
+  Utensils, Users, ChevronRight, MapPin, Leaf, Sun,
 } from "lucide-react";
 import {
   AppHeader, IconButton, Chip, SectionLabel, Card,
@@ -14,6 +14,7 @@ import {
 } from "@/components/ui";
 import { useHousehold } from "@/components/HouseholdContext";
 import { useModuleSettings } from "@/lib/modules";
+import { buildDailyBriefing } from "@/lib/daily-briefing";
 
 /* ── Types ── */
 type EventItem = {
@@ -70,6 +71,7 @@ export default function HomePage() {
   const [todayEvents, setTodayEvents]   = useState<EventItem[]>([]);
   const [weekEvents, setWeekEvents]     = useState<EventItem[]>([]);
   const [urgentTodos, setUrgentTodos]   = useState<TodoItem[]>([]);
+  const [briefing, setBriefing]         = useState<string | null>(null);
   const [loading, setLoading]           = useState(true);
 
   const SPEC = ["var(--m-teal)","var(--m-amber)","var(--m-violet)","var(--m-coral)"];
@@ -85,8 +87,9 @@ export default function HomePage() {
     const todayEnd   = new Date(now); todayEnd.setHours(23,59,59,999);
     const weekEnd    = new Date(now); weekEnd.setDate(weekEnd.getDate()+7); weekEnd.setHours(23,59,59,999);
     const weekEndStr = weekEnd.toISOString().split("T")[0];
+    const todayStr   = todayStart.toISOString().split("T")[0];
 
-    const [{ data: te }, { data: we }, { data: td }] = await Promise.all([
+    const [{ data: te }, { data: we }, { data: td }, { data: tm }] = await Promise.all([
       supabase.from("events")
         .select("id,title,start_at,end_at,all_day,location,recurrence,event_members(member_id)")
         .eq("household_id", household.id)
@@ -105,16 +108,27 @@ export default function HomePage() {
         .eq("completed", false)
         .order("due_date", { ascending:true, nullsFirst:false })
         .limit(20),
+      supabase.from("meals")
+        .select("title")
+        .eq("household_id", household.id)
+        .eq("date", todayStr)
+        .maybeSingle(),
     ]);
 
-    setTodayEvents((te ?? []) as unknown as EventItem[]);
+    const events = (te ?? []) as unknown as EventItem[];
+    const todos = (td ?? []) as unknown as TodoItem[];
+    setTodayEvents(events);
     setWeekEvents((we ?? []) as unknown as EventItem[]);
 
-    const filtered = ((td ?? []) as unknown as TodoItem[])
+    const filtered = todos
       .filter(t => !t.due_date || t.due_date <= weekEndStr || t.priority === "high")
       .sort((a,b) => (["high","normal","low"].indexOf(a.priority)) - (["high","normal","low"].indexOf(b.priority)))
       .slice(0, 6);
     setUrgentTodos(filtered);
+
+    const dueTodayOrOverdue = todos.filter(t => t.due_date && t.due_date <= todayStr);
+    setBriefing(buildDailyBriefing({ events, todos: dueTodayOrOverdue, meal: tm?.title ?? null }));
+
     setLoading(false);
   }, [household?.id, supabase]);
 
@@ -152,6 +166,16 @@ export default function HomePage() {
             </>
           }
         />
+
+        {/* ── Dagens briefing ── */}
+        {briefing && (
+          <Card className="mb-3">
+            <div className="flex items-center gap-2.5 px-4 py-3">
+              <Sun size={16} strokeWidth={1.8} style={{ color:"var(--accent)" }} className="flex-shrink-0" />
+              <p className="text-[14.5px] font-[500]" style={{ color:"var(--foreground)" }}>{briefing}</p>
+            </div>
+          </Card>
+        )}
 
         {/* Member filter chips */}
         {members.length > 0 && (
