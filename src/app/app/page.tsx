@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import {
-  Bell, LogOut, ShoppingCart, SquareCheck, Calendar,
+  LogOut, ShoppingCart, SquareCheck, Calendar,
   Utensils, Users, ChevronRight, MapPin, Leaf, Sun,
 } from "lucide-react";
 import {
@@ -15,6 +15,8 @@ import {
 import { useHousehold } from "@/components/HouseholdContext";
 import { useModuleSettings } from "@/lib/modules";
 import { buildDailyBriefing } from "@/lib/daily-briefing";
+import { checkEventReminders } from "@/lib/notifications";
+import NotificationBell from "@/components/NotificationBell";
 
 /* ── Types ── */
 type EventItem = {
@@ -134,6 +136,12 @@ export default function HomePage() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
+  // Best-effort bakgrunnssjekk for kommende hendelser — genererer varsler
+  // og sender push. Blokkerer ikke sideinnlasting; feiler stille.
+  useEffect(() => {
+    if (household?.id) checkEventReminders(household.id);
+  }, [household?.id]);
+
   /* ── Member filter ── */
   const filterEvent = (ev: EventItem) => {
     if (!activeChip) return true;
@@ -159,7 +167,7 @@ export default function HomePage() {
           date={todayLabel()}
           right={
             <>
-              <IconButton><Bell size={18} strokeWidth={1.7} /></IconButton>
+              <NotificationBell />
               <IconButton onClick={() => router.push("/login")}>
                 <LogOut size={17} strokeWidth={1.7} />
               </IconButton>

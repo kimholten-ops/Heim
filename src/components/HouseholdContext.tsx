@@ -9,6 +9,7 @@ export type HouseholdRef = { id: string; name: string };
 
 export type HouseholdCtx = {
   meName: string;
+  myMemberId: string | null;
   household: HouseholdRef;
   members: Member[];
   myHouseholds: HouseholdRef[];

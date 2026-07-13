@@ -126,6 +126,18 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["household_invites"]["Insert"]>;
         Relationships: [];
       };
+      notifications: {
+        Row:    { id: string; household_id: string; member_id: string; type: string; title: string; body: string | null; url: string | null; ref_id: string | null; read_at: string | null; created_at: string }
+        Insert: { id?: string; household_id: string; member_id: string; type?: string; title: string; body?: string | null; url?: string | null; ref_id?: string | null; read_at?: string | null; created_at?: string }
+        Update: { id?: string; household_id?: string; member_id?: string; type?: string; title?: string; body?: string | null; url?: string | null; ref_id?: string | null; read_at?: string | null; created_at?: string }
+        Relationships: [];
+      };
+      push_subscriptions: {
+        Row:    { id: string; auth_user_id: string; endpoint: string; p256dh: string; auth_key: string; created_at: string }
+        Insert: { id?: string; auth_user_id?: string; endpoint: string; p256dh: string; auth_key: string; created_at?: string }
+        Update: { id?: string; auth_user_id?: string; endpoint?: string; p256dh?: string; auth_key?: string; created_at?: string }
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
