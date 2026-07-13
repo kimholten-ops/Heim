@@ -235,7 +235,15 @@ export default function MaaltiderClient({
         body: JSON.stringify({ url: importUrl.trim() }),
       });
       const data = await res.json();
-      if (!res.ok) { setImportError(data?.error ?? "Klarte ikke hente oppskriften."); return; }
+      if (!res.ok) {
+        setRUrl(importUrl.trim());
+        if (data?.error === "no_structured_data") {
+          setImportError("Fant ingen strukturert oppskrift-data på denne siden. Fyll ut skjemaet under manuelt — lenken er allerede lagret som kilde.");
+        } else {
+          setImportError(data?.error ?? "Klarte ikke hente oppskriften.");
+        }
+        return;
+      }
       const r = data.recipe;
       setRTitle(r.title ?? "");
       setRBody(r.body ?? "");

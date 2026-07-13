@@ -155,67 +155,62 @@ function htmlToPlainText(html: string): string {
     .trim();
 }
 
-async function aiFallback(html: string): Promise<ImportedRecipe | null> {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) return null;
+// Microdata/RDFa-fallback for eldre oppskriftssider uten JSON-LD. Ingen DOM-parser
+// tilgjengelig server-side her, så dette er en regex-basert best-effort-tilnærming
+// (samme ånd som JSON-LD-parsingen over) — ikke skop-bevisst på nøstede itemscope,
+// men det er greit siden brukeren uansett godkjenner/redigerer før noe lagres.
+function hasRecipeMicrodata(html: string): boolean {
+  return /itemtype=["'][^"']*schema\.org\/Recipe["']/i.test(html);
+}
 
-  const text = htmlToPlainText(html).slice(0, 15_000);
-  if (!text) return null;
-
-  let res: Response;
-  try {
-    res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model: "claude-sonnet-5",
-        max_tokens: 1500,
-        system:
-          "Du får rå sidetekst fra en nettside. Avgjør om siden er en matoppskrift. " +
-          "Returner KUN gyldig JSON, ingen markdown, ingen forklaring. " +
-          'Hvis oppskrift: {"isRecipe":true,"title":string,"servings":number|null,' +
-          '"totalTimeMinutes":number|null,"ingredients":[string],"steps":[string]}. ' +
-          'Hvis ikke oppskrift: {"isRecipe":false}.',
-        messages: [{ role: "user", content: text }],
-      }),
-    });
-  } catch {
-    return null;
+function extractItemPropValues(html: string, prop: string): string[] {
+  const values: string[] = [];
+  const re = new RegExp(`<([a-zA-Z0-9]+)([^>]*\\bitemprop=["']${prop}["'][^>]*)>`, "gi");
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(html))) {
+    const tag = m[1].toLowerCase();
+    const attrs = m[2];
+    const contentMatch = /\bcontent=["']([^"']*)["']/i.exec(attrs);
+    const datetimeMatch = /\bdatetime=["']([^"']*)["']/i.exec(attrs);
+    const srcMatch = /\bsrc=["']([^"']*)["']/i.exec(attrs);
+    if (tag === "meta" && contentMatch) { values.push(contentMatch[1]); continue; }
+    if (tag === "time" && datetimeMatch) { values.push(datetimeMatch[1]); continue; }
+    if (tag === "img" && srcMatch) { values.push(srcMatch[1]); continue; }
+    if (contentMatch) { values.push(contentMatch[1]); continue; }
+    const closeIdx = html.indexOf(`</${tag}`, re.lastIndex);
+    if (closeIdx !== -1 && closeIdx - re.lastIndex < 5000) {
+      const inner = html.slice(re.lastIndex, closeIdx);
+      const text = inner.replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim();
+      if (text) values.push(text);
+    }
   }
-  if (!res.ok) return null;
+  return values;
+}
 
-  const data = await res.json().catch(() => null);
-  const raw = data?.content?.[0]?.text;
-  if (typeof raw !== "string") return null;
+function extractMicrodataRecipe(html: string): ImportedRecipe | null {
+  if (!hasRecipeMicrodata(html)) return null;
 
-  const cleaned = raw.replace(/^```json\s*/i, "").replace(/```\s*$/i, "").trim();
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(cleaned);
-  } catch {
-    return null;
-  }
-  if (!parsed || typeof parsed !== "object") return null;
-  const p = parsed as Record<string, unknown>;
-  if (!p.isRecipe) return null;
+  const names = extractItemPropValues(html, "name");
+  const title = names[0]?.trim() || "Uten tittel";
+  const image_url = extractItemPropValues(html, "image")[0] ?? null;
 
-  const ingredients = Array.isArray(p.ingredients)
-    ? (p.ingredients as unknown[]).filter((i): i is string => typeof i === "string").map(splitIngredient)
-    : [];
-  const steps = Array.isArray(p.steps) ? (p.steps as unknown[]).filter((s): s is string => typeof s === "string") : [];
+  const yields = extractItemPropValues(html, "recipeYield");
+  const servings = yields.length ? parseServings(yields[0]) : null;
 
-  return {
-    title: typeof p.title === "string" && p.title.trim() ? p.title.trim() : "Uten tittel",
-    image_url: null,
-    servings: typeof p.servings === "number" ? p.servings : null,
-    total_time_minutes: typeof p.totalTimeMinutes === "number" ? p.totalTimeMinutes : null,
-    ingredients,
-    body: stepsToBody(steps),
-  };
+  const totalTimes = extractItemPropValues(html, "totalTime");
+  const prepTimes = extractItemPropValues(html, "prepTime");
+  const cookTimes = extractItemPropValues(html, "cookTime");
+  const totalTime = totalTimes.length ? parseDurationMinutes(totalTimes[0]) : null;
+  const cookPrep = (prepTimes.length ? parseDurationMinutes(prepTimes[0]) ?? 0 : 0)
+    + (cookTimes.length ? parseDurationMinutes(cookTimes[0]) ?? 0 : 0);
+  const total_time_minutes = totalTime ?? (cookPrep > 0 ? cookPrep : null);
+
+  const ingredients = extractItemPropValues(html, "recipeIngredient").map(splitIngredient);
+  const steps = extractItemPropValues(html, "recipeInstructions");
+  const body = stepsToBody(steps);
+
+  if (ingredients.length === 0 && !body) return null;
+  return { title, image_url, servings, total_time_minutes, ingredients, body };
 }
 
 export async function POST(req: NextRequest) {
@@ -246,11 +241,12 @@ export async function POST(req: NextRequest) {
   }
 
   const node = findRecipeNode(extractJsonLdBlocks(html));
-  const recipe = node ? mapRecipeNode(node) : await aiFallback(html);
+  const recipe = node ? mapRecipeNode(node) : extractMicrodataRecipe(html);
 
   if (!recipe) {
+    const rawTextPreview = htmlToPlainText(html).slice(0, 500);
     return NextResponse.json(
-      { error: "Fant ingen oppskrift på denne siden. Prøv å lime inn manuelt i stedet." },
+      { error: "no_structured_data", rawTextPreview },
       { status: 422 }
     );
   }
