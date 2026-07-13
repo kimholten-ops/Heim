@@ -97,9 +97,15 @@ export type Database = {
         Relationships: []
       }
       todos: {
-        Row:    { id: string; todo_list_id: string; household_id: string; title: string; notes: string | null; due_date: string | null; priority: 'low'|'normal'|'high'; assigned_to: string | null; completed: boolean; completed_at: string | null; created_by: string | null; created_at: string }
-        Insert: { id?: string; todo_list_id: string; household_id: string; title: string; notes?: string | null; due_date?: string | null; priority?: 'low'|'normal'|'high'; assigned_to?: string | null; completed?: boolean; completed_at?: string | null; created_by?: string | null; created_at?: string }
-        Update: { id?: string; todo_list_id?: string; household_id?: string; title?: string; notes?: string | null; due_date?: string | null; priority?: 'low'|'normal'|'high'; assigned_to?: string | null; completed?: boolean; completed_at?: string | null; created_by?: string | null; created_at?: string }
+        Row:    { id: string; todo_list_id: string; household_id: string; title: string; notes: string | null; due_date: string | null; priority: 'low'|'normal'|'high'; assigned_to: string | null; completed: boolean; completed_at: string | null; created_by: string | null; created_at: string; rotation_id: string | null }
+        Insert: { id?: string; todo_list_id: string; household_id: string; title: string; notes?: string | null; due_date?: string | null; priority?: 'low'|'normal'|'high'; assigned_to?: string | null; completed?: boolean; completed_at?: string | null; created_by?: string | null; created_at?: string; rotation_id?: string | null }
+        Update: { id?: string; todo_list_id?: string; household_id?: string; title?: string; notes?: string | null; due_date?: string | null; priority?: 'low'|'normal'|'high'; assigned_to?: string | null; completed?: boolean; completed_at?: string | null; created_by?: string | null; created_at?: string; rotation_id?: string | null }
+        Relationships: []
+      }
+      todo_rotations: {
+        Row:    { id: string; household_id: string; todo_list_id: string; title: string; member_order: string[]; current_index: number; frequency: 'daily'|'weekly'; next_due: string; active: boolean; created_by: string | null; created_at: string }
+        Insert: { id?: string; household_id: string; todo_list_id: string; title: string; member_order: string[]; current_index?: number; frequency?: 'daily'|'weekly'; next_due: string; active?: boolean; created_by?: string | null; created_at?: string }
+        Update: { id?: string; household_id?: string; todo_list_id?: string; title?: string; member_order?: string[]; current_index?: number; frequency?: 'daily'|'weekly'; next_due?: string; active?: boolean; created_by?: string | null; created_at?: string }
         Relationships: []
       }
       calendar_feeds: {

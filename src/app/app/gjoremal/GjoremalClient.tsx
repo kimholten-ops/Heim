@@ -3,9 +3,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useHousehold } from "@/components/HouseholdContext";
-import { Plus, X, SquareCheck } from "lucide-react";
-import { Card, SectionLabel, EmptyState } from "@/components/ui";
+import { Plus, X, SquareCheck, Repeat, SkipForward } from "lucide-react";
+import { Card, EmptyState } from "@/components/ui";
 import { cn } from "@/lib/utils";
+import { checkRotations, skipRotationRound, type TodoRotation } from "@/lib/rotations";
 
 type TodoList = { id: string; name: string; icon: string; color: string };
 type Todo = {
@@ -13,6 +14,7 @@ type Todo = {
   priority: "low" | "normal" | "high"; due_date: string | null;
   assigned_to: string | null;
   completed: boolean;
+  rotation_id: string | null;
 };
 
 const PRIORITY_COLOR = { high: "#ef4444", normal: "#f59e0b", low: "#12936b" };
@@ -55,6 +57,16 @@ export default function GjoremalClient({
   const [fAssignees, setFAssignees] = useState<string[]>([]); // multi-select
   const [saving, setSaving] = useState(false);
 
+  // Rotasjoner
+  const [rotations, setRotations] = useState<TodoRotation[]>([]);
+  const [showRotationForm, setShowRotationForm] = useState(false);
+  const [rTitle, setRTitle] = useState("");
+  const [rListId, setRListId] = useState<string | null>(null);
+  const [rMemberOrder, setRMemberOrder] = useState<string[]>([]);
+  const [rFrequency, setRFrequency] = useState<"daily" | "weekly">("weekly");
+  const [savingRotation, setSavingRotation] = useState(false);
+  const [busyRotationId, setBusyRotationId] = useState<string | null>(null);
+
   const allMemberIds = members.map(m => m.id);
   const allAssigned = fAssignees.length === members.length && members.length > 0;
 
@@ -78,6 +90,60 @@ export default function GjoremalClient({
   }, [activeList, supabase]);
 
   useEffect(() => { fetchTodos(); }, [fetchTodos]);
+
+  const fetchRotations = useCallback(async () => {
+    if (!householdId) return;
+    const { data } = await supabase.from("todo_rotations").select("*")
+      .eq("household_id", householdId).eq("active", true).order("created_at");
+    setRotations((data ?? []) as TodoRotation[]);
+  }, [householdId, supabase]);
+
+  useEffect(() => {
+    if (!householdId) return;
+    (async () => {
+      await checkRotations(supabase, householdId);
+      await fetchRotations();
+      await fetchTodos();
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [householdId]);
+
+  function toggleRotationMember(id: string) {
+    setRMemberOrder(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  }
+
+  async function addRotation(e: React.FormEvent) {
+    e.preventDefault();
+    const listId = rListId ?? activeList;
+    if (!rTitle.trim() || !listId || !householdId || rMemberOrder.length === 0) return;
+    setSavingRotation(true);
+    const today = new Date();
+    const nextDue = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+    await supabase.from("todo_rotations").insert({
+      household_id: householdId, todo_list_id: listId, title: rTitle.trim(),
+      member_order: rMemberOrder, frequency: rFrequency, next_due: nextDue,
+    });
+    setRTitle(""); setRMemberOrder([]); setRFrequency("weekly"); setRListId(null);
+    setShowRotationForm(false); setSavingRotation(false);
+    await checkRotations(supabase, householdId);
+    await fetchRotations();
+    await fetchTodos();
+  }
+
+  async function handleSkipRotation(rotation: TodoRotation) {
+    setBusyRotationId(rotation.id);
+    await skipRotationRound(supabase, rotation);
+    await fetchRotations();
+    setBusyRotationId(null);
+  }
+
+  async function deleteRotation(id: string) {
+    if (!confirm("Slett rotasjonen? Allerede opprettede gjøremål beholdes.")) return;
+    setBusyRotationId(id);
+    await supabase.from("todo_rotations").delete().eq("id", id);
+    await fetchRotations();
+    setBusyRotationId(null);
+  }
 
   async function addList() {
     const n = newListName.trim();
@@ -221,6 +287,50 @@ export default function GjoremalClient({
           </div>
         )}
 
+        {/* Roterende gjøremål */}
+        {householdId && (
+          <div>
+            <div className="flex items-center justify-between px-1">
+              <h2 className="text-[12px] font-[600] uppercase tracking-wide12 text-text-3">Roterende gjøremål</h2>
+              <button onClick={() => setShowRotationForm(true)}
+                className="text-[12px] font-[600] text-accent flex items-center gap-1">
+                <Plus size={12} strokeWidth={2.5} /> Ny rotasjon
+              </button>
+            </div>
+            {rotations.length > 0 && (
+              <Card>
+                {rotations.map((r, i) => {
+                  const assigneeId = r.member_order[r.current_index % r.member_order.length];
+                  const member = memberMap[assigneeId];
+                  return (
+                    <div key={r.id} className={cn("flex items-center gap-3 px-4 py-[13px] group", i > 0 && "border-t border-border")}>
+                      <Repeat size={16} className="text-text-3 flex-shrink-0" strokeWidth={2} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[14px] font-[550] text-fg">{r.title}</p>
+                        {member && (
+                          <p className="text-[12.5px] text-text-3 mt-[1px] flex items-center gap-1.5">
+                            <span className="w-[10px] h-[10px] rounded-full" style={{ background: member.color }} />
+                            {member.name.split(" ")[0]} · {r.frequency === "daily" ? "daglig" : "ukentlig"}
+                          </p>
+                        )}
+                      </div>
+                      <button onClick={() => handleSkipRotation(r)} disabled={busyRotationId === r.id}
+                        title="Hopp over denne runden"
+                        className="text-text-3 hover:text-accent transition-colors p-1 disabled:opacity-40">
+                        <SkipForward size={15} />
+                      </button>
+                      <button onClick={() => deleteRotation(r.id)} disabled={busyRotationId === r.id}
+                        className="opacity-0 group-hover:opacity-100 text-text-3 hover:text-rose-500 transition-all p-1 disabled:opacity-40">
+                        <X size={14} />
+                      </button>
+                    </div>
+                  );
+                })}
+              </Card>
+            )}
+          </div>
+        )}
+
         {/* Todo list */}
         {activeList ? (
           todosLoading ? (
@@ -239,7 +349,10 @@ export default function GjoremalClient({
                           className="w-[22px] h-[22px] rounded-check border-2 border-[#d6dae1] flex-shrink-0 flex items-center justify-center hover:border-accent transition-colors" />
                         <div className="flex-1 min-w-0"
                           style={{ borderLeft: `3px solid ${PRIORITY_COLOR[todo.priority]}`, borderRadius: "3px", paddingLeft: "12px" }}>
-                          <p className="text-[15px] font-[550] text-fg">{todo.title}</p>
+                          <p className="text-[15px] font-[550] text-fg flex items-center gap-1.5">
+                            {todo.rotation_id && <Repeat size={12} className="text-text-3 flex-shrink-0" strokeWidth={2} />}
+                            {todo.title}
+                          </p>
                           {(due || member) && (
                             <p className="text-[12.5px] text-text-3 mt-[1px] flex items-center gap-2 flex-wrap">
                               {member && (
@@ -377,6 +490,80 @@ export default function GjoremalClient({
                 className="w-full py-3 text-white rounded-[13px] font-[600] text-[15px] disabled:opacity-40 hover:opacity-90 transition-all"
                 style={{ background: currentColor }}>
                 {saving ? "Lagrer…" : allAssigned || fAssignees.length > 1 ? `Legg til (${fAssignees.length || 1} stk)` : "Legg til gjøremål"}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── New rotation sheet ── */}
+      {showRotationForm && (
+        <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/40 backdrop-blur-sm"
+          onClick={() => setShowRotationForm(false)}>
+          <div className="bg-white rounded-t-[24px] p-5 pb-10 shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
+            <h2 className="text-[19px] font-[700] text-fg mb-5">Ny rotasjon</h2>
+            <form onSubmit={addRotation} className="space-y-3">
+              <input type="text" placeholder="Hva skal rotere? (f.eks. Ta ut søppel) *" value={rTitle}
+                onChange={e => setRTitle(e.target.value)} autoFocus required
+                className="w-full rounded-[13px] border border-border px-4 py-3 text-[15px] outline-none focus:border-accent" />
+
+              {lists.length > 1 && (
+                <div>
+                  <p className="text-[11px] font-[600] text-text-3 mb-2 uppercase tracking-wide12">Liste</p>
+                  <div className="flex flex-wrap gap-2">
+                    {lists.map(l => (
+                      <button key={l.id} type="button" onClick={() => setRListId(l.id)}
+                        className={cn("px-3 py-1.5 rounded-chip border text-[13px] font-[550] transition-all",
+                          (rListId ?? activeList) === l.id ? "bg-fg text-white border-fg" : "border-border text-fg hover:bg-surface-2")}>
+                        {l.icon} {l.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Member order — klikk i rekkefølge */}
+              <div>
+                <p className="text-[11px] font-[600] text-text-3 mb-2 uppercase tracking-wide12">Rekkefølge (klikk i ønsket rekkefølge)</p>
+                <div className="flex flex-wrap gap-2">
+                  {members.map(m => {
+                    const pos = rMemberOrder.indexOf(m.id);
+                    const sel = pos !== -1;
+                    return (
+                      <button key={m.id} type="button" onClick={() => toggleRotationMember(m.id)}
+                        className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-chip border text-[13px] font-[550] transition-all",
+                          sel ? "border-transparent text-white" : "border-border text-fg")}
+                        style={sel ? { background: m.color, borderColor: m.color } : {}}>
+                        {sel && <span className="text-[11px] font-[700]">{pos + 1}.</span>}
+                        <span className="w-[18px] h-[18px] rounded-full flex items-center justify-center text-[10px] text-white font-[700]"
+                          style={{ background: m.color }}>{m.name[0]?.toUpperCase()}</span>
+                        {m.name.split(" ")[0]}
+                      </button>
+                    );
+                  })}
+                </div>
+                {rMemberOrder.length > 0 && (
+                  <p className="text-[12px] text-text-3 mt-1">
+                    Starter med {memberMap[rMemberOrder[0]]?.name.split(" ")[0]}, roterer videre til neste.
+                  </p>
+                )}
+              </div>
+
+              {/* Frequency */}
+              <div className="flex gap-2">
+                {(["weekly", "daily"] as const).map(f => (
+                  <button key={f} type="button" onClick={() => setRFrequency(f)}
+                    className={cn("flex-1 py-2.5 text-[13px] rounded-[13px] border-2 font-[550] transition-all",
+                      rFrequency === f ? "border-accent text-accent bg-accent-weak" : "border-border text-text-2")}>
+                    {f === "weekly" ? "Ukentlig" : "Daglig"}
+                  </button>
+                ))}
+              </div>
+
+              <button type="submit" disabled={savingRotation || !rTitle.trim() || rMemberOrder.length === 0 || !(rListId ?? activeList)}
+                className="w-full py-3 text-white rounded-[13px] font-[600] text-[15px] disabled:opacity-40 hover:opacity-90 transition-all bg-accent">
+                {savingRotation ? "Lagrer…" : "Lag rotasjon"}
               </button>
             </form>
           </div>
