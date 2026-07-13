@@ -3,10 +3,31 @@
 -- household_members/invites/children som ble ryddet i 0005). Det gamle
 -- skjemaet (recipient_id, payload jsonb, ingen member_id/url/ref_id) er
 -- uforenlig med det 0013 faktisk trenger. "create table if not exists" i
--- 0013 ble derfor en stille no-op, og påfølgende create index/policy-
--- statements der kan ha feilet mot manglende kolonner.
---
--- Erstatter tabellen fullstendig — trygt siden den var ubrukt i appen.
+-- 0013 ble derfor en stille no-op, og "create unique index ... on
+-- notifications (member_id, ...)" som fulgte feilet med 42703 (kolonnen
+-- fantes ikke). Supabase sitt SQL-vindu kjører hele innlimingen som én
+-- transaksjon, så HELE 0013 ble rullet tilbake — push_subscriptions ble
+-- derfor aldri opprettet heller. Denne filen er derfor selvstendig og
+-- oppretter push_subscriptions på nytt (idempotent) i tillegg til å
+-- rette notifications, slik at det holder å kjøre kun denne.
+
+create table if not exists push_subscriptions (
+  id uuid primary key default gen_random_uuid(),
+  auth_user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  endpoint text not null unique,
+  p256dh text not null,
+  auth_key text not null,
+  created_at timestamptz not null default now()
+);
+
+alter table push_subscriptions enable row level security;
+
+drop policy if exists "Users manage own push subscriptions" on push_subscriptions;
+create policy "Users manage own push subscriptions" on push_subscriptions
+  for all using (auth_user_id = (select auth.uid()))
+  with check (auth_user_id = (select auth.uid()));
+
+-- Erstatter notifications fullstendig — trygt siden den var ubrukt i appen.
 drop table if exists notifications cascade;
 
 create table notifications (
