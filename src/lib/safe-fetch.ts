@@ -67,7 +67,12 @@ function assertUrlIsSafe(url: URL): void {
   }
   // Literal IP i URL-en (f.eks. http://127.0.0.1/ eller http://169.254.169.254/) —
   // undici sin connect.lookup blir ALDRI kalt for disse, må sjekkes her direkte.
-  if (net.isIP(url.hostname) && isPrivateIp(url.hostname)) {
+  // IPv6-literaler er brakettert i url.hostname (f.eks. "[::1]"), men net.isIP
+  // godtar ikke braketter og returnerer 0 for dem — uten avbraketteringen her
+  // ville HELE denne sjekken vært et stille no-op for enhver IPv6-adresse,
+  // siden undici stripper braketter selv før den kobler til (verifisert empirisk).
+  const hostname = url.hostname.replace(/^\[|\]$/g, "");
+  if (net.isIP(hostname) && isPrivateIp(hostname)) {
     throw new Error("Denne adressen kan ikke hentes.");
   }
 }
