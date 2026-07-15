@@ -6,7 +6,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import {
   LogOut, ShoppingCart, SquareCheck, Calendar,
-  Utensils, Users, ChevronRight, MapPin, Leaf, Sun,
+  Utensils, Users, ChevronRight, MapPin, Leaf, Sun, Dumbbell,
 } from "lucide-react";
 import {
   AppHeader, IconButton, Chip, SectionLabel, Card,
@@ -56,17 +56,19 @@ function dueBadge(due: string) {
 const PRIORITY_COLOR: Record<string,string> = { high:"#ef4444", normal:"#f59e0b", low:"#12936b" };
 
 const ALL_SHORTCUTS = [
-  { href:"/app/lister",    label:"Lister",    Icon:ShoppingCart, iconBg:"var(--accent-weak)", iconColor:"var(--accent)",  module:null       },
-  { href:"/app/gjoremal",  label:"Gjøremål",  Icon:SquareCheck,  iconBg:"#e7f4ee",            iconColor:"var(--accent)",  module:null       },
-  { href:"/app/kalender",  label:"Kalender",  Icon:Calendar,     iconBg:"#eef0f7",            iconColor:"#5b6bd6",        module:null       },
-  { href:"/app/maaltider", label:"Måltider",  Icon:Utensils,     iconBg:"#fdeee2",            iconColor:"var(--m-coral)", module:"maaltider"},
-  { href:"/app/familie",   label:"Familie",   Icon:Users,        iconBg:"#f1edff",            iconColor:"var(--m-violet)",module:null       },
+  { href:"/app/lister",    label:"Lister",    Icon:ShoppingCart, iconBg:"var(--accent-weak)", iconColor:"var(--accent)",  module:null,        adultOnly:false },
+  { href:"/app/gjoremal",  label:"Gjøremål",  Icon:SquareCheck,  iconBg:"#e7f4ee",            iconColor:"var(--accent)",  module:null,        adultOnly:false },
+  { href:"/app/kalender",  label:"Kalender",  Icon:Calendar,     iconBg:"#eef0f7",            iconColor:"#5b6bd6",        module:null,        adultOnly:false },
+  { href:"/app/maaltider", label:"Måltider",  Icon:Utensils,     iconBg:"#fdeee2",            iconColor:"var(--m-coral)", module:"maaltider", adultOnly:false },
+  { href:"/app/helse",     label:"Helse",     Icon:Dumbbell,     iconBg:"#fde8ec",            iconColor:"#e11d48",        module:null,        adultOnly:true  },
+  { href:"/app/familie",   label:"Familie",   Icon:Users,        iconBg:"#f1edff",            iconColor:"var(--m-violet)",module:null,        adultOnly:false },
 ] as const;
 
 /* ── Component ── */
 export default function HomePage() {
   const [supabase] = useState(() => createClient());
-  const { meName, household, members, myHouseholdRole } = useHousehold();
+  const { meName, household, members, myHouseholdRole, myMemberId } = useHousehold();
+  const myRole = members.find((m) => m.id === myMemberId)?.role;
   const router = useRouter();
   const { settings: moduleSettings } = useModuleSettings(household?.id ?? null);
 
@@ -331,6 +333,7 @@ export default function HomePage() {
             {ALL_SHORTCUTS
               .filter(s => !s.module || moduleSettings[s.module as keyof typeof moduleSettings])
               .filter(s => myHouseholdRole !== "gjest" || !GUEST_HIDDEN_HREFS.has(s.href))
+              .filter(s => !s.adultOnly || myRole === "adult")
               .map(({ href, label, Icon, iconBg, iconColor }) => (
                 <ShortcutTile key={label} href={href} label={label}
                   icon={<Icon size={19} strokeWidth={1.7} />}

@@ -1,0 +1,2524 @@
+[
+  {
+    "id": "Arnold_Dumbbell_Press",
+    "name_no": "Arnold press",
+    "name_en": "Arnold Dumbbell Press",
+    "muscle_groups": [
+      "skuldre",
+      "triceps"
+    ],
+    "equipment": "manualer",
+    "level": "middels",
+    "instructions_no": [
+      "Sitt med manualene foran skuldrene, håndflatene mot deg.",
+      "Press oppover mens du roterer håndflatene utover.",
+      "Roter tilbake og senk kontrollert til start."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Arnold_Dumbbell_Press/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Arnold_Dumbbell_Press/1.jpg"
+    ]
+  },
+  {
+    "id": "Dumbbell_Rear_Lunge",
+    "name_no": "Bakover-utfall med manualer",
+    "name_en": "Dumbbell Rear Lunge",
+    "muscle_groups": [
+      "forside lår",
+      "legger",
+      "sete",
+      "bakside lår"
+    ],
+    "equipment": "manualer",
+    "level": "middels",
+    "instructions_no": [
+      "Hold en manual i hver hånd, ta et langt steg bakover.",
+      "Bøy begge knær til bakre kne nesten berører gulvet.",
+      "Press tilbake til start og bytt ben."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Rear_Lunge/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Rear_Lunge/1.jpg"
+    ]
+  },
+  {
+    "id": "Cable_Rope_Rear-Delt_Rows",
+    "name_no": "Bakre skulder-rodd i kabel",
+    "name_en": "Cable Rope Rear-Delt Rows",
+    "muscle_groups": [
+      "skuldre",
+      "biceps",
+      "rygg"
+    ],
+    "equipment": "kabel",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Stå med tau i kabel foran deg i brysthøyde.",
+      "Trekk tauet mot ansiktet og spre hendene, albuene høye.",
+      "La det gå kontrollert tilbake ut igjen."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Rope_Rear-Delt_Rows/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Rope_Rear-Delt_Rows/1.jpg"
+    ]
+  },
+  {
+    "id": "Leg_Press",
+    "name_no": "Beinpress",
+    "name_en": "Leg Press",
+    "muscle_groups": [
+      "forside lår",
+      "legger",
+      "sete",
+      "bakside lår"
+    ],
+    "equipment": "maskin",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Sitt i maskinen med føttene skulderbredde på platen.",
+      "Bøy knærne kontrollert mot brystet.",
+      "Press platen tilbake uten å strekke knærne helt ut."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Leg_Press/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Leg_Press/1.jpg"
+    ]
+  },
+  {
+    "id": "Leg_Extensions",
+    "name_no": "Beinstrekk i maskin",
+    "name_en": "Leg Extensions",
+    "muscle_groups": [
+      "forside lår"
+    ],
+    "equipment": "maskin",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Sitt med ankelputen over ankelen, knær i 90 grader.",
+      "Strekk beina rett ut foran deg.",
+      "Senk kontrollert tilbake til start."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Leg_Extensions/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Leg_Extensions/1.jpg"
+    ]
+  },
+  {
+    "id": "Barbell_Bench_Press_-_Medium_Grip",
+    "name_no": "Benkpress",
+    "name_en": "Barbell Bench Press - Medium Grip",
+    "muscle_groups": [
+      "bryst",
+      "skuldre",
+      "triceps"
+    ],
+    "equipment": "vektstang",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Ligg på benken, grip stangen litt bredere enn skuldrene.",
+      "Senk stangen kontrollert mot brystet.",
+      "Press stangen opp til strake armer."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Bench_Press_-_Medium_Grip/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Bench_Press_-_Medium_Grip/1.jpg"
+    ]
+  },
+  {
+    "id": "Machine_Bench_Press",
+    "name_no": "Benkpress i maskin",
+    "name_en": "Machine Bench Press",
+    "muscle_groups": [
+      "bryst",
+      "skuldre",
+      "triceps"
+    ],
+    "equipment": "maskin",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Sitt eller ligg i maskinen med håndtakene i brysthøyde.",
+      "Press håndtakene fremover til strake armer.",
+      "Før dem kontrollert tilbake til start."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Machine_Bench_Press/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Machine_Bench_Press/1.jpg"
+    ]
+  },
+  {
+    "id": "Dumbbell_Bench_Press",
+    "name_no": "Benkpress med manualer",
+    "name_en": "Dumbbell Bench Press",
+    "muscle_groups": [
+      "bryst",
+      "skuldre",
+      "triceps"
+    ],
+    "equipment": "manualer",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Ligg på benken med en manual i hver hånd over brystet.",
+      "Senk manualene kontrollert til siden av brystet.",
+      "Press dem opp til strake armer."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Bench_Press/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Bench_Press/1.jpg"
+    ]
+  },
+  {
+    "id": "Standing_Biceps_Cable_Curl",
+    "name_no": "Biceps curl i kabel",
+    "name_en": "Standing Biceps Cable Curl",
+    "muscle_groups": [
+      "biceps"
+    ],
+    "equipment": "kabel",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Stå med håndtaket i kabel, armene strake ned.",
+      "Curl håndtaket opp mot skuldrene.",
+      "Senk kontrollert tilbake til start."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Standing_Biceps_Cable_Curl/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Standing_Biceps_Cable_Curl/1.jpg"
+    ]
+  },
+  {
+    "id": "Machine_Bicep_Curl",
+    "name_no": "Biceps curl i maskin",
+    "name_en": "Machine Bicep Curl",
+    "muscle_groups": [
+      "biceps"
+    ],
+    "equipment": "maskin",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Sitt med overarmene på puten, grip håndtakene.",
+      "Curl håndtakene opp mot skuldrene.",
+      "Senk kontrollert tilbake til start."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Machine_Bicep_Curl/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Machine_Bicep_Curl/1.jpg"
+    ]
+  },
+  {
+    "id": "Dumbbell_Bicep_Curl",
+    "name_no": "Biceps curl med manualer",
+    "name_en": "Dumbbell Bicep Curl",
+    "muscle_groups": [
+      "biceps",
+      "underarmer"
+    ],
+    "equipment": "manualer",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Stå med en manual i hver hånd langs siden.",
+      "Bøy albuene og curl manualene opp mot skuldrene.",
+      "Senk kontrollert tilbake til start."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Bicep_Curl/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Bicep_Curl/1.jpg"
+    ]
+  },
+  {
+    "id": "Barbell_Curl",
+    "name_no": "Biceps curl med vektstang",
+    "name_en": "Barbell Curl",
+    "muscle_groups": [
+      "biceps",
+      "underarmer"
+    ],
+    "equipment": "vektstang",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Stå med stangen i strake armer foran lårene.",
+      "Bøy albuene og curl stangen opp mot brystet.",
+      "Senk kontrollert tilbake til start."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Curl/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Curl/1.jpg"
+    ]
+  },
+  {
+    "id": "Wide-Grip_Standing_Barbell_Curl",
+    "name_no": "Bredt curl med vektstang",
+    "name_en": "Wide-Grip Standing Barbell Curl",
+    "muscle_groups": [
+      "biceps"
+    ],
+    "equipment": "vektstang",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Stå med stangen i bredt grep foran lårene.",
+      "Bøy albuene og curl stangen opp mot brystet.",
+      "Senk kontrollert tilbake til start."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Wide-Grip_Standing_Barbell_Curl/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Wide-Grip_Standing_Barbell_Curl/1.jpg"
+    ]
+  },
+  {
+    "id": "Leverage_Chest_Press",
+    "name_no": "Brystpress i maskin",
+    "name_en": "Leverage Chest Press",
+    "muscle_groups": [
+      "bryst",
+      "skuldre",
+      "triceps"
+    ],
+    "equipment": "maskin",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Sitt i maskinen med håndtakene i brysthøyde.",
+      "Press håndtakene fremover til strake armer.",
+      "Før dem kontrollert tilbake til start."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Leverage_Chest_Press/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Leverage_Chest_Press/1.jpg"
+    ]
+  },
+  {
+    "id": "Burpees",
+    "name_no": "Burpees",
+    "name_en": "Burpee",
+    "muscle_groups": [
+      "kjerne",
+      "bryst",
+      "forside lår",
+      "skuldre"
+    ],
+    "equipment": "kroppsvekt",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Start stående, bøy ned og plasser hendene i gulvet.",
+      "Spark beina bakover til planke, gjør gjerne en push-up.",
+      "Hopp beina frem igjen og strekk deg opp i et hopp."
+    ],
+    "image_urls": []
+  },
+  {
+    "id": "Cable_Crossover",
+    "name_no": "Cable crossover",
+    "name_en": "Cable Crossover",
+    "muscle_groups": [
+      "bryst",
+      "skuldre"
+    ],
+    "equipment": "kabel",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Stå mellom to kabeltårn med håndtak i hver hånd.",
+      "Før hendene sammen foran deg i en bue.",
+      "La armene gå kontrollert tilbake ut igjen."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Crossover/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Crossover/1.jpg"
+    ]
+  },
+  {
+    "id": "Chin-Up",
+    "name_no": "Chin-ups",
+    "name_en": "Chin-Up",
+    "muscle_groups": [
+      "rygg/lats",
+      "biceps",
+      "underarmer",
+      "rygg"
+    ],
+    "equipment": "kroppsvekt",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Heng i en stang med underhåndsgrep, skulderbredde.",
+      "Trekk deg opp til haken er over stangen.",
+      "Senk deg kontrollert ned til strake armer."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Chin-Up/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Chin-Up/1.jpg"
+    ]
+  },
+  {
+    "id": "Cable_Crunch",
+    "name_no": "Crunch i kabel",
+    "name_en": "Cable Crunch",
+    "muscle_groups": [
+      "kjerne"
+    ],
+    "equipment": "kabel",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Kne stående ved kabeltårnet, tau bak nakken.",
+      "Bøy overkroppen ned mot hoften ved å stramme magen.",
+      "Reis deg kontrollert tilbake til start."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Crunch/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Crunch/1.jpg"
+    ]
+  },
+  {
+    "id": "Ab_Crunch_Machine",
+    "name_no": "Crunch i maskin",
+    "name_en": "Ab Crunch Machine",
+    "muscle_groups": [
+      "kjerne"
+    ],
+    "equipment": "maskin",
+    "level": "middels",
+    "instructions_no": [
+      "Sitt i maskinen med puten mot overkroppen.",
+      "Bøy overkroppen fremover ved å stramme magen.",
+      "Reis deg kontrollert tilbake til start."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Ab_Crunch_Machine/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Ab_Crunch_Machine/1.jpg"
+    ]
+  },
+  {
+    "id": "Crunches",
+    "name_no": "Crunches",
+    "name_en": "Crunches",
+    "muscle_groups": [
+      "kjerne"
+    ],
+    "equipment": "kroppsvekt",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Ligg på ryggen med knærne bøyd, hendene bak hodet.",
+      "Løft skuldrene fra gulvet ved å bøye overkroppen.",
+      "Senk kontrollert tilbake til start."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Crunches/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Crunches/1.jpg"
+    ]
+  },
+  {
+    "id": "EZ-Bar_Curl",
+    "name_no": "Curl med EZ-stang",
+    "name_en": "EZ-Bar Curl",
+    "muscle_groups": [
+      "biceps"
+    ],
+    "equipment": "ez-stang",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Stå med EZ-stangen i strake armer foran lårene.",
+      "Bøy albuene og curl stangen opp mot brystet.",
+      "Senk kontrollert tilbake til start."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/EZ-Bar_Curl/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/EZ-Bar_Curl/1.jpg"
+    ]
+  },
+  {
+    "id": "Dead_Bug",
+    "name_no": "Dead bug",
+    "name_en": "Dead Bug",
+    "muscle_groups": [
+      "kjerne"
+    ],
+    "equipment": "kroppsvekt",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Ligg på ryggen med armene rett opp og knærne i 90 grader.",
+      "Senk motsatt arm og bein samtidig mot gulvet.",
+      "Før dem tilbake og bytt side."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dead_Bug/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dead_Bug/1.jpg"
+    ]
+  },
+  {
+    "id": "Dips_-_Chest_Version",
+    "name_no": "Dips (bryst)",
+    "name_en": "Dips - Chest Version",
+    "muscle_groups": [
+      "bryst",
+      "skuldre",
+      "triceps"
+    ],
+    "equipment": "annet",
+    "level": "middels",
+    "instructions_no": [
+      "Grip parallelle stenger, len overkroppen fremover.",
+      "Senk deg til albuene er i cirka 90 grader.",
+      "Press deg opp igjen til strake armer."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dips_-_Chest_Version/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dips_-_Chest_Version/1.jpg"
+    ]
+  },
+  {
+    "id": "Dips_-_Triceps_Version",
+    "name_no": "Dips (triceps)",
+    "name_en": "Dips - Triceps Version",
+    "muscle_groups": [
+      "triceps",
+      "bryst",
+      "skuldre"
+    ],
+    "equipment": "kroppsvekt",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Grip parallelle stenger, kroppen oppreist og albuene inntil kroppen.",
+      "Senk deg til albuene er i cirka 90 grader.",
+      "Press deg opp igjen til strake armer."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dips_-_Triceps_Version/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dips_-_Triceps_Version/1.jpg"
+    ]
+  },
+  {
+    "id": "Parallel_Bar_Dip",
+    "name_no": "Dips i barrer",
+    "name_en": "Parallel Bar Dip",
+    "muscle_groups": [
+      "triceps",
+      "bryst",
+      "skuldre"
+    ],
+    "equipment": "annet",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Grip parallelle stenger, kroppen oppreist.",
+      "Senk deg til albuene er i cirka 90 grader.",
+      "Press deg opp igjen til strake armer."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Parallel_Bar_Dip/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Parallel_Bar_Dip/1.jpg"
+    ]
+  },
+  {
+    "id": "Bench_Dips",
+    "name_no": "Dips på benk",
+    "name_en": "Bench Dips",
+    "muscle_groups": [
+      "triceps",
+      "bryst",
+      "skuldre"
+    ],
+    "equipment": "kroppsvekt",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Støtt hendene på kanten av en benk, føttene fremover.",
+      "Bøy albuene og senk hoften mot gulvet.",
+      "Press deg opp igjen til strake armer."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Bench_Dips/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Bench_Dips/1.jpg"
+    ]
+  },
+  {
+    "id": "Donkey_Calf_Raises",
+    "name_no": "Donkey calf raise",
+    "name_en": "Donkey Calf Raises",
+    "muscle_groups": [
+      "legger"
+    ],
+    "equipment": "annet",
+    "level": "middels",
+    "instructions_no": [
+      "Bøy fremover i hoften med forfoten på en kant.",
+      "Press deg opp på tå så høyt du kan.",
+      "Senk hælene kontrollert ned igjen."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Donkey_Calf_Raises/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Donkey_Calf_Raises/1.jpg"
+    ]
+  },
+  {
+    "id": "One-Arm_Kettlebell_Swings",
+    "name_no": "Ettarms kettlebell swing",
+    "name_en": "One-Arm Kettlebell Swings",
+    "muscle_groups": [
+      "bakside lår",
+      "legger",
+      "sete",
+      "korsrygg",
+      "skuldre"
+    ],
+    "equipment": "kettlebell",
+    "level": "middels",
+    "instructions_no": [
+      "Stå med kettlebellen foran deg, føtter litt bredere enn hoftebredde.",
+      "Sving kettlebellen mellom beina, press så hoften frem og sving den til brysthøyde.",
+      "La den svinge kontrollert tilbake ned, bytt hånd underveis."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/One-Arm_Kettlebell_Swings/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/One-Arm_Kettlebell_Swings/1.jpg"
+    ]
+  },
+  {
+    "id": "One_Arm_Lat_Pulldown",
+    "name_no": "Ettarms nedtrekk",
+    "name_en": "One Arm Lat Pulldown",
+    "muscle_groups": [
+      "rygg/lats",
+      "biceps",
+      "rygg"
+    ],
+    "equipment": "kabel",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Sitt med ett håndtak i én hånd, armen strak over deg.",
+      "Trekk håndtaket ned mot hoften.",
+      "La det gå kontrollert tilbake opp, bytt så arm."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/One_Arm_Lat_Pulldown/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/One_Arm_Lat_Pulldown/1.jpg"
+    ]
+  },
+  {
+    "id": "One-Arm_Dumbbell_Row",
+    "name_no": "Ettarms rodd med manual",
+    "name_en": "One-Arm Dumbbell Row",
+    "muscle_groups": [
+      "rygg",
+      "biceps",
+      "rygg/lats",
+      "skuldre"
+    ],
+    "equipment": "manualer",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Støtt deg med én hånd og kne på en benk.",
+      "Trekk manualen opp mot hoften, albuen bakover.",
+      "Senk kontrollert ned igjen, bytt så side."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/One-Arm_Dumbbell_Row/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/One-Arm_Dumbbell_Row/1.jpg"
+    ]
+  },
+  {
+    "id": "Single_Leg_Glute_Bridge",
+    "name_no": "Ettbeins glute bridge",
+    "name_en": "Single Leg Glute Bridge",
+    "muscle_groups": [
+      "sete",
+      "bakside lår"
+    ],
+    "equipment": "kroppsvekt",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Ligg på ryggen, ett kne bøyd og det andre beinet strak i luften.",
+      "Press hoften opp med det ene beinet.",
+      "Senk kontrollert og gjenta, bytt så bein."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Single_Leg_Glute_Bridge/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Single_Leg_Glute_Bridge/1.jpg"
+    ]
+  },
+  {
+    "id": "Face_Pull",
+    "name_no": "Face pull",
+    "name_en": "Face Pull",
+    "muscle_groups": [
+      "skuldre",
+      "rygg"
+    ],
+    "equipment": "kabel",
+    "level": "middels",
+    "instructions_no": [
+      "Grip tau i kabel i ansiktshøyde, armene strake fremover.",
+      "Trekk tauet mot ansiktet med albuene høye.",
+      "La det gå kontrollert tilbake ut igjen."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Face_Pull/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Face_Pull/1.jpg"
+    ]
+  },
+  {
+    "id": "Decline_Barbell_Bench_Press",
+    "name_no": "Fallende benkpress",
+    "name_en": "Decline Barbell Bench Press",
+    "muscle_groups": [
+      "bryst",
+      "skuldre",
+      "triceps"
+    ],
+    "equipment": "vektstang",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Ligg i en benk med negativ helning, fest føttene.",
+      "Senk stangen kontrollert mot nedre bryst.",
+      "Press stangen opp til strake armer."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Decline_Barbell_Bench_Press/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Decline_Barbell_Bench_Press/1.jpg"
+    ]
+  },
+  {
+    "id": "Decline_Push-Up",
+    "name_no": "Fallende push-up",
+    "name_en": "Decline Push-Up",
+    "muscle_groups": [
+      "bryst",
+      "skuldre",
+      "triceps"
+    ],
+    "equipment": "kroppsvekt",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Plasser føttene på en forhøyning, hendene i gulvet.",
+      "Senk brystet mot gulvet.",
+      "Press deg opp til strake armer."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Decline_Push-Up/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Decline_Push-Up/1.jpg"
+    ]
+  },
+  {
+    "id": "Farmers_Walk",
+    "name_no": "Farmer's walk",
+    "name_en": "Farmer's Walk",
+    "muscle_groups": [
+      "underarmer",
+      "kjerne",
+      "sete",
+      "bakside lår",
+      "korsrygg",
+      "forside lår",
+      "rygg/traps"
+    ],
+    "equipment": "annet",
+    "level": "middels",
+    "instructions_no": [
+      "Hold en tung vekt i hver hånd langs siden.",
+      "Gå fremover med rett rygg og stramme skuldre.",
+      "Hold grepet fast gjennom hele avstanden."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Farmers_Walk/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Farmers_Walk/1.jpg"
+    ]
+  },
+  {
+    "id": "Dumbbell_Flyes",
+    "name_no": "Flyes med manualer",
+    "name_en": "Dumbbell Flyes",
+    "muscle_groups": [
+      "bryst"
+    ],
+    "equipment": "manualer",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Ligg på benken med manualene over brystet, lett bøy i albuene.",
+      "Senk manualene i en bue ut til siden.",
+      "Før dem tilbake sammen over brystet."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Flyes/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Flyes/1.jpg"
+    ]
+  },
+  {
+    "id": "Front_Dumbbell_Raise",
+    "name_no": "Front raise med manualer",
+    "name_en": "Front Dumbbell Raise",
+    "muscle_groups": [
+      "skuldre"
+    ],
+    "equipment": "manualer",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Stå med en manual i hver hånd foran lårene.",
+      "Løft en eller begge armer rett frem til skulderhøyde.",
+      "Senk kontrollert ned igjen."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Front_Dumbbell_Raise/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Front_Dumbbell_Raise/1.jpg"
+    ]
+  },
+  {
+    "id": "Front_Barbell_Squat",
+    "name_no": "Front squat",
+    "name_en": "Front Barbell Squat",
+    "muscle_groups": [
+      "forside lår",
+      "legger",
+      "sete",
+      "bakside lår"
+    ],
+    "equipment": "vektstang",
+    "level": "øvet",
+    "instructions_no": [
+      "Hold stangen på fremre skuldre med albuene høyt.",
+      "Bøy i hofte og knær ned til dyp knebøy.",
+      "Press opp igjen med overkroppen oppreist."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Front_Barbell_Squat/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Front_Barbell_Squat/1.jpg"
+    ]
+  },
+  {
+    "id": "Barbell_Glute_Bridge",
+    "name_no": "Glute bridge med vektstang",
+    "name_en": "Barbell Glute Bridge",
+    "muscle_groups": [
+      "sete",
+      "legger",
+      "bakside lår"
+    ],
+    "equipment": "vektstang",
+    "level": "middels",
+    "instructions_no": [
+      "Ligg på ryggen med stang over hoftene, føttene i gulvet.",
+      "Press hoftene opp ved å klemme setet.",
+      "Senk kontrollert tilbake til gulvet."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Glute_Bridge/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Glute_Bridge/1.jpg"
+    ]
+  },
+  {
+    "id": "Glute_Kickback",
+    "name_no": "Glute kickback",
+    "name_en": "Glute Kickback",
+    "muscle_groups": [
+      "sete",
+      "bakside lår"
+    ],
+    "equipment": "kroppsvekt",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Stå på alle fire med rett rygg.",
+      "Press ett bein rett bakover og opp til det er i linje med ryggen.",
+      "Senk kontrollert og gjenta, bytt så bein."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Glute_Kickback/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Glute_Kickback/1.jpg"
+    ]
+  },
+  {
+    "id": "Goblet_Squat",
+    "name_no": "Goblet squat",
+    "name_en": "Goblet Squat",
+    "muscle_groups": [
+      "forside lår",
+      "legger",
+      "sete",
+      "bakside lår",
+      "skuldre"
+    ],
+    "equipment": "kettlebell",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Hold en kettlebell eller manual inntil brystet.",
+      "Bøy i hofte og knær ned til dyp knebøy.",
+      "Press gjennom hælene og strekk deg opp igjen."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Goblet_Squat/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Goblet_Squat/1.jpg"
+    ]
+  },
+  {
+    "id": "Good_Morning",
+    "name_no": "Good morning",
+    "name_en": "Good Morning",
+    "muscle_groups": [
+      "bakside lår",
+      "kjerne",
+      "sete",
+      "korsrygg"
+    ],
+    "equipment": "vektstang",
+    "level": "middels",
+    "instructions_no": [
+      "Stangen på øvre rygg, føttene i hoftebredde.",
+      "Bøy fremover i hoften med rett rygg til overkroppen er nesten vannrett.",
+      "Reis deg opp igjen ved å presse hoften fremover."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Good_Morning/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Good_Morning/1.jpg"
+    ]
+  },
+  {
+    "id": "Bodyweight_Walking_Lunge",
+    "name_no": "Gående utfall",
+    "name_en": "Bodyweight Walking Lunge",
+    "muscle_groups": [
+      "forside lår",
+      "legger",
+      "sete",
+      "bakside lår"
+    ],
+    "equipment": "kroppsvekt",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Ta et langt steg fremover.",
+      "Bøy begge knær til bakre kne nesten berører gulvet.",
+      "Press opp og ta neste steg med motsatt fot."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Bodyweight_Walking_Lunge/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Bodyweight_Walking_Lunge/1.jpg"
+    ]
+  },
+  {
+    "id": "Barbell_Walking_Lunge",
+    "name_no": "Gående utfall med vektstang",
+    "name_en": "Barbell Walking Lunge",
+    "muscle_groups": [
+      "forside lår",
+      "legger",
+      "sete",
+      "bakside lår"
+    ],
+    "equipment": "vektstang",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Stangen på øvre rygg, ta et langt steg fremover.",
+      "Bøy begge knær til bakre kne nesten berører gulvet.",
+      "Press opp og ta neste steg med motsatt fot."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Walking_Lunge/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Walking_Lunge/1.jpg"
+    ]
+  },
+  {
+    "id": "Hack_Squat",
+    "name_no": "Hack squat i maskin",
+    "name_en": "Hack Squat",
+    "muscle_groups": [
+      "forside lår",
+      "legger",
+      "sete",
+      "bakside lår"
+    ],
+    "equipment": "maskin",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Still deg i maskinen med rygg og skuldre mot puten.",
+      "Bøy knærne og senk deg kontrollert.",
+      "Press gjennom hælene tilbake til start."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Hack_Squat/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Hack_Squat/1.jpg"
+    ]
+  },
+  {
+    "id": "Hammer_Curls",
+    "name_no": "Hammer curls",
+    "name_en": "Hammer Curls",
+    "muscle_groups": [
+      "biceps"
+    ],
+    "equipment": "manualer",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Stå med en manual i hver hånd, tommelen opp.",
+      "Bøy albuene og curl manualene opp med nøytralt grep.",
+      "Senk kontrollert tilbake til start."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Hammer_Curls/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Hammer_Curls/1.jpg"
+    ]
+  },
+  {
+    "id": "Hanging_Leg_Raise",
+    "name_no": "Hengende beinløft",
+    "name_en": "Hanging Leg Raise",
+    "muscle_groups": [
+      "kjerne"
+    ],
+    "equipment": "kroppsvekt",
+    "level": "øvet",
+    "instructions_no": [
+      "Heng i en stang med strake armer.",
+      "Løft beina rett frem til hoftehøyde eller høyere.",
+      "Senk kontrollert tilbake til start."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Hanging_Leg_Raise/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Hanging_Leg_Raise/1.jpg"
+    ]
+  },
+  {
+    "id": "Barbell_Hip_Thrust",
+    "name_no": "Hip thrust med vektstang",
+    "name_en": "Barbell Hip Thrust",
+    "muscle_groups": [
+      "sete",
+      "legger",
+      "bakside lår"
+    ],
+    "equipment": "vektstang",
+    "level": "middels",
+    "instructions_no": [
+      "Sitt med øvre rygg mot en benk, stang over hoftene.",
+      "Press hoftene opp til kroppen er rett fra knær til skuldre.",
+      "Klem setet og senk kontrollert ned igjen."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Hip_Thrust/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Hip_Thrust/1.jpg"
+    ]
+  },
+  {
+    "id": "Leverage_High_Row",
+    "name_no": "Høy rodd i maskin",
+    "name_en": "Leverage High Row",
+    "muscle_groups": [
+      "rygg",
+      "rygg/lats"
+    ],
+    "equipment": "maskin",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Sitt i maskinen med brystet mot puten, grip håndtakene høyt.",
+      "Trekk håndtakene bakover mot deg.",
+      "Før dem kontrollert tilbake til start."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Leverage_High_Row/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Leverage_High_Row/1.jpg"
+    ]
+  },
+  {
+    "id": "Inverted_Row",
+    "name_no": "Inverted row",
+    "name_en": "Inverted Row",
+    "muscle_groups": [
+      "rygg",
+      "rygg/lats"
+    ],
+    "equipment": "kroppsvekt",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Legg deg under en fast stang, grip den med strake armer.",
+      "Trekk brystet opp mot stangen med rett kropp.",
+      "Senk deg kontrollert ned igjen."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Inverted_Row/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Inverted_Row/1.jpg"
+    ]
+  },
+  {
+    "id": "Kettlebell_Thruster",
+    "name_no": "Kettlebell thruster",
+    "name_en": "Kettlebell Thruster",
+    "muscle_groups": [
+      "skuldre",
+      "forside lår",
+      "triceps"
+    ],
+    "equipment": "kettlebell",
+    "level": "middels",
+    "instructions_no": [
+      "Hold en kettlebell foran skuldrene, føtter skulderbredde.",
+      "Bøy ned i knebøy, press deg så opp og videre rett opp over hodet.",
+      "Senk kettlebellen kontrollert tilbake til skuldrene."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Kettlebell_Thruster/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Kettlebell_Thruster/1.jpg"
+    ]
+  },
+  {
+    "id": "Dumbbell_Squat",
+    "name_no": "Knebøy med manualer",
+    "name_en": "Dumbbell Squat",
+    "muscle_groups": [
+      "forside lår",
+      "legger",
+      "sete",
+      "bakside lår",
+      "korsrygg"
+    ],
+    "equipment": "manualer",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Hold en manual i hver hånd langs siden.",
+      "Bøy i hofte og knær ned til dyp knebøy.",
+      "Press gjennom hælene og strekk deg opp igjen."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Squat/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Squat/1.jpg"
+    ]
+  },
+  {
+    "id": "Barbell_Squat",
+    "name_no": "Knebøy med vektstang",
+    "name_en": "Barbell Squat",
+    "muscle_groups": [
+      "forside lår",
+      "legger",
+      "sete",
+      "bakside lår",
+      "korsrygg"
+    ],
+    "equipment": "vektstang",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Stå med stangen på øvre rygg, føtter skulderbredde.",
+      "Bøy i hofte og knær til lårene er parallelle med gulvet.",
+      "Press gjennom hælene og strekk deg opp igjen."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Squat/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Squat/1.jpg"
+    ]
+  },
+  {
+    "id": "Bodyweight_Squat",
+    "name_no": "Knebøy uten vekt",
+    "name_en": "Bodyweight Squat",
+    "muscle_groups": [
+      "forside lår",
+      "sete",
+      "bakside lår"
+    ],
+    "equipment": "kroppsvekt",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Stå med føttene skulderbredde, tær lett utover.",
+      "Bøy i hofte og knær til lårene er parallelle med gulvet.",
+      "Press gjennom hælene og strekk deg opp igjen."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Bodyweight_Squat/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Bodyweight_Squat/1.jpg"
+    ]
+  },
+  {
+    "id": "Concentration_Curls",
+    "name_no": "Konsentrasjonscurl",
+    "name_en": "Concentration Curls",
+    "muscle_groups": [
+      "biceps",
+      "underarmer"
+    ],
+    "equipment": "manualer",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Sitt med albuen støttet mot innsiden av låret.",
+      "Curl manualen opp mot skulderen.",
+      "Senk kontrollert tilbake til start."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Concentration_Curls/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Concentration_Curls/1.jpg"
+    ]
+  },
+  {
+    "id": "Cross-Body_Crunch",
+    "name_no": "Kryss-crunch",
+    "name_en": "Cross-Body Crunch",
+    "muscle_groups": [
+      "kjerne"
+    ],
+    "equipment": "kroppsvekt",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Ligg på ryggen med hendene bak hodet.",
+      "Løft overkroppen og før albuen mot motsatt kne.",
+      "Senk kontrollert og gjenta til andre siden."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cross-Body_Crunch/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cross-Body_Crunch/1.jpg"
+    ]
+  },
+  {
+    "id": "Lying_Leg_Curls",
+    "name_no": "Liggende beincurl",
+    "name_en": "Lying Leg Curls",
+    "muscle_groups": [
+      "bakside lår"
+    ],
+    "equipment": "maskin",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Ligg på magen i maskinen, ankelputen bak leggene.",
+      "Bøy knærne og trekk hælene mot setet.",
+      "Senk kontrollert tilbake til start."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Lying_Leg_Curls/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Lying_Leg_Curls/1.jpg"
+    ]
+  },
+  {
+    "id": "Flat_Bench_Lying_Leg_Raise",
+    "name_no": "Liggende beinløft på benk",
+    "name_en": "Flat Bench Lying Leg Raise",
+    "muscle_groups": [
+      "kjerne"
+    ],
+    "equipment": "kroppsvekt",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Ligg på ryggen på en benk, hold i kanten bak hodet.",
+      "Løft strake bein opp mot loddrett.",
+      "Senk kontrollert uten at korsryggen løfter seg fra benken."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Flat_Bench_Lying_Leg_Raise/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Flat_Bench_Lying_Leg_Raise/1.jpg"
+    ]
+  },
+  {
+    "id": "Barbell_Deadlift",
+    "name_no": "Markløft med vektstang",
+    "name_en": "Barbell Deadlift",
+    "muscle_groups": [
+      "korsrygg",
+      "legger",
+      "underarmer",
+      "sete",
+      "bakside lår",
+      "rygg/lats",
+      "rygg",
+      "forside lår",
+      "rygg/traps"
+    ],
+    "equipment": "vektstang",
+    "level": "middels",
+    "instructions_no": [
+      "Stå med stangen over midtfoten, grip like utenfor beina.",
+      "Hold ryggen rett og løft stangen ved å strekke hofte og knær samtidig.",
+      "Stå fullt oppreist, senk deretter stangen kontrollert ned igjen."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Deadlift/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Deadlift/1.jpg"
+    ]
+  },
+  {
+    "id": "Machine_Shoulder_Military_Press",
+    "name_no": "Militærpress i maskin",
+    "name_en": "Machine Shoulder (Military) Press",
+    "muscle_groups": [
+      "skuldre",
+      "triceps"
+    ],
+    "equipment": "maskin",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Sitt i maskinen med håndtakene i skulderhøyde.",
+      "Press håndtakene rett opp.",
+      "Senk dem kontrollert tilbake til start."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Machine_Shoulder_Military_Press/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Machine_Shoulder_Military_Press/1.jpg"
+    ]
+  },
+  {
+    "id": "Two-Arm_Kettlebell_Military_Press",
+    "name_no": "Militærpress med kettlebeller",
+    "name_en": "Two-Arm Kettlebell Military Press",
+    "muscle_groups": [
+      "skuldre",
+      "triceps"
+    ],
+    "equipment": "kettlebell",
+    "level": "middels",
+    "instructions_no": [
+      "Stå med en kettlebell i hver hånd i skulderhøyde.",
+      "Press begge rett opp over hodet.",
+      "Senk kontrollert tilbake til skulderhøyde."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Two-Arm_Kettlebell_Military_Press/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Two-Arm_Kettlebell_Military_Press/1.jpg"
+    ]
+  },
+  {
+    "id": "Mountain_Climbers",
+    "name_no": "Mountain climbers",
+    "name_en": "Mountain Climbers",
+    "muscle_groups": [
+      "forside lår",
+      "bryst",
+      "bakside lår",
+      "skuldre"
+    ],
+    "equipment": "kroppsvekt",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Start i planke med hendene under skuldrene.",
+      "Trekk ett kne mot brystet, skift så raskt bein.",
+      "Hold hoften lav og fortsett i jevnt tempo."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Mountain_Climbers/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Mountain_Climbers/1.jpg"
+    ]
+  },
+  {
+    "id": "Wide-Grip_Lat_Pulldown",
+    "name_no": "Nedtrekk bredt grep",
+    "name_en": "Wide-Grip Lat Pulldown",
+    "muscle_groups": [
+      "rygg/lats",
+      "biceps",
+      "rygg",
+      "skuldre"
+    ],
+    "equipment": "kabel",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Sitt med bredt overhåndsgrep på stangen.",
+      "Trekk stangen ned mot øvre bryst, albuene bakover.",
+      "La stangen gå kontrollert tilbake opp."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Wide-Grip_Lat_Pulldown/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Wide-Grip_Lat_Pulldown/1.jpg"
+    ]
+  },
+  {
+    "id": "Close-Grip_Front_Lat_Pulldown",
+    "name_no": "Nedtrekk smalt grep",
+    "name_en": "Close-Grip Front Lat Pulldown",
+    "muscle_groups": [
+      "rygg/lats",
+      "biceps",
+      "rygg",
+      "skuldre"
+    ],
+    "equipment": "kabel",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Sitt med smalt grep på håndtaket.",
+      "Trekk håndtaket ned mot øvre bryst.",
+      "La det gå kontrollert tilbake opp."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Close-Grip_Front_Lat_Pulldown/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Close-Grip_Front_Lat_Pulldown/1.jpg"
+    ]
+  },
+  {
+    "id": "Reverse_Barbell_Curl",
+    "name_no": "Omvendt curl med vektstang",
+    "name_en": "Reverse Barbell Curl",
+    "muscle_groups": [
+      "biceps",
+      "underarmer"
+    ],
+    "equipment": "vektstang",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Stå med stangen i strake armer, overhåndsgrep.",
+      "Bøy albuene og curl stangen opp mot brystet.",
+      "Senk kontrollert tilbake til start."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Reverse_Barbell_Curl/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Reverse_Barbell_Curl/1.jpg"
+    ]
+  },
+  {
+    "id": "Upright_Barbell_Row",
+    "name_no": "Oppdrag med vektstang",
+    "name_en": "Upright Barbell Row",
+    "muscle_groups": [
+      "skuldre",
+      "rygg/traps"
+    ],
+    "equipment": "vektstang",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Hold stangen foran lårene med smalt grep.",
+      "Trekk stangen opp langs kroppen til brysthøyde, albuene høye.",
+      "Senk kontrollert ned igjen."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Upright_Barbell_Row/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Upright_Barbell_Row/1.jpg"
+    ]
+  },
+  {
+    "id": "Plank",
+    "name_no": "Planke",
+    "name_en": "Plank",
+    "muscle_groups": [
+      "kjerne"
+    ],
+    "equipment": "kroppsvekt",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Støtt på underarmer og tær, kroppen i rett linje.",
+      "Stram magen og hold posisjonen uten å synke i hoften.",
+      "Hold i ønsket tid."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Plank/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Plank/1.jpg"
+    ]
+  },
+  {
+    "id": "Preacher_Curl",
+    "name_no": "Preacher curl",
+    "name_en": "Preacher Curl",
+    "muscle_groups": [
+      "biceps"
+    ],
+    "equipment": "vektstang",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Sitt med overarmene støttet på en skråpute.",
+      "Curl stangen eller manualen opp mot skuldrene.",
+      "Senk kontrollert tilbake til nesten strake armer."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Preacher_Curl/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Preacher_Curl/1.jpg"
+    ]
+  },
+  {
+    "id": "Pullups",
+    "name_no": "Pull-ups",
+    "name_en": "Pullups",
+    "muscle_groups": [
+      "rygg/lats",
+      "biceps",
+      "rygg"
+    ],
+    "equipment": "kroppsvekt",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Heng i en stang med overhåndsgrep, litt bredere enn skuldrene.",
+      "Trekk deg opp til haken er over stangen.",
+      "Senk deg kontrollert ned til strake armer."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Pullups/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Pullups/1.jpg"
+    ]
+  },
+  {
+    "id": "Pushups",
+    "name_no": "Push-ups",
+    "name_en": "Pushups",
+    "muscle_groups": [
+      "bryst",
+      "skuldre",
+      "triceps"
+    ],
+    "equipment": "kroppsvekt",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Start i planke med hendene litt bredere enn skuldrene.",
+      "Senk brystet mot gulvet med albuene i cirka 45 grader.",
+      "Press deg opp til strake armer."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Pushups/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Pushups/1.jpg"
+    ]
+  },
+  {
+    "id": "Rack_Pulls",
+    "name_no": "Rack pulls",
+    "name_en": "Rack Pulls",
+    "muscle_groups": [
+      "korsrygg",
+      "underarmer",
+      "sete",
+      "bakside lår",
+      "rygg/traps"
+    ],
+    "equipment": "vektstang",
+    "level": "middels",
+    "instructions_no": [
+      "Sett stangen i en stativpinne like under knehøyde.",
+      "Grip stangen og hold ryggen rett.",
+      "Løft ved å strekke hofte og knær samtidig, senk kontrollert."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Rack_Pulls/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Rack_Pulls/1.jpg"
+    ]
+  },
+  {
+    "id": "Reverse_Crunch",
+    "name_no": "Reverse crunch",
+    "name_en": "Reverse Crunch",
+    "muscle_groups": [
+      "kjerne"
+    ],
+    "equipment": "kroppsvekt",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Ligg på ryggen med knærne bøyd mot brystet.",
+      "Løft hoften fra gulvet ved å trekke knærne mot brystet.",
+      "Senk kontrollert tilbake til start."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Reverse_Crunch/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Reverse_Crunch/1.jpg"
+    ]
+  },
+  {
+    "id": "Reverse_Flyes",
+    "name_no": "Reverse flyes",
+    "name_en": "Reverse Flyes",
+    "muscle_groups": [
+      "skuldre"
+    ],
+    "equipment": "manualer",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Bøy fremover i hoften med en manual i hver hånd.",
+      "Løft armene rett ut til siden med lett bøy i albuene.",
+      "Senk kontrollert tilbake til start."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Reverse_Flyes/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Reverse_Flyes/1.jpg"
+    ]
+  },
+  {
+    "id": "Two-Arm_Kettlebell_Row",
+    "name_no": "Rodd med to kettlebeller",
+    "name_en": "Two-Arm Kettlebell Row",
+    "muscle_groups": [
+      "rygg",
+      "biceps",
+      "rygg/lats"
+    ],
+    "equipment": "kettlebell",
+    "level": "middels",
+    "instructions_no": [
+      "Bøy fremover i hoften med rett rygg, en kettlebell i hver hånd.",
+      "Trekk begge kettlebellene opp mot hoften.",
+      "Senk kontrollert tilbake til start."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Two-Arm_Kettlebell_Row/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Two-Arm_Kettlebell_Row/1.jpg"
+    ]
+  },
+  {
+    "id": "Bent_Over_Two-Dumbbell_Row",
+    "name_no": "Rodd med to manualer",
+    "name_en": "Bent Over Two-Dumbbell Row",
+    "muscle_groups": [
+      "rygg",
+      "biceps",
+      "rygg/lats",
+      "skuldre"
+    ],
+    "equipment": "manualer",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Bøy fremover i hoften med rett rygg, en manual i hver hånd.",
+      "Trekk begge manualene opp mot hoften.",
+      "Senk kontrollert tilbake til start."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Bent_Over_Two-Dumbbell_Row/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Bent_Over_Two-Dumbbell_Row/1.jpg"
+    ]
+  },
+  {
+    "id": "Bent_Over_Barbell_Row",
+    "name_no": "Rodd med vektstang",
+    "name_en": "Bent Over Barbell Row",
+    "muscle_groups": [
+      "rygg",
+      "biceps",
+      "rygg/lats",
+      "skuldre"
+    ],
+    "equipment": "vektstang",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Bøy fremover i hoften med rett rygg, stangen henger foran deg.",
+      "Trekk stangen opp mot magen, albuene tett inntil kroppen.",
+      "Senk kontrollert tilbake til start."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Bent_Over_Barbell_Row/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Bent_Over_Barbell_Row/1.jpg"
+    ]
+  },
+  {
+    "id": "Romanian_Deadlift",
+    "name_no": "Rumensk markløft",
+    "name_en": "Romanian Deadlift",
+    "muscle_groups": [
+      "bakside lår",
+      "legger",
+      "sete",
+      "korsrygg"
+    ],
+    "equipment": "vektstang",
+    "level": "middels",
+    "instructions_no": [
+      "Hold stangen foran lårene, lett bøy i knærne.",
+      "Skyv hoften bakover og senk stangen langs beina.",
+      "Reis deg opp igjen ved å presse hoften fremover."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Romanian_Deadlift/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Romanian_Deadlift/1.jpg"
+    ]
+  },
+  {
+    "id": "Russian_Twist",
+    "name_no": "Russian twist",
+    "name_en": "Russian Twist",
+    "muscle_groups": [
+      "kjerne",
+      "korsrygg"
+    ],
+    "equipment": "kroppsvekt",
+    "level": "middels",
+    "instructions_no": [
+      "Sitt med overkroppen lent litt bakover, føttene løftet.",
+      "Roter overkroppen fra side til side.",
+      "Hold bevegelsen kontrollert gjennom hele settet."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Russian_Twist/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Russian_Twist/1.jpg"
+    ]
+  },
+  {
+    "id": "Cable_Russian_Twists",
+    "name_no": "Russian twist i kabel",
+    "name_en": "Cable Russian Twists",
+    "muscle_groups": [
+      "kjerne"
+    ],
+    "equipment": "kabel",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Sitt eller stå på siden av kabeltårnet, grip håndtaket med strake armer.",
+      "Roter overkroppen bort fra kabelen.",
+      "Roter kontrollert tilbake, gjenta så på andre siden."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Russian_Twists/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Russian_Twists/1.jpg"
+    ]
+  },
+  {
+    "id": "Hyperextensions_Back_Extensions",
+    "name_no": "Ryggheving",
+    "name_en": "Hyperextensions (Back Extensions)",
+    "muscle_groups": [
+      "korsrygg",
+      "sete",
+      "bakside lår"
+    ],
+    "equipment": "annet",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Legg deg i en ryggstrekk-benk med hoften på puten.",
+      "Senk overkroppen kontrollert fremover.",
+      "Strekk deg opp igjen til rett linje, ikke overstrekk."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Hyperextensions_Back_Extensions/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Hyperextensions_Back_Extensions/1.jpg"
+    ]
+  },
+  {
+    "id": "Dumbbell_Shrug",
+    "name_no": "Shrugs med manualer",
+    "name_en": "Dumbbell Shrug",
+    "muscle_groups": [
+      "rygg/traps"
+    ],
+    "equipment": "manualer",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Stå med en manual i hver hånd langs siden.",
+      "Løft skuldrene rett opp mot ørene.",
+      "Senk kontrollert ned igjen."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Shrug/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Shrug/1.jpg"
+    ]
+  },
+  {
+    "id": "Barbell_Shrug",
+    "name_no": "Shrugs med vektstang",
+    "name_en": "Barbell Shrug",
+    "muscle_groups": [
+      "rygg/traps"
+    ],
+    "equipment": "vektstang",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Hold stangen foran deg med strake armer.",
+      "Løft skuldrene rett opp mot ørene.",
+      "Senk kontrollert ned igjen."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Shrug/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Shrug/1.jpg"
+    ]
+  },
+  {
+    "id": "Side_Lateral_Raise",
+    "name_no": "Sidehev med manualer",
+    "name_en": "Side Lateral Raise",
+    "muscle_groups": [
+      "skuldre"
+    ],
+    "equipment": "manualer",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Stå med en manual i hver hånd langs siden.",
+      "Løft armene rett ut til siden til skulderhøyde.",
+      "Senk kontrollert ned igjen."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Side_Lateral_Raise/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Side_Lateral_Raise/1.jpg"
+    ]
+  },
+  {
+    "id": "Seated_Bent-Over_Rear_Delt_Raise",
+    "name_no": "Sittende bakre skulderhev",
+    "name_en": "Seated Bent-Over Rear Delt Raise",
+    "muscle_groups": [
+      "skuldre"
+    ],
+    "equipment": "manualer",
+    "level": "middels",
+    "instructions_no": [
+      "Sitt bøyd fremover med en manual i hver hånd under leggene.",
+      "Løft armene rett ut til siden.",
+      "Senk kontrollert ned igjen."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Seated_Bent-Over_Rear_Delt_Raise/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Seated_Bent-Over_Rear_Delt_Raise/1.jpg"
+    ]
+  },
+  {
+    "id": "Seated_Leg_Curl",
+    "name_no": "Sittende beincurl",
+    "name_en": "Seated Leg Curl",
+    "muscle_groups": [
+      "bakside lår"
+    ],
+    "equipment": "maskin",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Sitt i maskinen med ankelputen foran anklene.",
+      "Bøy knærne og trekk hælene ned og bakover.",
+      "Senk kontrollert tilbake til start."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Seated_Leg_Curl/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Seated_Leg_Curl/1.jpg"
+    ]
+  },
+  {
+    "id": "Seated_Dumbbell_Curl",
+    "name_no": "Sittende biceps curl med manualer",
+    "name_en": "Seated Dumbbell Curl",
+    "muscle_groups": [
+      "biceps"
+    ],
+    "equipment": "manualer",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Sitt med en manual i hver hånd langs siden.",
+      "Bøy albuene og curl manualene opp mot skuldrene.",
+      "Senk kontrollert tilbake til start."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Seated_Dumbbell_Curl/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Seated_Dumbbell_Curl/1.jpg"
+    ]
+  },
+  {
+    "id": "Seated_Barbell_Military_Press",
+    "name_no": "Sittende militærpress",
+    "name_en": "Seated Barbell Military Press",
+    "muscle_groups": [
+      "skuldre",
+      "triceps"
+    ],
+    "equipment": "vektstang",
+    "level": "middels",
+    "instructions_no": [
+      "Sitt med stangen i skulderhøyde, grep litt bredere enn skuldrene.",
+      "Press stangen rett opp over hodet.",
+      "Senk kontrollert tilbake til skulderhøyde."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Seated_Barbell_Military_Press/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Seated_Barbell_Military_Press/1.jpg"
+    ]
+  },
+  {
+    "id": "Seated_Cable_Rows",
+    "name_no": "Sittende rodd i kabel",
+    "name_en": "Seated Cable Rows",
+    "muscle_groups": [
+      "rygg",
+      "biceps",
+      "rygg/lats",
+      "skuldre"
+    ],
+    "equipment": "kabel",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Sitt med føttene i støtten, grip håndtaket med strake armer.",
+      "Trekk håndtaket mot magen, albuene bakover.",
+      "La armene strekkes kontrollert ut igjen."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Seated_Cable_Rows/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Seated_Cable_Rows/1.jpg"
+    ]
+  },
+  {
+    "id": "Cable_Seated_Lateral_Raise",
+    "name_no": "Sittende sidehev i kabel",
+    "name_en": "Cable Seated Lateral Raise",
+    "muscle_groups": [
+      "skuldre",
+      "rygg",
+      "rygg/traps"
+    ],
+    "equipment": "kabel",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Sitt ved siden av et kabeltårn, grip håndtaket over kroppen.",
+      "Løft armen ut til siden til skulderhøyde.",
+      "Senk kontrollert ned igjen, bytt så side."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Seated_Lateral_Raise/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Seated_Lateral_Raise/1.jpg"
+    ]
+  },
+  {
+    "id": "Seated_Dumbbell_Press",
+    "name_no": "Sittende skulderpress med manualer",
+    "name_en": "Seated Dumbbell Press",
+    "muscle_groups": [
+      "skuldre",
+      "triceps"
+    ],
+    "equipment": "manualer",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Sitt med en manual i hver hånd i skulderhøyde.",
+      "Press manualene rett opp over hodet.",
+      "Senk kontrollert tilbake til skulderhøyde."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Seated_Dumbbell_Press/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Seated_Dumbbell_Press/1.jpg"
+    ]
+  },
+  {
+    "id": "Seated_Calf_Raise",
+    "name_no": "Sittende tåhev",
+    "name_en": "Seated Calf Raise",
+    "muscle_groups": [
+      "legger"
+    ],
+    "equipment": "maskin",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Sitt med forfoten på plate, vekt over knærne.",
+      "Press deg opp på tå så høyt du kan.",
+      "Senk hælene kontrollert ned igjen."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Seated_Calf_Raise/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Seated_Calf_Raise/1.jpg"
+    ]
+  },
+  {
+    "id": "Barbell_Incline_Bench_Press_-_Medium_Grip",
+    "name_no": "Skrå benkpress",
+    "name_en": "Barbell Incline Bench Press - Medium Grip",
+    "muscle_groups": [
+      "bryst",
+      "skuldre",
+      "triceps"
+    ],
+    "equipment": "vektstang",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Ligg i en benk med helning, grip stangen litt bredere enn skuldrene.",
+      "Senk stangen kontrollert mot øvre bryst.",
+      "Press stangen opp til strake armer."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Incline_Bench_Press_-_Medium_Grip/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Incline_Bench_Press_-_Medium_Grip/1.jpg"
+    ]
+  },
+  {
+    "id": "Incline_Dumbbell_Bench_With_Palms_Facing_In",
+    "name_no": "Skrå benkpress med manualer",
+    "name_en": "Incline Dumbbell Bench With Palms Facing In",
+    "muscle_groups": [
+      "bryst",
+      "skuldre",
+      "triceps"
+    ],
+    "equipment": "manualer",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Ligg i en benk med helning, manualene over brystet med håndflatene mot hverandre.",
+      "Senk manualene kontrollert mot brystet.",
+      "Press dem opp til strake armer."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Dumbbell_Bench_With_Palms_Facing_In/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Dumbbell_Bench_With_Palms_Facing_In/1.jpg"
+    ]
+  },
+  {
+    "id": "Leverage_Incline_Chest_Press",
+    "name_no": "Skrå brystpress i maskin",
+    "name_en": "Leverage Incline Chest Press",
+    "muscle_groups": [
+      "bryst",
+      "skuldre",
+      "triceps"
+    ],
+    "equipment": "maskin",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Sitt i maskinen med håndtakene i øvre bryst-høyde.",
+      "Press håndtakene fremover til strake armer.",
+      "Før dem kontrollert tilbake til start."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Leverage_Incline_Chest_Press/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Leverage_Incline_Chest_Press/1.jpg"
+    ]
+  },
+  {
+    "id": "Incline_Dumbbell_Curl",
+    "name_no": "Skrå curl med manualer",
+    "name_en": "Incline Dumbbell Curl",
+    "muscle_groups": [
+      "biceps"
+    ],
+    "equipment": "manualer",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Sitt tilbakelent i en benk med helning, armene hengende ned.",
+      "Curl manualene opp mot skuldrene.",
+      "Senk kontrollert tilbake til strake armer."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Dumbbell_Curl/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Dumbbell_Curl/1.jpg"
+    ]
+  },
+  {
+    "id": "Incline_Dumbbell_Flyes",
+    "name_no": "Skrå flyes med manualer",
+    "name_en": "Incline Dumbbell Flyes",
+    "muscle_groups": [
+      "bryst",
+      "skuldre"
+    ],
+    "equipment": "manualer",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Ligg i en benk med helning, manualene over brystet, lett bøy i albuene.",
+      "Senk manualene i en bue ut til siden.",
+      "Før dem tilbake sammen over brystet."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Dumbbell_Flyes/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Dumbbell_Flyes/1.jpg"
+    ]
+  },
+  {
+    "id": "Incline_Push-Up",
+    "name_no": "Skrå push-up",
+    "name_en": "Incline Push-Up",
+    "muscle_groups": [
+      "bryst",
+      "skuldre",
+      "triceps"
+    ],
+    "equipment": "kroppsvekt",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Plasser hendene på en forhøyning, kroppen i rett linje.",
+      "Senk brystet mot forhøyningen.",
+      "Press deg opp til strake armer."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Push-Up/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Push-Up/1.jpg"
+    ]
+  },
+  {
+    "id": "Leverage_Shoulder_Press",
+    "name_no": "Skulderpress i maskin",
+    "name_en": "Leverage Shoulder Press",
+    "muscle_groups": [
+      "skuldre",
+      "triceps"
+    ],
+    "equipment": "maskin",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Sitt i maskinen med håndtakene i skulderhøyde.",
+      "Press håndtakene rett opp.",
+      "Senk dem kontrollert tilbake til start."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Leverage_Shoulder_Press/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Leverage_Shoulder_Press/1.jpg"
+    ]
+  },
+  {
+    "id": "Dumbbell_Shoulder_Press",
+    "name_no": "Skulderpress med manualer",
+    "name_en": "Dumbbell Shoulder Press",
+    "muscle_groups": [
+      "skuldre",
+      "triceps"
+    ],
+    "equipment": "manualer",
+    "level": "middels",
+    "instructions_no": [
+      "Sitt med en manual i hver hånd i skulderhøyde.",
+      "Press manualene rett opp over hodet.",
+      "Senk kontrollert tilbake til skulderhøyde."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Shoulder_Press/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Shoulder_Press/1.jpg"
+    ]
+  },
+  {
+    "id": "Barbell_Shoulder_Press",
+    "name_no": "Skulderpress med vektstang",
+    "name_en": "Barbell Shoulder Press",
+    "muscle_groups": [
+      "skuldre",
+      "bryst",
+      "triceps"
+    ],
+    "equipment": "vektstang",
+    "level": "middels",
+    "instructions_no": [
+      "Sitt eller stå med stangen i skulderhøyde.",
+      "Press stangen rett opp over hodet.",
+      "Senk kontrollert tilbake til skulderhøyde."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Shoulder_Press/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Shoulder_Press/1.jpg"
+    ]
+  },
+  {
+    "id": "Lying_Close-Grip_Barbell_Triceps_Extension_Behind_The_Head",
+    "name_no": "Skullcrusher",
+    "name_en": "Lying Close-Grip Barbell Triceps Extension Behind The Head",
+    "muscle_groups": [
+      "triceps"
+    ],
+    "equipment": "vektstang",
+    "level": "middels",
+    "instructions_no": [
+      "Ligg på benken med stangen over brystet, smalt grep.",
+      "Bøy albuene og senk stangen mot pannen.",
+      "Press stangen opp igjen til strake armer."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Lying_Close-Grip_Barbell_Triceps_Extension_Behind_The_Head/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Lying_Close-Grip_Barbell_Triceps_Extension_Behind_The_Head/1.jpg"
+    ]
+  },
+  {
+    "id": "Close-Grip_Barbell_Bench_Press",
+    "name_no": "Smal benkpress",
+    "name_en": "Close-Grip Barbell Bench Press",
+    "muscle_groups": [
+      "triceps",
+      "bryst",
+      "skuldre"
+    ],
+    "equipment": "vektstang",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Ligg på benken, grip stangen med skulderbredt grep.",
+      "Senk stangen kontrollert mot nedre bryst, albuene tett inntil kroppen.",
+      "Press stangen opp til strake armer."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Close-Grip_Barbell_Bench_Press/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Close-Grip_Barbell_Bench_Press/1.jpg"
+    ]
+  },
+  {
+    "id": "Close-Grip_EZ_Bar_Curl",
+    "name_no": "Smalt curl med EZ-stang",
+    "name_en": "Close-Grip EZ Bar Curl",
+    "muscle_groups": [
+      "biceps",
+      "underarmer"
+    ],
+    "equipment": "vektstang",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Stå med EZ-stangen i smalt grep foran lårene.",
+      "Bøy albuene og curl stangen opp mot brystet.",
+      "Senk kontrollert tilbake til start."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Close-Grip_EZ_Bar_Curl/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Close-Grip_EZ_Bar_Curl/1.jpg"
+    ]
+  },
+  {
+    "id": "Spider_Curl",
+    "name_no": "Spider curl",
+    "name_en": "Spider Curl",
+    "muscle_groups": [
+      "biceps"
+    ],
+    "equipment": "ez-stang",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Ligg med brystet mot en skråbenk, armene hengende ned.",
+      "Curl stangen opp mot skuldrene uten å bevege overarmene.",
+      "Senk kontrollert tilbake til strake armer."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Spider_Curl/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Spider_Curl/1.jpg"
+    ]
+  },
+  {
+    "id": "Split_Squat_with_Dumbbells",
+    "name_no": "Split squat med manualer",
+    "name_en": "Split Squat with Dumbbells",
+    "muscle_groups": [
+      "forside lår",
+      "sete",
+      "bakside lår"
+    ],
+    "equipment": "manualer",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Stå i utfallsposisjon med en manual i hver hånd.",
+      "Bøy begge knær til bakre kne nesten berører gulvet.",
+      "Press opp igjen uten å flytte føttene."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Split_Squat_with_Dumbbells/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Split_Squat_with_Dumbbells/1.jpg"
+    ]
+  },
+  {
+    "id": "Step-up_with_Knee_Raise",
+    "name_no": "Step-up med knéløft",
+    "name_en": "Step-up with Knee Raise",
+    "muscle_groups": [
+      "sete",
+      "bakside lår",
+      "forside lår"
+    ],
+    "equipment": "kroppsvekt",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Stå foran en kasse eller benk.",
+      "Tråkk opp med ett bein og løft motsatt kne høyt.",
+      "Trå kontrollert ned igjen og bytt bein."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Step-up_with_Knee_Raise/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Step-up_with_Knee_Raise/1.jpg"
+    ]
+  },
+  {
+    "id": "Stiff-Legged_Dumbbell_Deadlift",
+    "name_no": "Strak-beins markløft med manualer",
+    "name_en": "Stiff-Legged Dumbbell Deadlift",
+    "muscle_groups": [
+      "bakside lår",
+      "sete",
+      "korsrygg"
+    ],
+    "equipment": "manualer",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Hold en manual i hver hånd foran lårene.",
+      "Skyv hoften bakover og senk vektene med rett rygg.",
+      "Reis deg opp igjen ved å presse hoften fremover."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Stiff-Legged_Dumbbell_Deadlift/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Stiff-Legged_Dumbbell_Deadlift/1.jpg"
+    ]
+  },
+  {
+    "id": "Stiff-Legged_Barbell_Deadlift",
+    "name_no": "Strak-beins markløft med vektstang",
+    "name_en": "Stiff-Legged Barbell Deadlift",
+    "muscle_groups": [
+      "bakside lår",
+      "sete",
+      "korsrygg"
+    ],
+    "equipment": "vektstang",
+    "level": "middels",
+    "instructions_no": [
+      "Hold stangen foran lårene, lett bøy i knærne.",
+      "Skyv hoften bakover og senk stangen langs beina med rett rygg.",
+      "Reis deg opp igjen ved å presse hoften fremover."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Stiff-Legged_Barbell_Deadlift/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Stiff-Legged_Barbell_Deadlift/1.jpg"
+    ]
+  },
+  {
+    "id": "Standing_Leg_Curl",
+    "name_no": "Stående beincurl",
+    "name_en": "Standing Leg Curl",
+    "muscle_groups": [
+      "bakside lår"
+    ],
+    "equipment": "maskin",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Stå med ankelputen bak den ene leggen.",
+      "Bøy kneet og trekk hælen mot setet.",
+      "Senk kontrollert og gjenta, bytt så bein."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Standing_Leg_Curl/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Standing_Leg_Curl/1.jpg"
+    ]
+  },
+  {
+    "id": "Standing_Military_Press",
+    "name_no": "Stående militærpress",
+    "name_en": "Standing Military Press",
+    "muscle_groups": [
+      "skuldre",
+      "triceps"
+    ],
+    "equipment": "vektstang",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Stå med stangen i skulderhøyde, grep litt bredere enn skuldrene.",
+      "Press stangen rett opp over hodet.",
+      "Senk kontrollert tilbake til skulderhøyde."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Standing_Military_Press/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Standing_Military_Press/1.jpg"
+    ]
+  },
+  {
+    "id": "Standing_Calf_Raises",
+    "name_no": "Stående tåhev",
+    "name_en": "Standing Calf Raises",
+    "muscle_groups": [
+      "legger"
+    ],
+    "equipment": "maskin",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Stå på forfoten på en kant eller i maskin, hælene fritt.",
+      "Press deg opp på tå så høyt du kan.",
+      "Senk hælene kontrollert under nivået du startet på."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Standing_Calf_Raises/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Standing_Calf_Raises/1.jpg"
+    ]
+  },
+  {
+    "id": "Standing_Dumbbell_Calf_Raise",
+    "name_no": "Stående tåhev med manualer",
+    "name_en": "Standing Dumbbell Calf Raise",
+    "muscle_groups": [
+      "legger"
+    ],
+    "equipment": "manualer",
+    "level": "middels",
+    "instructions_no": [
+      "Stå med en manual i hver hånd, forfoten på en kant.",
+      "Press deg opp på tå så høyt du kan.",
+      "Senk hælene kontrollert under nivået du startet på."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Standing_Dumbbell_Calf_Raise/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Standing_Dumbbell_Calf_Raise/1.jpg"
+    ]
+  },
+  {
+    "id": "Sumo_Deadlift",
+    "name_no": "Sumo-markløft",
+    "name_en": "Sumo Deadlift",
+    "muscle_groups": [
+      "bakside lår",
+      "innside lår",
+      "underarmer",
+      "sete",
+      "korsrygg",
+      "rygg",
+      "forside lår",
+      "rygg/traps"
+    ],
+    "equipment": "vektstang",
+    "level": "middels",
+    "instructions_no": [
+      "Stå bredbeint med tærne pekende utover, grip innenfor knærne.",
+      "Hold ryggen rett og løft stangen ved å strekke hofte og knær samtidig.",
+      "Stå fullt oppreist, senk deretter stangen kontrollert ned igjen."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Sumo_Deadlift/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Sumo_Deadlift/1.jpg"
+    ]
+  },
+  {
+    "id": "Superman",
+    "name_no": "Superman",
+    "name_en": "Superman",
+    "muscle_groups": [
+      "korsrygg",
+      "sete",
+      "bakside lår"
+    ],
+    "equipment": "kroppsvekt",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Ligg på magen med armene strukket frem.",
+      "Løft armer, bryst og bein samtidig fra gulvet.",
+      "Senk kontrollert tilbake til start."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Superman/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Superman/1.jpg"
+    ]
+  },
+  {
+    "id": "T-Bar_Row_with_Handle",
+    "name_no": "T-bar rodd",
+    "name_en": "T-Bar Row with Handle",
+    "muscle_groups": [
+      "rygg",
+      "biceps",
+      "rygg/lats"
+    ],
+    "equipment": "vektstang",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Stå over stangen, bøyd fremover med rett rygg.",
+      "Trekk håndtaket opp mot brystet.",
+      "Senk kontrollert tilbake til start."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/T-Bar_Row_with_Handle/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/T-Bar_Row_with_Handle/1.jpg"
+    ]
+  },
+  {
+    "id": "Triceps_Pushdown",
+    "name_no": "Triceps pushdown",
+    "name_en": "Triceps Pushdown",
+    "muscle_groups": [
+      "triceps"
+    ],
+    "equipment": "kabel",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Stå ved kabeltårnet, grip stangen med albuene inntil kroppen.",
+      "Press stangen ned til strake armer.",
+      "La den gå kontrollert tilbake opp."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Triceps_Pushdown/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Triceps_Pushdown/1.jpg"
+    ]
+  },
+  {
+    "id": "Triceps_Pushdown_-_Rope_Attachment",
+    "name_no": "Triceps pushdown med tau",
+    "name_en": "Triceps Pushdown - Rope Attachment",
+    "muscle_groups": [
+      "triceps"
+    ],
+    "equipment": "kabel",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Stå ved kabeltårnet, grip tauet med albuene inntil kroppen.",
+      "Press tauet ned og spre hendene ut til siden nederst.",
+      "La det gå kontrollert tilbake opp."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Triceps_Pushdown_-_Rope_Attachment/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Triceps_Pushdown_-_Rope_Attachment/1.jpg"
+    ]
+  },
+  {
+    "id": "Machine_Triceps_Extension",
+    "name_no": "Triceps-strekk i maskin",
+    "name_en": "Machine Triceps Extension",
+    "muscle_groups": [
+      "triceps"
+    ],
+    "equipment": "maskin",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Sitt med overarmene fast, grip håndtakene.",
+      "Press håndtakene ned til strake armer.",
+      "La dem gå kontrollert tilbake opp."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Machine_Triceps_Extension/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Machine_Triceps_Extension/1.jpg"
+    ]
+  },
+  {
+    "id": "Dumbbell_Tricep_Extension_-Pronated_Grip",
+    "name_no": "Triceps-strekk med manual",
+    "name_en": "Dumbbell Tricep Extension -Pronated Grip",
+    "muscle_groups": [
+      "triceps"
+    ],
+    "equipment": "manualer",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Hold en manual med begge hender strak over hodet.",
+      "Bøy albuene og senk manualen bak hodet.",
+      "Press den opp igjen til strake armer."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Tricep_Extension_-Pronated_Grip/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Tricep_Extension_-Pronated_Grip/1.jpg"
+    ]
+  },
+  {
+    "id": "Standing_Overhead_Barbell_Triceps_Extension",
+    "name_no": "Triceps-strekk over hodet",
+    "name_en": "Standing Overhead Barbell Triceps Extension",
+    "muscle_groups": [
+      "triceps",
+      "skuldre"
+    ],
+    "equipment": "vektstang",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Stå med stangen strak over hodet.",
+      "Bøy albuene og senk stangen bak hodet.",
+      "Press stangen opp igjen til strake armer."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Standing_Overhead_Barbell_Triceps_Extension/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Standing_Overhead_Barbell_Triceps_Extension/1.jpg"
+    ]
+  },
+  {
+    "id": "Dumbbell_Lunges",
+    "name_no": "Utfall med manualer",
+    "name_en": "Dumbbell Lunges",
+    "muscle_groups": [
+      "forside lår",
+      "legger",
+      "sete",
+      "bakside lår"
+    ],
+    "equipment": "manualer",
+    "level": "nybegynner",
+    "instructions_no": [
+      "Hold en manual i hver hånd, ta et langt steg fremover.",
+      "Bøy begge knær til bakre kne nesten berører gulvet.",
+      "Press tilbake til start og bytt ben."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Lunges/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Lunges/1.jpg"
+    ]
+  },
+  {
+    "id": "Barbell_Lunge",
+    "name_no": "Utfall med vektstang",
+    "name_en": "Barbell Lunge",
+    "muscle_groups": [
+      "forside lår",
+      "legger",
+      "sete",
+      "bakside lår"
+    ],
+    "equipment": "vektstang",
+    "level": "middels",
+    "instructions_no": [
+      "Stangen på øvre rygg, ta et langt steg fremover.",
+      "Bøy begge knær til bakre kne nesten berører gulvet.",
+      "Press tilbake til start og bytt ben."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Lunge/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Lunge/1.jpg"
+    ]
+  },
+  {
+    "id": "Zottman_Curl",
+    "name_no": "Zottman curl",
+    "name_en": "Zottman Curl",
+    "muscle_groups": [
+      "biceps",
+      "underarmer"
+    ],
+    "equipment": "manualer",
+    "level": "middels",
+    "instructions_no": [
+      "Stå med en manual i hver hånd, underhåndsgrep.",
+      "Curl manualene opp, roter så håndflatene ned på toppen.",
+      "Senk med overhåndsgrep, roter tilbake nederst."
+    ],
+    "image_urls": [
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Zottman_Curl/0.jpg",
+      "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Zottman_Curl/1.jpg"
+    ]
+  }
+]

@@ -142,6 +142,36 @@ export type Database = {
         Update: { id?: string; auth_user_id?: string; endpoint?: string; p256dh?: string; auth_key?: string; created_at?: string }
         Relationships: [];
       };
+      exercises: {
+        Row:    { id: string; name_no: string; name_en: string; muscle_groups: string[]; equipment: string | null; level: string | null; instructions_no: string[]; image_urls: string[] }
+        Insert: { id: string; name_no: string; name_en: string; muscle_groups: string[]; equipment?: string | null; level?: string | null; instructions_no?: string[]; image_urls?: string[] }
+        Update: { id?: string; name_no?: string; name_en?: string; muscle_groups?: string[]; equipment?: string | null; level?: string | null; instructions_no?: string[]; image_urls?: string[] }
+        Relationships: [];
+      };
+      workout_templates: {
+        Row:    { id: string; member_id: string; name: string; created_at: string }
+        Insert: { id?: string; member_id: string; name: string; created_at?: string }
+        Update: { id?: string; member_id?: string; name?: string; created_at?: string }
+        Relationships: [];
+      };
+      workout_template_exercises: {
+        Row:    { id: string; template_id: string; exercise_id: string; position: number; target_sets: number | null; target_reps: string | null; notes: string | null }
+        Insert: { id?: string; template_id: string; exercise_id: string; position?: number; target_sets?: number | null; target_reps?: string | null; notes?: string | null }
+        Update: { id?: string; template_id?: string; exercise_id?: string; position?: number; target_sets?: number | null; target_reps?: string | null; notes?: string | null }
+        Relationships: [];
+      };
+      workout_sessions: {
+        Row:    { id: string; member_id: string; template_id: string | null; started_at: string; finished_at: string | null; notes: string | null; calendar_event_id: string | null }
+        Insert: { id?: string; member_id: string; template_id?: string | null; started_at?: string; finished_at?: string | null; notes?: string | null; calendar_event_id?: string | null }
+        Update: { id?: string; member_id?: string; template_id?: string | null; started_at?: string; finished_at?: string | null; notes?: string | null; calendar_event_id?: string | null }
+        Relationships: [];
+      };
+      workout_sets: {
+        Row:    { id: string; session_id: string; exercise_id: string; set_number: number; reps: number | null; weight_kg: number | null; completed: boolean }
+        Insert: { id?: string; session_id: string; exercise_id: string; set_number: number; reps?: number | null; weight_kg?: number | null; completed?: boolean }
+        Update: { id?: string; session_id?: string; exercise_id?: string; set_number?: number; reps?: number | null; weight_kg?: number | null; completed?: boolean }
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -156,6 +186,7 @@ export type Database = {
       generate_meal_shopping_list_heim: { Args: { p_week_start: string }; Returns: string };
       rename_member: { Args: { p_member_id: string; p_name: string }; Returns: undefined };
       check_rate_limit: { Args: { p_endpoint: string; p_max: number; p_window_minutes: number }; Returns: boolean };
+      my_member_ids: { Args: Record<string, never>; Returns: string };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;

@@ -255,6 +255,44 @@ export function AppHeader({
   );
 }
 
+/* ── StatCard ────────────────────────────────────────────────────────
+ * Compact stat tile: label + big value + optional sub line.
+ */
+export function StatCard({
+  label, value, sub, icon,
+}: { label: string; value: string; sub?: string; icon?: React.ReactNode }) {
+  return (
+    <div className="bg-surface border border-border rounded-card shadow-card px-4 py-3.5 flex-1 min-w-0">
+      <div className="flex items-center gap-2 text-text-3">
+        {icon}
+        <span className="text-[11px] font-[600] uppercase tracking-wide12">{label}</span>
+      </div>
+      <p className="text-[22px] font-[700] text-fg mt-1 tracking-[-0.02em] truncate">{value}</p>
+      {sub && <p className="text-[12px] text-text-3 mt-[1px]">{sub}</p>}
+    </div>
+  );
+}
+
+/* ── Sheet ───────────────────────────────────────────────────────────
+ * Bottom modal sheet: dim backdrop + white rounded-top panel w/ drag handle.
+ */
+export function Sheet({
+  open, onClose, children, maxHeight,
+}: { open: boolean; onClose: () => void; children: React.ReactNode; maxHeight?: boolean }) {
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/40 backdrop-blur-sm" onClick={onClose}>
+      <div
+        className={cn("bg-white rounded-t-[24px] p-5 pb-10 shadow-2xl", maxHeight && "max-h-[85vh] flex flex-col")}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="w-10 h-1 bg-border rounded-full mx-auto mb-5 flex-shrink-0" />
+        {children}
+      </div>
+    </div>
+  );
+}
+
 /* ── IconButton ──────────────────────────────────────────────────────
  * 38×38 surface button w/ border & shadow.
  */
