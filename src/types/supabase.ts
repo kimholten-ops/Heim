@@ -172,6 +172,24 @@ export type Database = {
         Update: { id?: string; session_id?: string; exercise_id?: string; set_number?: number; reps?: number | null; weight_kg?: number | null; completed?: boolean }
         Relationships: [];
       };
+      matvarer: {
+        Row:    { id: string; navn: string; gruppe: string | null; kcal: number; protein_g: number; karbo_g: number; fett_g: number; fiber_g: number }
+        Insert: { id: string; navn: string; gruppe?: string | null; kcal: number; protein_g?: number; karbo_g?: number; fett_g?: number; fiber_g?: number }
+        Update: { id?: string; navn?: string; gruppe?: string | null; kcal?: number; protein_g?: number; karbo_g?: number; fett_g?: number; fiber_g?: number }
+        Relationships: [];
+      };
+      health_profiles: {
+        Row:    { member_id: string; kcal_target: number | null; protein_target_g: number | null; updated_at: string }
+        Insert: { member_id: string; kcal_target?: number | null; protein_target_g?: number | null; updated_at?: string }
+        Update: { member_id?: string; kcal_target?: number | null; protein_target_g?: number | null; updated_at?: string }
+        Relationships: [];
+      };
+      weight_entries: {
+        Row:    { id: string; member_id: string; date: string; weight_kg: number }
+        Insert: { id?: string; member_id: string; date: string; weight_kg: number }
+        Update: { id?: string; member_id?: string; date?: string; weight_kg?: number }
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {

@@ -5,13 +5,14 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useHousehold } from "@/components/HouseholdContext";
 import {
-  Plus, X, Dumbbell, Salad, ChevronRight, Search, ArrowUp, ArrowDown,
+  Plus, X, Dumbbell, ChevronRight, Search, ArrowUp, ArrowDown,
   Pencil, Calendar, Play, Clock,
 } from "lucide-react";
 import { Card, SectionLabel, EmptyState, Sheet } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import type { Exercise } from "@/lib/exercises";
 import { formatDuration, tonnage } from "@/lib/exercises";
+import KostholdCard from "./KostholdCard";
 
 type Template = { id: string; name: string };
 type TemplateExercise = {
@@ -324,13 +325,7 @@ export default function HelseClient({ memberId, householdId }: { memberId: strin
           </button>
         </div>
 
-        {/* ── Kosthold ── */}
-        <div className="mt-6">
-          <SectionLabel title="Kosthold" />
-          <Card>
-            <EmptyState icon={<Salad size={18} strokeWidth={1.7} />} text="Kommer snart." />
-          </Card>
-        </div>
+        <KostholdCard memberId={memberId} householdId={householdId} />
       </div>
 
       {/* ── Start-økt sheet ── */}
