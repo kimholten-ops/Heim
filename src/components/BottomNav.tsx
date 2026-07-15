@@ -15,9 +15,17 @@ const ALL_TABS = [
   { href: "/app/familie",  label: "Familie",  Icon: Users,        module: null },
 ] as const;
 
+// Sider der den globale bunnmenyen skjules — en fokusert flyt (aktiv
+// treningsøkt) skal ikke konkurrere med global navigasjon, og den faste
+// "Avslutt økt"-knappen ville uansett blitt overlappet av navigasjonen
+// siden begge er posisjonert fast nederst på skjermen.
+const HIDE_ON_PREFIXES = ["/app/helse/okt"];
+
 export default function BottomNav() {
   const path = usePathname();
   const { myHouseholdRole } = useHousehold();
+
+  if (HIDE_ON_PREFIXES.some((p) => path.startsWith(p))) return null;
 
   const tabs = ALL_TABS.filter(t => {
     if (myHouseholdRole === "gjest" && GUEST_HIDDEN_HREFS.has(t.href)) return false;
