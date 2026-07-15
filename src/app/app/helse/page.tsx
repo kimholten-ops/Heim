@@ -14,9 +14,14 @@ export default async function HelsePage() {
   if (!hid) redirect("/app");
 
   const { data: me } = await supabase
-    .from("members").select("id, role").eq("household_id", hid).eq("auth_user_id", user.id).maybeSingle();
+    .from("members").select("id, role, household_role").eq("household_id", hid).eq("auth_user_id", user.id).maybeSingle();
   // Helse/trening er kun for voksne — barn skal ikke se ruten i det hele tatt.
   if (!me || me.role !== "adult") redirect("/app");
 
-  return <HelseClient memberId={me.id} householdId={hid} veilederEnabled={veilederEnabled()} />;
+  // Veilederen er den eneste betalte tjenesten i appen — gjester (household_role
+  // 'gjest') beholder full tilgang til trening/kosthold som før, men skal ikke
+  // kunne bruke av husholdningens delte AI-kvote.
+  const showVeileder = veilederEnabled() && me.household_role === "medlem";
+
+  return <HelseClient memberId={me.id} householdId={hid} veilederEnabled={showVeileder} />;
 }
