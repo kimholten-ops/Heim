@@ -20,28 +20,42 @@ const MAL_OPTIONS: { value: "styrke" | "generelt" | "utholdenhet"; label: string
 
 const UNAVAILABLE = "Veilederen er utilgjengelig akkurat nå — prøv igjen senere.";
 
+const KIND_LABELS: Record<string, string> = {
+  chat: "Chat", ukesprogram: "Ukesprogram", gjennomgang: "Gjennomgang", maltid: "Måltidsforslag",
+  smartadd: "Smart Add", oppskrift: "Oppskriftsimport", ukesmeny: "Ukesmeny",
+};
+
 export default function VeilederCard({ memberId }: { memberId: string }) {
   const [supabase] = useState(() => createClient());
 
-  /* ── Forbruk denne måneden ── */
+  /* ── Forbruk denne måneden (delt AI-budsjett — alle kinds) ── */
   const [usageText, setUsageText] = useState<string | null>(null);
   useEffect(() => {
     (async () => {
       const start = new Date();
       start.setDate(1); start.setHours(0, 0, 0, 0);
       const { data } = await supabase
-        .from("ai_usage").select("input_tokens, output_tokens, cache_read_tokens")
+        .from("ai_usage").select("kind, input_tokens, output_tokens, cache_read_tokens")
         .eq("member_id", memberId).gte("created_at", start.toISOString());
       const rows = data ?? [];
-      const totals = rows.reduce(
-        (s, r) => ({
-          input: s.input + r.input_tokens, output: s.output + r.output_tokens, cacheRead: s.cacheRead + r.cache_read_tokens,
-        }),
-        { input: 0, output: 0, cacheRead: 0 }
+      const byKind = new Map<string, { count: number; usd: number }>();
+      let totalUsd = 0;
+      for (const r of rows) {
+        const usd = (r.input_tokens / 1e6) * 1 + (r.output_tokens / 1e6) * 5 + (r.cache_read_tokens / 1e6) * 0.1;
+        totalUsd += usd;
+        const entry = byKind.get(r.kind) ?? { count: 0, usd: 0 };
+        entry.count += 1; entry.usd += usd;
+        byKind.set(r.kind, entry);
+      }
+      const nok = Math.round(totalUsd * 10.5 * 10) / 10;
+      const breakdown = [...byKind.entries()]
+        .map(([kind, v]) => `${KIND_LABELS[kind] ?? kind} ${v.count}`)
+        .join(", ");
+      setUsageText(
+        rows.length === 0
+          ? "AI-forbruk denne måneden: 0 kall"
+          : `AI-forbruk denne måneden: ${rows.length} kall (${breakdown}), estimert ~${nok.toLocaleString("nb-NO")} kr`
       );
-      const usd = (totals.input / 1e6) * 1 + (totals.output / 1e6) * 5 + (totals.cacheRead / 1e6) * 0.1;
-      const nok = Math.round(usd * 10.5 * 10) / 10;
-      setUsageText(`Veileder-forbruk denne måneden: ${rows.length} spørsmål, estimert ~${nok.toLocaleString("nb-NO")} kr`);
     })();
   }, [memberId, supabase]);
 

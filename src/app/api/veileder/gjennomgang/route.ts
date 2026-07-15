@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getGatedMember, checkVeilederRateLimit, logVeilederUsage } from "@/lib/veileder-auth";
+import { getGatedMember } from "@/lib/veileder-auth";
 import { veilederEnabled, callVeileder } from "@/lib/veileder";
+import { checkAIRateLimit, aiErrorResponse } from "@/lib/ai";
 import { buildProfileBlock, buildWeekTrainingContext, buildKostholdContext, isoWeekStart } from "@/lib/veileder-context";
 import { todayISO } from "@/lib/nutrition";
 
@@ -27,7 +28,7 @@ export async function GET() {
     return NextResponse.json({ text: cached.text, cached: true });
   }
 
-  const allowed = await checkVeilederRateLimit(supabase, gated.memberId);
+  const allowed = await checkAIRateLimit(supabase, gated.memberId);
   if (!allowed) {
     return NextResponse.json(
       { error: "Veilederen har nådd dagens grense — prøv igjen i morgen." },
@@ -42,24 +43,15 @@ export async function GET() {
   ]);
   const dynamicContext = [trainingCtx, kostholdCtx].join("\n\n");
 
-  try {
-    const result = await callVeileder({
-      kind: "gjennomgang",
-      profileBlock,
-      dynamicContext,
-      messages: [{ role: "user", content: "Gi en kort ukesgjennomgang av trening og kosthold denne uken, basert på konteksten over." }],
-    });
-    if (!result) return NextResponse.json({ error: "Veilederen er ikke tilgjengelig." }, { status: 404 });
+  const result = await callVeileder({
+    supabase, memberId: gated.memberId, kind: "gjennomgang",
+    profileBlock, dynamicContext,
+    messages: [{ role: "user", content: "Gi en kort ukesgjennomgang av trening og kosthold denne uken, basert på konteksten over." }],
+  });
+  if ("error" in result) return aiErrorResponse(result.error);
 
-    await logVeilederUsage(supabase, gated.memberId, "gjennomgang", result.usage);
-    await supabase.from("ai_weekly_reviews")
-      .upsert({ member_id: gated.memberId, week_start: weekStart, text: result.text }, { onConflict: "member_id,week_start" });
+  await supabase.from("ai_weekly_reviews")
+    .upsert({ member_id: gated.memberId, week_start: weekStart, text: result.text }, { onConflict: "member_id,week_start" });
 
-    return NextResponse.json({ text: result.text, cached: false });
-  } catch {
-    return NextResponse.json(
-      { error: "Veilederen er utilgjengelig akkurat nå — prøv igjen senere." },
-      { status: 502 }
-    );
-  }
+  return NextResponse.json({ text: result.text, cached: false });
 }

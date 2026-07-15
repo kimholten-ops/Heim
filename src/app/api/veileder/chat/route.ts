@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getGatedMember, checkVeilederRateLimit, logVeilederUsage } from "@/lib/veileder-auth";
+import { getGatedMember } from "@/lib/veileder-auth";
 import { veilederEnabled, callVeileder } from "@/lib/veileder";
+import { checkAIRateLimit, aiErrorResponse } from "@/lib/ai";
 import { buildProfileBlock, buildTrainingContext, buildKostholdContext, buildMealContext } from "@/lib/veileder-context";
 import type Anthropic from "@anthropic-ai/sdk";
 
@@ -21,7 +22,7 @@ export async function POST(req: NextRequest) {
   const gated = await getGatedMember(supabase);
   if (!gated) return NextResponse.json({ error: "Ikke tilgang." }, { status: 403 });
 
-  const allowed = await checkVeilederRateLimit(supabase, gated.memberId);
+  const allowed = await checkAIRateLimit(supabase, gated.memberId);
   if (!allowed) {
     return NextResponse.json(
       { error: "Veilederen har nådd dagens grense — prøv igjen i morgen." },
@@ -50,16 +51,7 @@ export async function POST(req: NextRequest) {
   ]);
   const dynamicContext = [trainingCtx, kostholdCtx, mealCtx].join("\n\n");
 
-  try {
-    const result = await callVeileder({ kind: "chat", profileBlock, dynamicContext, messages });
-    if (!result) return NextResponse.json({ error: "Veilederen er ikke tilgjengelig." }, { status: 404 });
-
-    await logVeilederUsage(supabase, gated.memberId, "chat", result.usage);
-    return NextResponse.json({ text: result.text });
-  } catch {
-    return NextResponse.json(
-      { error: "Veilederen er utilgjengelig akkurat nå — prøv igjen senere." },
-      { status: 502 }
-    );
-  }
+  const result = await callVeileder({ supabase, memberId: gated.memberId, kind: "chat", profileBlock, dynamicContext, messages });
+  if ("error" in result) return aiErrorResponse(result.error);
+  return NextResponse.json({ text: result.text });
 }

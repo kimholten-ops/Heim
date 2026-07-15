@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getGatedMember, checkVeilederRateLimit, logVeilederUsage } from "@/lib/veileder-auth";
+import { getGatedMember } from "@/lib/veileder-auth";
 import { veilederEnabled, callVeileder, parseUkesprogram } from "@/lib/veileder";
+import { checkAIRateLimit, aiErrorResponse } from "@/lib/ai";
 import { buildProfileBlock, buildTrainingContext } from "@/lib/veileder-context";
 
 export const runtime = "nodejs";
@@ -20,7 +21,7 @@ export async function POST(req: NextRequest) {
   const gated = await getGatedMember(supabase);
   if (!gated) return NextResponse.json({ error: "Ikke tilgang." }, { status: 403 });
 
-  const allowed = await checkVeilederRateLimit(supabase, gated.memberId);
+  const allowed = await checkAIRateLimit(supabase, gated.memberId);
   if (!allowed) {
     return NextResponse.json(
       { error: "Veilederen har nådd dagens grense — prøv igjen i morgen." },
@@ -60,26 +61,16 @@ export async function POST(req: NextRequest) {
     `Svar med KUN gyldig JSON i dette skjemaet, ingen annen tekst:\n` +
     `{"okter": [{"navn": string, "ovelser": [{"exercise_id": string|null, "navn": string, "sett": int, "reps": string, "kommentar": string|null}]}]}`;
 
-  try {
-    const result = await callVeileder({
-      kind: "ukesprogram",
-      profileBlock,
-      dynamicContext,
-      messages: [{ role: "user", content: instruction }],
-    });
-    if (!result) return NextResponse.json({ error: "Veilederen er ikke tilgjengelig." }, { status: 404 });
+  const result = await callVeileder({
+    supabase, memberId: gated.memberId, kind: "ukesprogram",
+    profileBlock, dynamicContext,
+    messages: [{ role: "user", content: instruction }],
+  });
+  if ("error" in result) return aiErrorResponse(result.error);
 
-    await logVeilederUsage(supabase, gated.memberId, "ukesprogram", result.usage);
-
-    const program = parseUkesprogram(result.text, validExerciseIds);
-    if (!program) {
-      return NextResponse.json({ error: "Klarte ikke lage et gyldig program — prøv igjen." }, { status: 422 });
-    }
-    return NextResponse.json({ program });
-  } catch {
-    return NextResponse.json(
-      { error: "Veilederen er utilgjengelig akkurat nå — prøv igjen senere." },
-      { status: 502 }
-    );
+  const program = parseUkesprogram(result.text, validExerciseIds);
+  if (!program) {
+    return NextResponse.json({ error: "Klarte ikke lage et gyldig program — prøv igjen." }, { status: 422 });
   }
+  return NextResponse.json({ program });
 }

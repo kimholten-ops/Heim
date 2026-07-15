@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getGatedMember, checkVeilederRateLimit, logVeilederUsage } from "@/lib/veileder-auth";
+import { getGatedMember } from "@/lib/veileder-auth";
 import { veilederEnabled, callVeileder } from "@/lib/veileder";
+import { checkAIRateLimit, aiErrorResponse } from "@/lib/ai";
 import { buildProfileBlock, buildRemainingToday } from "@/lib/veileder-context";
 
 export const runtime = "nodejs";
@@ -18,7 +19,7 @@ export async function POST() {
   const gated = await getGatedMember(supabase);
   if (!gated) return NextResponse.json({ error: "Ikke tilgang." }, { status: 403 });
 
-  const allowed = await checkVeilederRateLimit(supabase, gated.memberId);
+  const allowed = await checkAIRateLimit(supabase, gated.memberId);
   if (!allowed) {
     return NextResponse.json(
       { error: "Veilederen har nådd dagens grense — prøv igjen i morgen." },
@@ -37,21 +38,11 @@ export async function POST() {
     .join("\n");
   const dynamicContext = [remaining.context, `Kandidatmatvarer (proteinrike basisvarer):\n${candidateLines}`].join("\n\n");
 
-  try {
-    const result = await callVeileder({
-      kind: "maltid",
-      profileBlock,
-      dynamicContext,
-      messages: [{ role: "user", content: "Foreslå 3 konkrete måltider for resten av dagen, med omtrentlige mengder, basert på hva som gjenstår." }],
-    });
-    if (!result) return NextResponse.json({ error: "Veilederen er ikke tilgjengelig." }, { status: 404 });
-
-    await logVeilederUsage(supabase, gated.memberId, "maltid", result.usage);
-    return NextResponse.json({ text: result.text });
-  } catch {
-    return NextResponse.json(
-      { error: "Veilederen er utilgjengelig akkurat nå — prøv igjen senere." },
-      { status: 502 }
-    );
-  }
+  const result = await callVeileder({
+    supabase, memberId: gated.memberId, kind: "maltid",
+    profileBlock, dynamicContext,
+    messages: [{ role: "user", content: "Foreslå 3 konkrete måltider for resten av dagen, med omtrentlige mengder, basert på hva som gjenstår." }],
+  });
+  if ("error" in result) return aiErrorResponse(result.error);
+  return NextResponse.json({ text: result.text });
 }

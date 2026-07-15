@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { safeFetchText } from "@/lib/safe-fetch";
 import { checkRateLimit, checkIpRateLimit, getClientIp } from "@/lib/rate-limit";
+import { getAIGatedMember, callAI, parseAIJson } from "@/lib/ai";
 
 export const runtime = "nodejs";
 
@@ -213,6 +214,47 @@ function extractMicrodataRecipe(html: string): ImportedRecipe | null {
   return { title, image_url, servings, total_time_minutes, ingredients, body };
 }
 
+function buildOppskriftSystemPrompt(): string {
+  return (
+    "Du leser rå tekst fra en nettside og skal finne om den inneholder en matoppskrift. " +
+    "Returner KUN gyldig JSON. Hvis dette er en oppskrift: " +
+    '{"title":string,"servings":number|null,"total_time_minutes":number|null,' +
+    '"ingredients":[{"name":string,"amount":string|null,"unit":string|null}],"body":string|null} ' +
+    "(body = nummererte fremgangsmåte-steg adskilt med linjeskift). " +
+    'Hvis siden IKKE er en oppskrift, returner nøyaktig {"error":"ikke_oppskrift"}. ' +
+    "Ingen forklaring, ingen markdown."
+  );
+}
+
+function validateImportedRecipe(parsed: unknown): ImportedRecipe | null {
+  if (typeof parsed !== "object" || parsed === null) return null;
+  const r = parsed as Record<string, unknown>;
+  if (typeof r.error === "string") return null; // f.eks. ikke_oppskrift
+  if (typeof r.title !== "string" || !r.title.trim()) return null;
+
+  const rawIngredients = Array.isArray(r.ingredients) ? r.ingredients : [];
+  const ingredients: ImportedIngredient[] = [];
+  for (const ing of rawIngredients) {
+    if (typeof ing !== "object" || ing === null) continue;
+    const io = ing as Record<string, unknown>;
+    if (typeof io.name !== "string" || !io.name.trim()) continue;
+    ingredients.push({
+      name: io.name.trim(),
+      amount: typeof io.amount === "string" ? io.amount : undefined,
+      unit: typeof io.unit === "string" ? io.unit : undefined,
+    });
+  }
+
+  return {
+    title: r.title.trim(),
+    image_url: null,
+    servings: typeof r.servings === "number" ? Math.round(r.servings) : null,
+    total_time_minutes: typeof r.total_time_minutes === "number" ? Math.round(r.total_time_minutes) : null,
+    ingredients,
+    body: typeof r.body === "string" && r.body.trim() ? r.body.trim() : null,
+  };
+}
+
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -241,7 +283,26 @@ export async function POST(req: NextRequest) {
   }
 
   const node = findRecipeNode(extractJsonLdBlocks(html));
-  const recipe = node ? mapRecipeNode(node) : extractMicrodataRecipe(html);
+  let recipe = node ? mapRecipeNode(node) : extractMicrodataRecipe(html);
+  let aiParsed = false;
+
+  // AI-fallback KUN når verken JSON-LD eller Microdata/RDFa fant noe —
+  // degraderer stille til manuelt skjema om AI er avslått/rate-limitert/feiler.
+  if (!recipe) {
+    const gated = await getAIGatedMember(supabase);
+    if (gated) {
+      const plainText = htmlToPlainText(html).slice(0, 12_000);
+      const result = await callAI({
+        supabase, memberId: gated.memberId, kind: "oppskrift",
+        system: buildOppskriftSystemPrompt(),
+        messages: [{ role: "user", content: plainText }],
+      });
+      if (!("error" in result)) {
+        const parsed = parseAIJson(result.text, validateImportedRecipe);
+        if (parsed) { recipe = parsed; aiParsed = true; }
+      }
+    }
+  }
 
   if (!recipe) {
     const rawTextPreview = htmlToPlainText(html).slice(0, 500);
@@ -251,5 +312,5 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  return NextResponse.json({ recipe: { ...recipe, url } });
+  return NextResponse.json({ recipe: { ...recipe, url }, aiParsed });
 }

@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { aiEnabled } from "@/lib/ai";
 import MaaltiderClient from "./MaaltiderClient";
 
 export default async function MaaltiderPage() {
@@ -35,5 +36,5 @@ export default async function MaaltiderPage() {
     meals = m ?? [];
   }
 
-  return <MaaltiderClient householdId={hid} initialRecipes={recipes} initialMeals={meals} />;
+  return <MaaltiderClient householdId={hid} initialRecipes={recipes} initialMeals={meals} aiEnabled={aiEnabled()} />;
 }

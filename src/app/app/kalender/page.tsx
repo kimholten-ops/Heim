@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { aiEnabled } from "@/lib/ai";
 import KalenderClient from "./KalenderClient";
 
 export default async function KalenderPage() {
@@ -11,5 +12,5 @@ export default async function KalenderPage() {
     .from("profiles").select("active_household_id").eq("id", user.id).maybeSingle();
   const hid = profile?.active_household_id ?? null;
 
-  return <KalenderClient householdId={hid} />;
+  return <KalenderClient householdId={hid} aiEnabled={aiEnabled()} />;
 }

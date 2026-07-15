@@ -1,6 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/supabase";
-import type { VeilederKind, VeilederUsage } from "@/lib/veileder";
 
 type Sb = SupabaseClient<Database>;
 
@@ -30,18 +29,7 @@ export async function getGatedMember(supabase: Sb): Promise<GatedMember | null> 
   return { memberId: me.id, householdId: hid };
 }
 
-export async function checkVeilederRateLimit(supabase: Sb, memberId: string): Promise<boolean> {
-  const { data, error } = await supabase.rpc("ai_check_rate_limit", { p_member_id: memberId });
-  if (error) return false; // fail closed — dette er et betalt kall, ikke en gratis funksjon
-  return data === true;
-}
-
-export async function logVeilederUsage(supabase: Sb, memberId: string, kind: VeilederKind, usage: VeilederUsage) {
-  await supabase.from("ai_usage").insert({
-    member_id: memberId,
-    kind,
-    input_tokens: usage.input_tokens,
-    output_tokens: usage.output_tokens,
-    cache_read_tokens: usage.cache_read_tokens,
-  });
-}
+// Rate-limit-sjekk og usage-logging bor nå i src/lib/ai.ts (checkAIRateLimit/
+// logAIUsage) — delt av ALLE AI-funksjoner, ikke bare veilederen. callAI()
+// kaller dem selv, så rutene her trenger dem kun for det tidlige
+// early-exit-kallet (unngå å bygge kontekst for en rate-limitert bruker).

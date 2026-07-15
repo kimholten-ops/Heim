@@ -4,7 +4,7 @@ import { useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useHousehold } from "@/components/HouseholdContext";
 import { useRouter } from "next/navigation";
-import { Plus, X, ChevronLeft, ChevronRight, ShoppingCart, BookOpen, Link as LinkIcon, Wand2, Clock, Users, Search } from "lucide-react";
+import { Plus, X, ChevronLeft, ChevronRight, ShoppingCart, BookOpen, Link as LinkIcon, Wand2, Clock, Users, Search, Sparkles } from "lucide-react";
 import { Card, SectionLabel, EmptyState } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +18,7 @@ type Meal = {
   notes: string | null; recipe_id: string | null;
 };
 type Ingredient = { name: string; amount?: string; unit?: string };
+type UkesmenyDag = { date: string; recipe_id: string | null; fritekst: string | null; begrunnelse: string | null };
 
 const DAY_NAMES = ["Man","Tir","Ons","Tor","Fre","Lør","Søn"];
 const PALETTE = ["#0d9488","#f59e0b","#7c5cff","#f97316","#12936b","#ef4444","#3b82f6","#ec4899"];
@@ -43,13 +44,14 @@ function fmtWeek(mon: Date): string {
 }
 
 export default function MaaltiderClient({
-  householdId, initialRecipes, initialMeals,
+  householdId, initialRecipes, initialMeals, aiEnabled,
 }: {
   householdId: string | null;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   initialRecipes: any[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   initialMeals: any[];
+  aiEnabled: boolean;
 }) {
   const [supabase] = useState(() => createClient());
   const { members } = useHousehold();
@@ -98,6 +100,18 @@ export default function MaaltiderClient({
   const [importUrl, setImportUrl] = useState("");
   const [importing, setImporting] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
+  const [importNotice, setImportNotice] = useState<string | null>(null);
+
+  // Ukesmeny-forslag (AI)
+  const [showUkesmeny, setShowUkesmeny] = useState(false);
+  const [ukesmenyBusy, setUkesmenyBusy] = useState(false);
+  const [ukesmenyApplying, setUkesmenyApplying] = useState(false);
+  const [ukesmenyError, setUkesmenyError] = useState<string | null>(null);
+  const [ukesmenyPlan, setUkesmenyPlan] = useState<UkesmenyDag[] | null>(null);
+  const [varyProteins, setVaryProteins] = useState(true);
+  const [quickWeekdays, setQuickWeekdays] = useState(false);
+  const [ukesmenySwapDay, setUkesmenySwapDay] = useState<string | null>(null);
+  const [ukesmenySwapSearch, setUkesmenySwapSearch] = useState("");
 
   const memberColorMap = Object.fromEntries(members.map((m, i) => [m.id, PALETTE[i % PALETTE.length]]));
 
@@ -212,7 +226,7 @@ export default function MaaltiderClient({
   function openNewRecipe() {
     setEditRecipe(null); setRTitle(""); setRBody(""); setRUrl("");
     setRImageUrl(null); setRServings(""); setRTotalTime(""); setRIngredients([]);
-    setShowImport(false); setImportUrl(""); setImportError(null);
+    setShowImport(false); setImportUrl(""); setImportError(null); setImportNotice(null);
     setShowRecipeForm(true);
   }
   function openEditRecipe(r: Recipe) {
@@ -221,13 +235,13 @@ export default function MaaltiderClient({
     setRServings(r.servings != null ? String(r.servings) : "");
     setRTotalTime(r.total_time_minutes != null ? String(r.total_time_minutes) : "");
     setRIngredients([...(r.ingredients ?? [])]);
-    setShowImport(false); setImportUrl(""); setImportError(null);
+    setShowImport(false); setImportUrl(""); setImportError(null); setImportNotice(null);
     setShowRecipeForm(true);
   }
 
   async function importFromUrl() {
     if (!importUrl.trim()) return;
-    setImporting(true); setImportError(null);
+    setImporting(true); setImportError(null); setImportNotice(null);
     try {
       const res = await fetch("/api/recipe-import", {
         method: "POST",
@@ -252,12 +266,75 @@ export default function MaaltiderClient({
       setRServings(r.servings != null ? String(r.servings) : "");
       setRTotalTime(r.total_time_minutes != null ? String(r.total_time_minutes) : "");
       setRIngredients(Array.isArray(r.ingredients) && r.ingredients.length ? r.ingredients : []);
+      if (data.aiParsed) setImportNotice("Tolket med AI — sjekk verdiene før du lagrer.");
       setShowImport(false);
     } catch {
       setImportError("Klarte ikke hente oppskriften. Sjekk lenken og prøv igjen.");
     } finally {
       setImporting(false);
     }
+  }
+
+  // ── Ukesmeny-forslag (AI) ──
+  function openUkesmeny() {
+    setUkesmenyError(null); setUkesmenyPlan(null); setUkesmenySwapDay(null);
+    setShowUkesmeny(true);
+  }
+
+  async function suggestUkesmeny() {
+    setUkesmenyBusy(true); setUkesmenyError(null); setUkesmenyPlan(null);
+    try {
+      const res = await fetch("/api/ai/ukesmeny", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ weekStart: toDateStr(weekStart), varyProteins, quickWeekdays }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setUkesmenyError(json.error ?? "Kunne ikke lage forslag akkurat nå.");
+        return;
+      }
+      setUkesmenyPlan(json.dager ?? []);
+    } catch {
+      setUkesmenyError("Kunne ikke lage forslag akkurat nå.");
+    } finally {
+      setUkesmenyBusy(false);
+    }
+  }
+
+  function updateUkesmenyDay(date: string, patch: Partial<UkesmenyDag>) {
+    setUkesmenyPlan(prev => prev ? prev.map(d => d.date === date ? { ...d, ...patch } : d) : prev);
+  }
+
+  async function applyUkesmenyPlan() {
+    if (!ukesmenyPlan || !householdId) return;
+    const overwriting = ukesmenyPlan.some(d => {
+      if (!d.recipe_id && !d.fritekst) return false;
+      const existing = meals.find(m => m.date === d.date);
+      return existing && (existing.title || existing.recipe_id);
+    });
+    if (overwriting && !confirm("Noen dager i uken har allerede en middag satt opp. Overskriv med forslaget?")) return;
+
+    setUkesmenyApplying(true);
+    for (const d of ukesmenyPlan) {
+      if (!d.recipe_id && !d.fritekst) continue;
+      const recipe = d.recipe_id ? recipes.find(r => r.id === d.recipe_id) : null;
+      const payload = {
+        household_id: householdId, date: d.date,
+        title: d.fritekst || recipe?.title || null,
+        recipe_id: d.recipe_id || null,
+      };
+      const existing = meals.find(m => m.date === d.date);
+      if (existing) {
+        await supabase.from("meals").update(payload).eq("id", existing.id);
+      } else {
+        await supabase.from("meals").insert(payload);
+      }
+    }
+    setUkesmenyApplying(false);
+    setShowUkesmeny(false);
+    setUkesmenyPlan(null);
+    await fetchMeals();
   }
 
   async function saveRecipe(e: React.FormEvent) {
@@ -325,6 +402,13 @@ export default function MaaltiderClient({
             <ChevronRight size={18} strokeWidth={2} />
           </button>
         </div>
+
+        {aiEnabled && (
+          <button onClick={openUkesmeny}
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-[13px] border border-dashed border-accent/40 text-accent text-[13.5px] font-[600] hover:bg-accent-weak transition-colors">
+            <Sparkles size={14} strokeWidth={2} /> Foreslå ukesmeny
+          </button>
+        )}
 
         {/* Week plan */}
         <div>
@@ -658,6 +742,10 @@ export default function MaaltiderClient({
               </div>
             )}
 
+            {importNotice && (
+              <p className="text-[12.5px] text-accent bg-accent-weak rounded-[10px] px-3 py-2 mb-3">{importNotice}</p>
+            )}
+
             <form onSubmit={saveRecipe} className="space-y-3">
               {rImageUrl && (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -765,6 +853,103 @@ export default function MaaltiderClient({
                   {addingToList ? "Legger til…" : `Legg til ${addToList.lines.length} varer`}
                 </button>
               </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Ukesmeny-forslag sheet ── */}
+      {showUkesmeny && (
+        <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/40 backdrop-blur-sm" onClick={() => setShowUkesmeny(false)}>
+          <div className="bg-white rounded-t-[24px] p-5 pb-10 max-h-[92vh] overflow-y-auto shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
+            <h2 className="text-[19px] font-[700] text-fg mb-1">Foreslå ukesmeny</h2>
+            <p className="text-[13px] text-text-3 mb-4">{fmtWeek(weekStart)} — basert på oppskriftsbanken og hva dere har spist nylig.</p>
+
+            {!ukesmenyPlan ? (
+              <div className="space-y-3">
+                <label className="flex items-center gap-2 text-[14px] text-fg">
+                  <input type="checkbox" checked={varyProteins} onChange={e => setVaryProteins(e.target.checked)} />
+                  Varier proteinkilder
+                </label>
+                <label className="flex items-center gap-2 text-[14px] text-fg">
+                  <input type="checkbox" checked={quickWeekdays} onChange={e => setQuickWeekdays(e.target.checked)} />
+                  Raske middager på hverdager
+                </label>
+                {ukesmenyError && <p className="text-[12.5px] text-rose-500">{ukesmenyError}</p>}
+                <button onClick={suggestUkesmeny} disabled={ukesmenyBusy}
+                  className="w-full flex items-center justify-center gap-2 py-3 bg-accent text-white rounded-[13px] font-[600] text-[15px] disabled:opacity-40 hover:opacity-90 transition-all">
+                  <Sparkles size={15} strokeWidth={2} /> {ukesmenyBusy ? "Lager forslag…" : "Lag forslag"}
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {ukesmenyPlan.map((d, i) => {
+                  const recipe = d.recipe_id ? recipes.find(r => r.id === d.recipe_id) : null;
+                  const displayTitle = d.fritekst || recipe?.title;
+                  const dayIdx = weekDays.findIndex(day => toDateStr(day) === d.date);
+                  return (
+                    <div key={d.date} className="bg-surface-2 rounded-[13px] p-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="text-[11px] font-[600] text-text-3 uppercase tracking-wide12">
+                            {dayIdx >= 0 ? DAY_NAMES[dayIdx] : ""} {new Date(d.date).getDate()}.
+                          </p>
+                          <p className="text-[14.5px] font-[600] text-fg truncate">{displayTitle || "Ingenting foreslått"}</p>
+                          {d.begrunnelse && <p className="text-[12px] text-text-3 mt-[2px]">{d.begrunnelse}</p>}
+                        </div>
+                        <button type="button"
+                          onClick={() => { setUkesmenySwapDay(ukesmenySwapDay === d.date ? null : d.date); setUkesmenySwapSearch(""); }}
+                          className="text-[12.5px] font-[600] text-accent flex-shrink-0 hover:opacity-80">
+                          Bytt
+                        </button>
+                      </div>
+
+                      {ukesmenySwapDay === d.date && (
+                        <div className="mt-2 pt-2 border-t border-border">
+                          <input type="text" placeholder="Søk i oppskrifter…" value={ukesmenySwapSearch} autoFocus
+                            onChange={e => setUkesmenySwapSearch(e.target.value)}
+                            className="w-full rounded-[10px] border border-border bg-white px-3 py-2 text-[13.5px] placeholder:text-text-3 outline-none focus:border-accent mb-2" />
+                          <div className="flex flex-wrap gap-2 mb-2">
+                            <button type="button"
+                              onClick={() => { updateUkesmenyDay(d.date, { recipe_id: null }); setUkesmenySwapDay(null); }}
+                              className="px-3 py-1.5 rounded-chip border border-border text-[13px] font-[550] text-fg hover:bg-surface-2">
+                              Ingen oppskrift
+                            </button>
+                            {recipes
+                              .filter(r => !ukesmenySwapSearch.trim() || r.title.toLowerCase().includes(ukesmenySwapSearch.trim().toLowerCase()))
+                              .slice(0, 20)
+                              .map(r => (
+                                <button key={r.id} type="button"
+                                  onClick={() => { updateUkesmenyDay(d.date, { recipe_id: r.id, fritekst: null }); setUkesmenySwapDay(null); }}
+                                  className="px-3 py-1.5 rounded-chip border border-border text-[13px] font-[550] text-fg hover:bg-surface-2">
+                                  {r.title}
+                                </button>
+                              ))}
+                          </div>
+                          <input type="text" placeholder="…eller skriv fritt (f.eks. Tacos)"
+                            defaultValue={d.fritekst ?? ""}
+                            onBlur={e => { const v = e.target.value.trim(); if (v) { updateUkesmenyDay(d.date, { fritekst: v, recipe_id: null }); setUkesmenySwapDay(null); } }}
+                            className="w-full rounded-[10px] border border-border px-3 py-2 text-[13.5px] placeholder:text-text-3 outline-none focus:border-accent" />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+
+                {ukesmenyError && <p className="text-[12.5px] text-rose-500">{ukesmenyError}</p>}
+
+                <div className="flex gap-2 pt-1">
+                  <button onClick={applyUkesmenyPlan} disabled={ukesmenyApplying}
+                    className="flex-1 py-3 bg-accent text-white rounded-[13px] font-[600] text-[15px] disabled:opacity-40 hover:opacity-90 transition-all">
+                    {ukesmenyApplying ? "Lagrer…" : "Bruk denne planen"}
+                  </button>
+                  <button onClick={suggestUkesmeny} disabled={ukesmenyBusy}
+                    className="px-4 py-3 rounded-[13px] text-[14px] border border-border text-text-2 disabled:opacity-40 hover:bg-surface-2 transition-colors">
+                    Foreslå på nytt
+                  </button>
+                </div>
+              </div>
             )}
           </div>
         </div>

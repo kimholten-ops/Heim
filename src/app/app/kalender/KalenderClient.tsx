@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useHousehold } from "@/components/HouseholdContext";
 import {
   Calendar,
-  Plus, X, MapPin, RefreshCcw, ChevronLeft, ChevronRight, Rss, ClipboardPaste, Trash2,
+  Plus, X, MapPin, RefreshCcw, ChevronLeft, ChevronRight, Rss, ClipboardPaste, Trash2, Sparkles,
 } from "lucide-react";
 import { Card, SectionLabel } from "@/components/ui";
 import { cn } from "@/lib/utils";
@@ -147,8 +147,8 @@ function navigate(view: CalView, anchor: Date, dir: 1|-1): Date {
 
 /* ── Main component ── */
 export default function KalenderClient({
-  householdId,
-}: { householdId: string|null }) {
+  householdId, aiEnabled,
+}: { householdId: string|null; aiEnabled: boolean }) {
   const [supabase] = useState(() => createClient());
   const { members } = useHousehold();
 
@@ -179,6 +179,10 @@ export default function KalenderClient({
   const [smartAddRows, setSmartAddRows] = useState<SmartAddRow[]>([]);
   const [smartAddParticipants, setSmartAddParticipants] = useState<string[]>([]);
   const [smartAddSaving, setSmartAddSaving] = useState(false);
+  // AI-tolkning — opt-in løft over regex-parseren over. Regex-veien er
+  // fortsatt default og eneste vei uten ANTHROPIC_API_KEY.
+  const [smartAddAIBusy, setSmartAddAIBusy] = useState(false);
+  const [smartAddAIError, setSmartAddAIError] = useState<string | null>(null);
 
   const allMemberIds = members.map(m => m.id);
   const allSelected  = fParticipants.length === members.length && members.length > 0;
@@ -218,11 +222,65 @@ export default function KalenderClient({
   function resetSmartAdd() {
     setSmartAddMode(false); setSmartAddText(""); setSmartAddRows([]);
     setSmartAddParticipants([]); setSmartAddSaving(false);
+    setSmartAddAIBusy(false); setSmartAddAIError(null);
   }
 
   function runSmartAddParse() {
     const parsed = parseSmartAddText(smartAddText);
     setSmartAddRows(parsed.map(c => ({ ...c, id: crypto.randomUUID(), checked: c.confidence === "high" })));
+  }
+
+  type AIEvent = { title: string; date: string; startTime: string | null; endTime: string | null; location: string | null; notes: string | null };
+
+  async function submitSmartAddAI(payload: { text?: string; imageBase64?: string; mediaType?: string }) {
+    setSmartAddAIBusy(true);
+    setSmartAddAIError(null);
+    try {
+      const res = await fetch("/api/ai/smart-add", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setSmartAddAIError(json.error ?? "Kunne ikke tolke med AI akkurat nå.");
+        return;
+      }
+      const events: AIEvent[] = json.events ?? [];
+      setSmartAddMode(true);
+      setSmartAddRows(events.map((e) => ({
+        title: e.title, date: e.date, startTime: e.startTime, endTime: e.endTime,
+        location: e.location, raw: e.notes ?? e.title, confidence: "high",
+        id: crypto.randomUUID(), checked: true,
+      })));
+    } catch {
+      setSmartAddAIError("Kunne ikke tolke med AI akkurat nå.");
+    }
+    setSmartAddAIBusy(false);
+  }
+
+  // Skalerer bildet til maks ~1568px lengste side og prøver progressivt
+  // lavere JPEG-kvalitet til det er under ~1 MB, før det sendes som base64.
+  async function compressImageForAI(file: File): Promise<{ data: string; mediaType: string }> {
+    const bitmap = await createImageBitmap(file);
+    const maxSide = 1568;
+    const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
+    const w = Math.round(bitmap.width * scale);
+    const h = Math.round(bitmap.height * scale);
+    const canvas = document.createElement("canvas");
+    canvas.width = w; canvas.height = h;
+    const ctx = canvas.getContext("2d")!;
+    ctx.drawImage(bitmap, 0, 0, w, h);
+    let quality = 0.85;
+    let dataUrl = canvas.toDataURL("image/jpeg", quality);
+    while (dataUrl.length * 0.75 > 1_000_000 && quality > 0.4) {
+      quality -= 0.15;
+      dataUrl = canvas.toDataURL("image/jpeg", quality);
+    }
+    return { data: dataUrl.split(",")[1], mediaType: "image/jpeg" };
+  }
+
+  async function handleSmartAddImage(file: File) {
+    const { data, mediaType } = await compressImageForAI(file);
+    await submitSmartAddAI({ imageBase64: data, mediaType });
   }
 
   function updateSmartAddRow(id: string, patch: Partial<SmartAddRow>) {
@@ -700,11 +758,28 @@ export default function KalenderClient({
             </h2>
 
             {!editEventId && !smartAddMode && (
-              <button type="button" onClick={() => setSmartAddMode(true)}
-                className="w-full flex items-center justify-center gap-2 py-2.5 mb-4 rounded-[13px] border border-dashed text-[13.5px] font-[600] transition-colors"
-                style={{ borderColor:"var(--accent)", color:"var(--accent)" }}>
-                <ClipboardPaste size={14} strokeWidth={2} /> Lim inn tekst
-              </button>
+              <div className="flex gap-2 mb-4">
+                <button type="button" onClick={() => setSmartAddMode(true)}
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-[13px] border border-dashed text-[13.5px] font-[600] transition-colors"
+                  style={{ borderColor:"var(--accent)", color:"var(--accent)" }}>
+                  <ClipboardPaste size={14} strokeWidth={2} /> Lim inn tekst
+                </button>
+                {aiEnabled && (
+                  <>
+                    <button type="button" onClick={() => document.getElementById("smart-add-image-input")?.click()}
+                      disabled={smartAddAIBusy}
+                      className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-[13px] border border-dashed text-[13.5px] font-[600] transition-colors disabled:opacity-40"
+                      style={{ borderColor:"var(--accent)", color:"var(--accent)" }}>
+                      <Sparkles size={14} strokeWidth={2} /> {smartAddAIBusy ? "Tolker…" : "Last opp bilde"}
+                    </button>
+                    <input id="smart-add-image-input" type="file" accept="image/*" className="hidden"
+                      onChange={(e) => { const f = e.target.files?.[0]; if (f) handleSmartAddImage(f); e.target.value = ""; }} />
+                  </>
+                )}
+              </div>
+            )}
+            {!editEventId && !smartAddMode && smartAddAIError && (
+              <p className="text-[12.5px] mb-3" style={{ color:"#e11d48" }}>{smartAddAIError}</p>
             )}
 
             {smartAddMode ? (
@@ -730,6 +805,17 @@ export default function KalenderClient({
                         Avbryt
                       </button>
                     </div>
+                    {aiEnabled && (
+                      <button type="button" onClick={() => submitSmartAddAI({ text: smartAddText })}
+                        disabled={!smartAddText.trim() || smartAddAIBusy}
+                        className="w-full flex items-center justify-center gap-2 py-2.5 rounded-[13px] text-[13.5px] font-[600] transition-colors disabled:opacity-40"
+                        style={{ border:"1px solid var(--accent)", color:"var(--accent)" }}>
+                        <Sparkles size={14} strokeWidth={2} /> {smartAddAIBusy ? "Tolker…" : "Tolk med AI i stedet"}
+                      </button>
+                    )}
+                    {smartAddAIError && (
+                      <p className="text-[12.5px]" style={{ color:"#e11d48" }}>{smartAddAIError}</p>
+                    )}
                   </>
                 ) : (() => {
                   const withDate = smartAddRows.filter(r => r.date);
