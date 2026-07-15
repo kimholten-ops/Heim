@@ -84,6 +84,20 @@ npm run gen-types
 5. **Ekte offline-skriving:** PWA cacher app-skallet, men offline *endringer* som synker
    senere krever en skrivekø (outbox) eller en synk-motor (f.eks. PowerSync/ElectricSQL).
 
+## AI-veileder (valgfritt)
+Kosthold/trening-siden i `/app/helse` kan vise en AI-drevet veileder (chat,
+ukesprogram, ukesgjennomgang, måltidsforslag) via Anthropic sin API
+(`claude-haiku-4-5`). Dette er den eneste betalte tjenesten i appen.
+
+- Sett `ANTHROPIC_API_KEY` i Vercel (server-side only — **aldri** `NEXT_PUBLIC_`),
+  og husk å redeploye etter at den er satt.
+- Mangler nøkkelen, skjules hele Veileder-seksjonen stille — resten av appen
+  fungerer 100 % uten.
+- **Sett en Spend Limit på $5/mnd i Anthropic Console** før du slår den på i
+  produksjon — appen håndhever egne per-medlem/per-husholdning-grenser
+  (25 kall/dag, 600 kall/mnd), men en Spend Limit er et nyttig ekstra
+  sikkerhetsnett mot uforutsette kostnader.
+
 ## Notater
 - `@supabase/ssr` må være en nyere versjon (0.10+) for at databasetypene skal flyte
   korrekt sammen med supabase-js 2.10x.

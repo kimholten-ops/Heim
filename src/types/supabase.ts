@@ -196,6 +196,18 @@ export type Database = {
         Update: { id?: string; member_id?: string; date?: string; slot?: string; matvare_id?: string | null; matvare_navn?: string | null; product?: unknown; custom_name?: string | null; grams?: number; kcal?: number; protein_g?: number; karbo_g?: number; fett_g?: number; created_at?: string }
         Relationships: [];
       };
+      ai_usage: {
+        Row:    { id: string; member_id: string; kind: "chat" | "ukesprogram" | "gjennomgang" | "maltid"; input_tokens: number; output_tokens: number; cache_read_tokens: number; created_at: string }
+        Insert: { id?: string; member_id: string; kind: "chat" | "ukesprogram" | "gjennomgang" | "maltid"; input_tokens: number; output_tokens: number; cache_read_tokens?: number; created_at?: string }
+        Update: { id?: string; member_id?: string; kind?: "chat" | "ukesprogram" | "gjennomgang" | "maltid"; input_tokens?: number; output_tokens?: number; cache_read_tokens?: number; created_at?: string }
+        Relationships: [];
+      };
+      ai_weekly_reviews: {
+        Row:    { member_id: string; week_start: string; text: string; created_at: string }
+        Insert: { member_id: string; week_start: string; text: string; created_at?: string }
+        Update: { member_id?: string; week_start?: string; text?: string; created_at?: string }
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -211,6 +223,7 @@ export type Database = {
       rename_member: { Args: { p_member_id: string; p_name: string }; Returns: undefined };
       check_rate_limit: { Args: { p_endpoint: string; p_max: number; p_window_minutes: number }; Returns: boolean };
       my_member_ids: { Args: Record<string, never>; Returns: string };
+      ai_check_rate_limit: { Args: { p_member_id: string; p_daily_max?: number; p_monthly_max?: number }; Returns: boolean };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;

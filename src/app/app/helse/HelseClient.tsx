@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import type { Exercise } from "@/lib/exercises";
 import { formatDuration, tonnage } from "@/lib/exercises";
 import KostholdCard from "./KostholdCard";
+import VeilederCard from "./VeilederCard";
 
 type Template = { id: string; name: string };
 type TemplateExercise = {
@@ -25,7 +26,7 @@ type SessionRow = {
   workout_sets: { reps: number | null; weight_kg: number | null; completed: boolean }[];
 };
 
-export default function HelseClient({ memberId, householdId }: { memberId: string; householdId: string }) {
+export default function HelseClient({ memberId, householdId, veilederEnabled }: { memberId: string; householdId: string; veilederEnabled: boolean }) {
   const [supabase] = useState(() => createClient());
   const router = useRouter();
   const { members } = useHousehold();
@@ -326,6 +327,10 @@ export default function HelseClient({ memberId, householdId }: { memberId: strin
         </div>
 
         <KostholdCard memberId={memberId} householdId={householdId} />
+
+        {/* AI-veilederen skjules helt (ikke bare deaktivert) hvis
+            ANTHROPIC_API_KEY mangler i miljøet — appen fungerer 100 % uten. */}
+        {veilederEnabled && <VeilederCard memberId={memberId} />}
       </div>
 
       {/* ── Start-økt sheet ── */}

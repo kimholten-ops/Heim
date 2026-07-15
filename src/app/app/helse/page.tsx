@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { veilederEnabled } from "@/lib/veileder";
 import HelseClient from "./HelseClient";
 
 export default async function HelsePage() {
@@ -17,5 +18,5 @@ export default async function HelsePage() {
   // Helse/trening er kun for voksne — barn skal ikke se ruten i det hele tatt.
   if (!me || me.role !== "adult") redirect("/app");
 
-  return <HelseClient memberId={me.id} householdId={hid} />;
+  return <HelseClient memberId={me.id} householdId={hid} veilederEnabled={veilederEnabled()} />;
 }

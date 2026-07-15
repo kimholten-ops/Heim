@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import {
-  ChevronLeft, ChevronRight, Plus, X, Search, Star, Utensils,
+  ChevronLeft, ChevronRight, Plus, X, Search, Star, Utensils, Sparkles,
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, ReferenceLine, ResponsiveContainer, Tooltip } from "recharts";
 import { Card, Sheet } from "@/components/ui";
@@ -48,7 +48,7 @@ function impliedPer100g(e: Entry): Macros {
   };
 }
 
-export default function KostholdLogClient({ memberId, householdId }: { memberId: string; householdId: string }) {
+export default function KostholdLogClient({ memberId, householdId, veilederEnabled }: { memberId: string; householdId: string; veilederEnabled: boolean }) {
   const [supabase] = useState(() => createClient());
   const router = useRouter();
 
@@ -246,6 +246,28 @@ export default function KostholdLogClient({ memberId, householdId }: { memberId:
     setFavorites(toggleFavorite(memberId, item));
   }
 
+  /* ── Måltidsforslag (kvelds, når <40 % av kcal-målet gjenstår) ── */
+  const [showMaltid, setShowMaltid] = useState(false);
+  const [maltidText, setMaltidText] = useState<string | null>(null);
+  const [maltidLoading, setMaltidLoading] = useState(false);
+  const [maltidError, setMaltidError] = useState<string | null>(null);
+
+  async function openMaltidForslag() {
+    setShowMaltid(true);
+    setMaltidText(null); setMaltidError(null); setMaltidLoading(true);
+    try {
+      const res = await fetch("/api/veileder/maltid", { method: "POST" });
+      const json = await res.json();
+      if (res.ok) setMaltidText(json.text);
+      else setMaltidError(json.error ?? "Veilederen er utilgjengelig akkurat nå — prøv igjen senere.");
+    } catch {
+      setMaltidError("Veilederen er utilgjengelig akkurat nå — prøv igjen senere.");
+    }
+    setMaltidLoading(false);
+  }
+
+  const showMaltidButton = veilederEnabled && isToday && !!kcalTarget && (kcalTarget - daySum.kcal) / kcalTarget < 0.4;
+
   const SLOT_LABEL: Record<string, string> = Object.fromEntries(SLOTS.map((s) => [s.key, s.label]));
 
   return (
@@ -288,6 +310,13 @@ export default function KostholdLogClient({ memberId, householdId }: { memberId:
               {rows.map((e, i) => (
                 <EntryRow key={e.id} entry={e} divider={i > 0} onDelete={() => deleteEntry(e.id)} onGramsChange={(g) => updateGrams(e, g)} />
               ))}
+              {key === "kvelds" && showMaltidButton && (
+                <button onClick={openMaltidForslag}
+                  className="w-full flex items-center gap-2 px-4 py-3 text-left hover:bg-surface-2 transition-colors border-t border-border">
+                  <Sparkles size={14} className="text-accent flex-shrink-0" />
+                  <span className="text-[13px] font-[550] text-accent">Forslag til kvelds?</span>
+                </button>
+              )}
               {showDinnerShortcut && (
                 <button onClick={() => openAdd("middag", todaysMeal ?? undefined)}
                   className="w-full flex items-center gap-2 px-4 py-3 text-left hover:bg-surface-2 transition-colors">
@@ -423,6 +452,17 @@ export default function KostholdLogClient({ memberId, householdId }: { memberId:
             </div>
           )}
         </div>
+      </Sheet>
+
+      {/* ── Måltidsforslag-sheet ── */}
+      <Sheet open={showMaltid} onClose={() => setShowMaltid(false)} maxHeight>
+        <h2 className="text-[19px] font-[700] text-fg mb-3 flex-shrink-0">Forslag til kvelds</h2>
+        <div className="overflow-y-auto">
+          {maltidLoading && <p className="text-[13px] text-text-3 py-6 text-center">Ser på hva som gjenstår…</p>}
+          {maltidError && <p className="text-[13px] text-rose-600">{maltidError}</p>}
+          {maltidText && <p className="text-[14px] text-fg leading-[1.55] whitespace-pre-wrap">{maltidText}</p>}
+        </div>
+        <p className="text-[11px] text-text-3 mt-3 pt-2 border-t border-border flex-shrink-0">Veilederen kan ta feil — sjekk viktige råd med fagperson.</p>
       </Sheet>
     </div>
   );

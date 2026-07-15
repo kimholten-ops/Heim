@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { veilederEnabled } from "@/lib/veileder";
 import KostholdLogClient from "./KostholdLogClient";
 
 export default async function KostholdLogPage() {
@@ -16,5 +17,5 @@ export default async function KostholdLogPage() {
     .from("members").select("id, role").eq("household_id", hid).eq("auth_user_id", user.id).maybeSingle();
   if (!me || me.role !== "adult") redirect("/app");
 
-  return <KostholdLogClient memberId={me.id} householdId={hid} />;
+  return <KostholdLogClient memberId={me.id} householdId={hid} veilederEnabled={veilederEnabled()} />;
 }
