@@ -4,7 +4,11 @@ import { checkRateLimit, checkIpRateLimit, getClientIp } from "@/lib/rate-limit"
 
 export const runtime = "nodejs";
 
-export type KassalappProduct = { ean: string; name: string; brand: string | null; price: number | null; store: string | null };
+export type Nutrition100g = { kcal: number; protein_g: number; karbo_g: number; fett_g: number };
+export type KassalappProduct = {
+  ean: string; name: string; brand: string | null; price: number | null; store: string | null;
+  nutrition100g: Nutrition100g | null;
+};
 
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const cache = new Map<string, { data: KassalappProduct[]; expires: number }>();
@@ -23,6 +27,57 @@ function pickStore(r: Record<string, unknown>): string | null {
     const name = (store as Record<string, unknown>).name;
     if (typeof name === "string") return name;
   }
+  return null;
+}
+
+// Kassalapp sitt eksakte nærings-skjema er ikke verifisert mot et ekte svar i
+// denne økten (ingen API-nøkkel tilgjengelig, og API-dokumentasjonen var
+// utilgjengelig). Tolererer derfor flere plausible former defensivt — samme
+// stil som pickPrice/pickStore over — og returnerer null (ikke krasj) hvis
+// ingenting gjenkjennes, som UI-et viser som "mangler næringsdata".
+function pickNumber(v: unknown): number | null {
+  if (typeof v === "number" && Number.isFinite(v)) return v;
+  if (typeof v === "string" && v.trim() !== "" && Number.isFinite(Number(v))) return Number(v);
+  return null;
+}
+
+function pickNutrition(r: Record<string, unknown>): Nutrition100g | null {
+  // Form A: en flat "nutrition"-liste med navngitte poster (vanlig i EU-stil
+  // næringsdeklarasjoner), typisk deklarert per 100 g.
+  const list = r.nutrition ?? r.nutrients ?? r.nutritional_information;
+  if (Array.isArray(list)) {
+    const find = (...keys: string[]) => {
+      for (const item of list) {
+        if (typeof item !== "object" || item === null) continue;
+        const o = item as Record<string, unknown>;
+        const label = String(o.code ?? o.name ?? o.display_name ?? "").toLowerCase();
+        if (keys.some((k) => label.includes(k))) {
+          const n = pickNumber(o.amount ?? o.value ?? o.quantity);
+          if (n !== null) return n;
+        }
+      }
+      return null;
+    };
+    const kcal = find("energi_kcal", "energy_kcal", "kcal") ?? find("energi", "energy");
+    const protein = find("protein");
+    const karbo = find("karbohydrat", "carbohydrate");
+    const fett = find("fett", "fat");
+    if (kcal !== null) {
+      return { kcal, protein_g: protein ?? 0, karbo_g: karbo ?? 0, fett_g: fett ?? 0 };
+    }
+  }
+
+  // Form B: flate felt direkte på produktobjektet.
+  const kcalFlat = pickNumber(r.energy_kcal ?? r.kcal);
+  if (kcalFlat !== null) {
+    return {
+      kcal: kcalFlat,
+      protein_g: pickNumber(r.protein) ?? 0,
+      karbo_g: pickNumber(r.carbohydrates ?? r.karbohydrat) ?? 0,
+      fett_g: pickNumber(r.fat ?? r.fett) ?? 0,
+    };
+  }
+
   return null;
 }
 
@@ -77,6 +132,7 @@ export async function GET(req: NextRequest) {
           brand: typeof r.brand === "string" ? r.brand : null,
           price: pickPrice(r),
           store: pickStore(r),
+          nutrition100g: pickNutrition(r),
         });
         if (products.length >= 8) break;
       }

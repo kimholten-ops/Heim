@@ -190,6 +190,12 @@ export type Database = {
         Update: { id?: string; member_id?: string; date?: string; weight_kg?: number }
         Relationships: [];
       };
+      food_log_entries: {
+        Row:    { id: string; member_id: string; date: string; slot: string; matvare_id: string | null; matvare_navn: string | null; product: unknown; custom_name: string | null; grams: number; kcal: number; protein_g: number; karbo_g: number; fett_g: number; created_at: string }
+        Insert: { id?: string; member_id: string; date: string; slot?: string; matvare_id?: string | null; matvare_navn?: string | null; product?: unknown; custom_name?: string | null; grams?: number; kcal: number; protein_g?: number; karbo_g?: number; fett_g?: number; created_at?: string }
+        Update: { id?: string; member_id?: string; date?: string; slot?: string; matvare_id?: string | null; matvare_navn?: string | null; product?: unknown; custom_name?: string | null; grams?: number; kcal?: number; protein_g?: number; karbo_g?: number; fett_g?: number; created_at?: string }
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {

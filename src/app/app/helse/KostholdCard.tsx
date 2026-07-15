@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { Utensils, Target, Scale, Search, Info } from "lucide-react";
+import { Utensils, Target, Scale, Search, Info, ChevronRight, NotebookPen } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { Card, SectionLabel, Sheet } from "@/components/ui";
 import { cn } from "@/lib/utils";
@@ -30,6 +31,7 @@ function todayISO(): string {
 
 export default function KostholdCard({ memberId, householdId }: { memberId: string; householdId: string }) {
   const [supabase] = useState(() => createClient());
+  const router = useRouter();
 
   const [todaysMeal, setTodaysMeal] = useState<string | null>(null);
   const [kcalTarget, setKcalTarget] = useState<number | null>(null);
@@ -146,6 +148,18 @@ export default function KostholdCard({ memberId, householdId }: { memberId: stri
   return (
     <div className="mt-6">
       <SectionLabel title="Kosthold" />
+
+      <button onClick={() => router.push("/app/helse/kosthold")}
+        className="w-full flex items-center gap-[13px] px-4 py-[14px] mb-3 bg-surface border border-border rounded-card shadow-card hover:bg-surface-2 transition-colors">
+        <span className="w-[38px] h-[38px] rounded-[11px] bg-accent-weak text-accent flex items-center justify-center flex-shrink-0">
+          <NotebookPen size={17} strokeWidth={2} />
+        </span>
+        <div className="flex-1 min-w-0 text-left">
+          <p className="text-[15px] font-[600] text-fg">Logg mat i dag</p>
+          <p className="text-[12.5px] text-text-2 mt-[1px]">Frokost, lunsj, middag og kvelds</p>
+        </div>
+        <ChevronRight size={18} className="text-text-3 flex-shrink-0" />
+      </button>
 
       {/* Dagens middag */}
       <Card className="mb-3">
