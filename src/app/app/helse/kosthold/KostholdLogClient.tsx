@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import {
-  ChevronLeft, ChevronRight, Plus, X, Search, Star, Utensils, Sparkles,
+  ChevronLeft, ChevronRight, Plus, X, Search, Star, Utensils, Sparkles, Barcode,
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, ReferenceLine, ResponsiveContainer, Tooltip } from "recharts";
 import { Card, Sheet } from "@/components/ui";
@@ -226,6 +226,93 @@ export default function KostholdLogClient({ memberId, householdId, veilederEnabl
     setGrams(getLastGrams(item.key) ?? 100);
   }
 
+  /* ── Strekkodeskanning ──
+   * Bruker den native BarcodeDetector-API-en (Chrome/Android) — ingen ny
+   * avhengighet. Støttes ikke i iOS Safari per juli 2026, så der faller vi
+   * tilbake til manuell EAN-inntasting i stedet for et fullverdig kamera-skann
+   * (bevisst nedskalert scope — en ZXing-js-avhengighet ville gitt skanning på
+   * alle plattformer, men er ikke tatt inn her).
+   */
+  const [showScanner, setShowScanner] = useState(false);
+  const [scanSupported, setScanSupported] = useState(true);
+  const [scanStatus, setScanStatus] = useState<"idle" | "scanning" | "looking-up" | "not-found" | "error">("idle");
+  const [manualEan, setManualEan] = useState("");
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  function openScanner() {
+    setScanStatus("idle");
+    setManualEan("");
+    setShowScanner(true);
+  }
+
+  async function handleScanned(ean: string) {
+    setScanStatus("looking-up");
+    try {
+      const res = await fetch(`/api/varer?ean=${encodeURIComponent(ean)}`);
+      const json = await res.json();
+      const p: KassalappProduct | null = json?.product ?? null;
+      if (p && p.nutrition100g) {
+        const item: LoggableItem = { key: `kl:${p.ean}`, label: p.name, source: "butikkvare", per100g: p.nutrition100g, product: p };
+        setShowScanner(false);
+        pickItem(item);
+      } else {
+        setScanStatus("not-found");
+      }
+    } catch {
+      setScanStatus("error");
+    }
+  }
+
+  useEffect(() => {
+    if (!showScanner) return;
+    const supported = typeof window !== "undefined" && "BarcodeDetector" in window;
+    setScanSupported(supported);
+    if (!supported) return;
+
+    let stream: MediaStream | null = null;
+    let stopped = false;
+    let raf = 0;
+
+    (async () => {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        if (stopped) { stream.getTracks().forEach((t) => t.stop()); return; }
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          await videoRef.current.play();
+        }
+        setScanStatus("scanning");
+        type BarcodeDetectorLike = { detect: (source: HTMLVideoElement) => Promise<{ rawValue: string }[]> };
+        const Detector = (window as unknown as { BarcodeDetector: new (opts: { formats: string[] }) => BarcodeDetectorLike }).BarcodeDetector;
+        const detector = new Detector({ formats: ["ean_13", "ean_8", "upc_a", "upc_e"] });
+        const tick = async () => {
+          if (stopped || !videoRef.current) return;
+          try {
+            const codes = await detector.detect(videoRef.current);
+            if (codes.length > 0) {
+              stopped = true;
+              await handleScanned(codes[0].rawValue);
+              return;
+            }
+          } catch {
+            // enkeltbilder kan feile å dekode — bare prøv igjen neste frame
+          }
+          raf = requestAnimationFrame(tick);
+        };
+        raf = requestAnimationFrame(tick);
+      } catch {
+        setScanStatus("error");
+      }
+    })();
+
+    return () => {
+      stopped = true;
+      cancelAnimationFrame(raf);
+      if (stream) stream.getTracks().forEach((t) => t.stop());
+      if (videoRef.current) videoRef.current.srcObject = null;
+    };
+  }, [showScanner]);
+
   async function confirmAddSelected() {
     if (!selected?.per100g) return;
     setSaving(true);
@@ -422,11 +509,17 @@ export default function KostholdLogClient({ memberId, householdId, veilederEnabl
               </div>
             ) : (
               <>
-                <div className="relative mb-3">
-                  <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-3" />
-                  <input type="text" autoFocus placeholder="Søk matvare eller butikkvare" value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    className="w-full rounded-[13px] border border-border pl-9 pr-4 py-2.5 text-[14px] outline-none focus:border-accent" />
+                <div className="flex gap-2 mb-3">
+                  <div className="relative flex-1">
+                    <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-3" />
+                    <input type="text" autoFocus placeholder="Søk matvare eller butikkvare" value={query}
+                      onChange={(e) => setQuery(e.target.value)}
+                      className="w-full rounded-[13px] border border-border pl-9 pr-4 py-2.5 text-[14px] outline-none focus:border-accent" />
+                  </div>
+                  <button onClick={openScanner} aria-label="Skann strekkode"
+                    className="flex-shrink-0 w-[42px] rounded-[13px] border border-border flex items-center justify-center text-text-3 hover:text-accent hover:border-accent">
+                    <Barcode size={18} />
+                  </button>
                 </div>
 
                 {query.trim().length < 2 && (
@@ -476,6 +569,43 @@ export default function KostholdLogClient({ memberId, householdId, veilederEnabl
             </div>
           )}
         </div>
+      </Sheet>
+
+      {/* ── Strekkode-sheet ── */}
+      <Sheet open={showScanner} onClose={() => setShowScanner(false)}>
+        <h2 className="text-[19px] font-[700] text-fg mb-3 flex-shrink-0">Skann strekkode</h2>
+        {scanSupported ? (
+          <div className="space-y-3">
+            <div className="relative rounded-[13px] overflow-hidden bg-black aspect-[4/3]">
+              <video ref={videoRef} muted playsInline className="w-full h-full object-cover" />
+              {scanStatus === "looking-up" && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                  <p className="text-white text-[13px]">Slår opp…</p>
+                </div>
+              )}
+            </div>
+            {scanStatus === "not-found" && (
+              <p className="text-[12.5px] text-rose-600">Fant ikke produktet i varekatalogen. Prøv søk i stedet.</p>
+            )}
+            {scanStatus === "error" && (
+              <p className="text-[12.5px] text-rose-600">Fikk ikke tilgang til kamera.</p>
+            )}
+            <p className="text-[11.5px] text-text-3">Hold strekkoden foran kameraet.</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <p className="text-[12.5px] text-text-3">Kameraskanning støttes ikke i denne nettleseren (blant annet iOS Safari). Skriv inn strekkoden manuelt.</p>
+            <input type="text" inputMode="numeric" autoFocus placeholder="Strekkode (EAN)" value={manualEan}
+              onChange={(e) => setManualEan(e.target.value.replace(/\D/g, ""))}
+              className="w-full rounded-[13px] border border-border px-4 py-2.5 text-[15px] outline-none focus:border-accent" />
+            {scanStatus === "not-found" && <p className="text-[12.5px] text-rose-600">Fant ikke produktet i varekatalogen.</p>}
+            {scanStatus === "error" && <p className="text-[12.5px] text-rose-600">Noe gikk galt. Prøv igjen.</p>}
+            <button onClick={() => manualEan && handleScanned(manualEan)} disabled={!manualEan || scanStatus === "looking-up"}
+              className="w-full py-3 rounded-[13px] bg-accent text-white font-[600] text-[14px] disabled:opacity-40">
+              {scanStatus === "looking-up" ? "Slår opp…" : "Slå opp"}
+            </button>
+          </div>
+        )}
       </Sheet>
 
       {/* ── Måltidsforslag-sheet ── */}

@@ -81,18 +81,100 @@ function pickNutrition(r: Record<string, unknown>): Nutrition100g | null {
   return null;
 }
 
+function rowToProduct(r: Record<string, unknown>): KassalappProduct | null {
+  const ean = String(r.ean ?? r.gtin ?? r.id ?? "");
+  const name = typeof r.name === "string" ? r.name : "";
+  if (!ean || !name) return null;
+  return {
+    ean,
+    name,
+    brand: typeof r.brand === "string" ? r.brand : null,
+    price: pickPrice(r),
+    store: pickStore(r),
+    nutrition100g: pickNutrition(r),
+  };
+}
+
+// Kassalapp har et eget EAN-oppslagsendepunkt (/v1/products/ean/{ean}), men det
+// eksakte svarskjemaet er ikke verifisert mot et ekte svar i denne økten (ingen
+// API-nøkkel/internett-tilgang). Prøver det først, faller tilbake til
+// tekstsøk-med-EAN-som-streng og filtrerer på eksakt EAN-treff hvis det feiler
+// eller ikke gir treff — samme forsvarlige stil som pickNutrition over.
+async function lookupByEan(ean: string, apiKey: string): Promise<KassalappProduct | null> {
+  try {
+    const res = await fetch(`https://kassal.app/api/v1/products/ean/${encodeURIComponent(ean)}`, {
+      headers: { Authorization: `Bearer ${apiKey}` }, signal: AbortSignal.timeout(5000),
+    });
+    if (res.ok) {
+      const json = await res.json().catch(() => null);
+      const row = Array.isArray(json?.data) ? json.data[0] : json?.data;
+      if (row && typeof row === "object") {
+        const product = rowToProduct(row as Record<string, unknown>);
+        if (product) return product;
+      }
+    }
+  } catch {
+    // faller videre til søk-fallback
+  }
+
+  try {
+    const res = await fetch(
+      `https://kassal.app/api/v1/products?search=${encodeURIComponent(ean)}&size=20`,
+      { headers: { Authorization: `Bearer ${apiKey}` }, signal: AbortSignal.timeout(5000) }
+    );
+    if (res.ok) {
+      const json = await res.json().catch(() => null);
+      const rows: unknown[] = Array.isArray(json?.data) ? json.data : [];
+      for (const row of rows) {
+        if (typeof row !== "object" || row === null) continue;
+        const r = row as Record<string, unknown>;
+        if (String(r.ean ?? r.gtin ?? "") !== ean) continue;
+        const product = rowToProduct(r);
+        if (product) return product;
+      }
+    }
+  } catch {
+    // ingen treff — returner null under
+  }
+
+  return null;
+}
+
 // GET /api/varer?q=melk — proxy mot Kassalapp produktsøk (kassal.app/api), brukt til
 // autofullføring på handlelisten. Feiler alltid stille (tom liste) — skal aldri blokkere
 // brukeren fra å skrive fritekst.
+// GET /api/varer?ean=7020097009021 — strekkodeoppslag, brukt av kamera-skanneren i
+// kostholdslogging. Feiler alltid stille (product: null).
 export async function GET(req: NextRequest) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ products: [] }, { status: 401 });
 
+  const ean = (req.nextUrl.searchParams.get("ean") ?? "").trim();
   const q = (req.nextUrl.searchParams.get("q") ?? "").trim();
-  if (q.length < 2) return NextResponse.json({ products: [] });
 
   const apiKey = process.env.KASSALAPP_API_KEY;
+
+  if (ean) {
+    if (!apiKey) return NextResponse.json({ product: null });
+
+    const allowed = await checkRateLimit(supabase, "varer", 300, 60);
+    if (!allowed) return NextResponse.json({ product: null });
+    const ipAllowed = await checkIpRateLimit(getClientIp(req), "varer", 1000, 60);
+    if (!ipAllowed) return NextResponse.json({ product: null });
+
+    const cacheKey = `ean:${ean}`;
+    const cached = cache.get(cacheKey);
+    if (cached && cached.expires > Date.now()) {
+      return NextResponse.json({ product: cached.data[0] ?? null });
+    }
+
+    const product = await lookupByEan(ean, apiKey);
+    cache.set(cacheKey, { data: product ? [product] : [], expires: Date.now() + CACHE_TTL_MS });
+    return NextResponse.json({ product });
+  }
+
+  if (q.length < 2) return NextResponse.json({ products: [] });
   if (!apiKey) return NextResponse.json({ products: [] });
 
   // Rate-limitert stille (som manglende nøkkel) — autofullføring skal aldri vise feil,
@@ -122,18 +204,10 @@ export async function GET(req: NextRequest) {
       for (const row of rows) {
         if (typeof row !== "object" || row === null) continue;
         const r = row as Record<string, unknown>;
-        const ean = String(r.ean ?? r.gtin ?? r.id ?? "");
-        const name = typeof r.name === "string" ? r.name : "";
-        if (!ean || !name || seen.has(ean)) continue;
-        seen.add(ean);
-        products.push({
-          ean,
-          name,
-          brand: typeof r.brand === "string" ? r.brand : null,
-          price: pickPrice(r),
-          store: pickStore(r),
-          nutrition100g: pickNutrition(r),
-        });
+        const product = rowToProduct(r);
+        if (!product || seen.has(product.ean)) continue;
+        seen.add(product.ean);
+        products.push(product);
         if (products.length >= 8) break;
       }
     }
