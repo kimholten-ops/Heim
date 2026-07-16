@@ -4,6 +4,10 @@ import { getAIGatedMember, checkAIRateLimit, aiErrorResponse, callAI, parseAIJso
 import type Anthropic from "@anthropic-ai/sdk";
 
 export const runtime = "nodejs";
+// AI-kall kan i sjeldne tilfeller ta lenger enn plattformens standard
+// funksjonstidsavbrudd (spesielt store maxTokens-svar eller bilde-tolkning)
+// — utvid grensen eksplisitt i stedet for å stole på default.
+export const maxDuration = 60;
 
 const MAX_IMAGE_BYTES = 1_500_000; // litt takhøyde over klientens ~1 MB-mål
 

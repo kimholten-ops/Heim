@@ -139,15 +139,20 @@ export async function callAI(opts: {
           ...(p.cache ? { cache_control: { type: "ephemeral" as const } } : {}),
         }));
 
+  const maxTokens = opts.maxTokens ?? MAX_TOKENS[opts.kind];
+
   // Bilde-innhold (Smart Add-bilde-tolkning) kan ta merkbart lenger tid å
-  // behandle enn ren tekst — gi den litt mer takhøyde enn standard 20s.
-  const timeout = opts.messages.some((m) => isImageContent(m.content)) ? 45_000 : 20_000;
+  // behandle enn ren tekst, og et høyt maxTokens-tak (f.eks. ukesmeny sitt
+  // 1800 — en hel ukes forslag med flere fulle mini-oppskrifter) kan i seg
+  // selv ta lenger enn standard 20s å generere ferdig — gi begge mer takhøyde
+  // enn korte svar (chat, maltid) trenger.
+  const timeout = opts.messages.some((m) => isImageContent(m.content)) || maxTokens > 1000 ? 45_000 : 20_000;
 
   try {
     const response = await anthropic.messages.create(
       {
         model: MODEL,
-        max_tokens: opts.maxTokens ?? MAX_TOKENS[opts.kind],
+        max_tokens: maxTokens,
         system: systemBlocks,
         messages: opts.messages,
       },

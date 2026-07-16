@@ -6,6 +6,10 @@ import { checkAIRateLimit, aiErrorResponse } from "@/lib/ai";
 import { buildProfileBlock, buildTrainingContext } from "@/lib/veileder-context";
 
 export const runtime = "nodejs";
+// AI-kall kan i sjeldne tilfeller ta lenger enn plattformens standard
+// funksjonstidsavbrudd (spesielt store maxTokens-svar eller bilde-tolkning)
+// — utvid grensen eksplisitt i stedet for å stole på default.
+export const maxDuration = 60;
 
 const VALID_MAL = ["styrke", "generelt", "utholdenhet"] as const;
 

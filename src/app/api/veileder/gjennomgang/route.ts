@@ -7,6 +7,10 @@ import { buildProfileBlock, buildWeekTrainingContext, buildKostholdContext, isoW
 import { todayISO } from "@/lib/nutrition";
 
 export const runtime = "nodejs";
+// AI-kall kan i sjeldne tilfeller ta lenger enn plattformens standard
+// funksjonstidsavbrudd (spesielt store maxTokens-svar eller bilde-tolkning)
+// — utvid grensen eksplisitt i stedet for å stole på default.
+export const maxDuration = 60;
 
 // GET /api/veileder/gjennomgang — ukesgjennomgang. Sjekker ai_weekly_reviews
 // for inneværende uke FØRST (cache) — finnes den, returneres den uten

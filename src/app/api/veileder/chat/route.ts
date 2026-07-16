@@ -7,6 +7,10 @@ import { buildProfileBlock, buildTrainingContext, buildKostholdContext, buildMea
 import type Anthropic from "@anthropic-ai/sdk";
 
 export const runtime = "nodejs";
+// AI-kall kan i sjeldne tilfeller ta lenger enn plattformens standard
+// funksjonstidsavbrudd (spesielt store maxTokens-svar eller bilde-tolkning)
+// — utvid grensen eksplisitt i stedet for å stole på default.
+export const maxDuration = 60;
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
