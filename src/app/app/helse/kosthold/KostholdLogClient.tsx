@@ -13,6 +13,7 @@ import {
   type Macros, type LoggableItem, scaleMacros, toISODate, todayISO, addDays,
   getLastGrams, setLastGrams, getFavorites, toggleFavorite,
 } from "@/lib/nutrition";
+import { estimateSessionCalories } from "@/lib/exercises";
 import type { KassalappProduct } from "@/app/api/varer/route";
 
 type Entry = {
@@ -58,6 +59,7 @@ export default function KostholdLogClient({ memberId, householdId, veilederEnabl
   const [proteinTarget, setProteinTarget] = useState<number | null>(null);
   const [todaysMeal, setTodaysMeal] = useState<string | null>(null);
   const [weekTotals, setWeekTotals] = useState<{ label: string; date: string; kcal: number }[]>([]);
+  const [trainingKcal, setTrainingKcal] = useState(0);
 
   const isToday = date === todayISO();
 
@@ -65,6 +67,25 @@ export default function KostholdLogClient({ memberId, householdId, veilederEnabl
     const { data } = await supabase.from("food_log_entries").select("*")
       .eq("member_id", memberId).eq("date", date).order("created_at");
     setEntries((data ?? []) as Entry[]);
+  }, [memberId, date, supabase]);
+
+  // Trening → kosthold: gjennomførte økter denne dagen legger til et grovt
+  // forbrenningsestimat (MET-basert, se lib/exercises.ts) oppå kalorimålet —
+  // konservativt anslag, ikke wearable-presisjon, men langt bedre enn et
+  // statisk mål som ikke ser at du nettopp trente.
+  const fetchTrainingKcal = useCallback(async () => {
+    const [{ data: sessions }, { data: weights }] = await Promise.all([
+      supabase.from("workout_sessions").select("type, started_at, finished_at")
+        .eq("member_id", memberId).gte("started_at", `${date}T00:00:00`).lt("started_at", `${addDays(date, 1)}T00:00:00`)
+        .not("finished_at", "is", null),
+      supabase.from("weight_entries").select("weight_kg").eq("member_id", memberId).order("date", { ascending: false }).limit(1),
+    ]);
+    const bodyWeight = weights?.[0]?.weight_kg ?? null;
+    const total = (sessions ?? []).reduce((sum, s) => {
+      const minutes = (new Date(s.finished_at!).getTime() - new Date(s.started_at).getTime()) / 60000;
+      return sum + estimateSessionCalories(s.type, minutes, bodyWeight);
+    }, 0);
+    setTrainingKcal(total);
   }, [memberId, date, supabase]);
 
   const fetchWeek = useCallback(async () => {
@@ -95,7 +116,7 @@ export default function KostholdLogClient({ memberId, householdId, veilederEnabl
     setTodaysMeal(meal?.title ?? null);
   }, [memberId, householdId, supabase]);
 
-  useEffect(() => { fetchDay(); }, [fetchDay]);
+  useEffect(() => { fetchDay(); fetchTrainingKcal(); }, [fetchDay, fetchTrainingKcal]);
   useEffect(() => { fetchWeek(); fetchGoalsAndMeal(); }, [fetchWeek, fetchGoalsAndMeal]);
 
   const entriesBySlot = useMemo(() => {
@@ -335,7 +356,10 @@ export default function KostholdLogClient({ memberId, householdId, veilederEnabl
         <Card>
           <div className="px-4 py-3.5 space-y-3">
             <p className="text-[11px] font-[600] text-text-3 uppercase tracking-wide12">Dagssummering</p>
-            <GoalBar label="Kalorier" value={daySum.kcal} target={kcalTarget} unit="kcal" />
+            <GoalBar label="Kalorier" value={daySum.kcal} target={kcalTarget != null ? kcalTarget + trainingKcal : null} unit="kcal" />
+            {trainingKcal > 0 && (
+              <p className="text-[11.5px] text-accent -mt-2">+{trainingKcal} kcal fra trening denne dagen</p>
+            )}
             <GoalBar label="Protein" value={daySum.protein_g} target={proteinTarget} unit="g" />
           </div>
         </Card>

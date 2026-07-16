@@ -106,3 +106,27 @@ export function parseUkesprogram(raw: string, validExerciseIds: Set<string>): Uk
   if (okter.length === 0) return null;
   return { okter };
 }
+
+// Ukesgjennomgangen ber AI-en om strukturert JSON ({oppsummering, justeringer}),
+// men denne funksjonen håndterer også gamle cachede rader fra FØR denne
+// strukturen fantes (ren fritekst) — JSON.parse feiler da bare stille, og vi
+// faller tilbake til å vise raw som oppsummering uten justeringer. Dermed
+// trenger ingen kallere å vite om en cachet rad er gammel eller ny.
+export type GjennomgangResult = { oppsummering: string; justeringer: string[] };
+
+export function parseGjennomgang(raw: string): GjennomgangResult {
+  const stripped = raw.trim().replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "").trim();
+  try {
+    const parsed: unknown = JSON.parse(stripped);
+    if (typeof parsed === "object" && parsed !== null && typeof (parsed as Record<string, unknown>).oppsummering === "string") {
+      const rec = parsed as Record<string, unknown>;
+      const justeringer = Array.isArray(rec.justeringer)
+        ? rec.justeringer.filter((j): j is string => typeof j === "string" && j.trim().length > 0)
+        : [];
+      return { oppsummering: (rec.oppsummering as string).trim(), justeringer };
+    }
+  } catch {
+    // Ikke gyldig JSON — gammel fritekst-gjennomgang, se kommentar over.
+  }
+  return { oppsummering: raw.trim(), justeringer: [] };
+}

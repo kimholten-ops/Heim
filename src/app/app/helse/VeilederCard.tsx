@@ -186,22 +186,40 @@ export default function VeilederCard({ memberId }: { memberId: string }) {
 
   /* ── Ukens gjennomgang ── */
   const [showReview, setShowReview] = useState(false);
-  const [reviewText, setReviewText] = useState<string | null>(null);
+  const [reviewData, setReviewData] = useState<{ oppsummering: string; justeringer: string[] } | null>(null);
+  const [tdeeForslag, setTdeeForslag] = useState<{ current: number; suggested: number; diff: number } | null>(null);
   const [reviewLoading, setReviewLoading] = useState(false);
   const [reviewError, setReviewError] = useState<string | null>(null);
+  const [applyingTdee, setApplyingTdee] = useState(false);
+  const [tdeeApplied, setTdeeApplied] = useState(false);
 
   async function openReview() {
     setShowReview(true);
-    setReviewText(null); setReviewError(null); setReviewLoading(true);
+    setReviewData(null); setTdeeForslag(null); setReviewError(null); setTdeeApplied(false); setReviewLoading(true);
     try {
       const res = await fetch("/api/veileder/gjennomgang");
       const json = await res.json();
-      if (res.ok) setReviewText(json.text);
-      else setReviewError(json.error ?? UNAVAILABLE);
+      if (res.ok) {
+        setReviewData({ oppsummering: json.oppsummering, justeringer: json.justeringer ?? [] });
+        setTdeeForslag(json.tdeeForslag ?? null);
+      } else {
+        setReviewError(json.error ?? UNAVAILABLE);
+      }
     } catch {
       setReviewError(UNAVAILABLE);
     }
     setReviewLoading(false);
+  }
+
+  async function applyTdeeForslag() {
+    if (!tdeeForslag) return;
+    setApplyingTdee(true);
+    await supabase.from("health_profiles").upsert(
+      { member_id: memberId, kcal_target: tdeeForslag.suggested, updated_at: new Date().toISOString() },
+      { onConflict: "member_id" }
+    );
+    setApplyingTdee(false);
+    setTdeeApplied(true);
   }
 
   return (
@@ -383,10 +401,45 @@ export default function VeilederCard({ memberId }: { memberId: string }) {
       {/* ── Ukens gjennomgang-sheet ── */}
       <Sheet open={showReview} onClose={() => setShowReview(false)} maxHeight>
         <h2 className="text-[19px] font-[700] text-fg mb-3 flex-shrink-0">Ukens gjennomgang</h2>
-        <div className="overflow-y-auto">
+        <div className="overflow-y-auto space-y-3">
           {reviewLoading && <p className="text-[13px] text-text-3 py-6 text-center">Genererer gjennomgang…</p>}
           {reviewError && <p className="text-[13px] text-rose-600">{reviewError}</p>}
-          {reviewText && <p className="text-[14px] text-fg leading-[1.55] whitespace-pre-wrap">{reviewText}</p>}
+
+          {tdeeForslag && (
+            <div className="bg-accent-weak rounded-[13px] p-3.5">
+              <p className="text-[11px] font-[600] text-accent uppercase tracking-wide12 mb-1.5">Kalorimål</p>
+              <p className="text-[13.5px] text-fg">
+                Basert på vektendring og loggført inntak ser ditt egentlige vedlikeholdsnivå ut til å være{" "}
+                <strong>{tdeeForslag.suggested} kcal</strong> (nåværende mål: {tdeeForslag.current} kcal).
+              </p>
+              {tdeeApplied ? (
+                <p className="text-[12.5px] text-accent font-[600] mt-2">Kalorimål oppdatert!</p>
+              ) : (
+                <button onClick={applyTdeeForslag} disabled={applyingTdee}
+                  className="mt-2 text-[13px] font-[600] text-accent disabled:opacity-40">
+                  {applyingTdee ? "Oppdaterer…" : `Bruk ${tdeeForslag.suggested} kcal som nytt mål`}
+                </button>
+              )}
+            </div>
+          )}
+
+          {reviewData && (
+            <>
+              <p className="text-[14px] text-fg leading-[1.55] whitespace-pre-wrap">{reviewData.oppsummering}</p>
+              {reviewData.justeringer.length > 0 && (
+                <div>
+                  <p className="text-[11px] font-[600] text-text-3 uppercase tracking-wide12 mb-1.5">Til neste uke</p>
+                  <ul className="space-y-1.5">
+                    {reviewData.justeringer.map((j, i) => (
+                      <li key={i} className="text-[13.5px] text-fg flex items-start gap-2">
+                        <span className="text-accent font-[700] flex-shrink-0">{i + 1}.</span> {j}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </>
+          )}
         </div>
       </Sheet>
     </div>

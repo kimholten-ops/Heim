@@ -46,3 +46,21 @@ export function formatDuration(startedAt: string, finishedAt: string | null): st
   const m = min % 60;
   return m > 0 ? `${h}t ${m}min` : `${h}t`;
 }
+
+// Grovt MET-basert forbrenningsestimat (kcal = MET × kroppsvekt(kg) × timer).
+// Bevisst konservativt i valg av MET-verdier — PWA-en har ingen tilgang til
+// puls/HealthKit, så dette skal aldri late som presisjon det ikke har.
+const MET_BY_SESSION_TYPE: Record<string, number> = {
+  styrke: 5.0,
+  cardio: 7.0,
+  yoga: 2.5,
+  mobilitet: 2.3,
+  annet: 4.0,
+};
+const DEFAULT_BODY_WEIGHT_KG = 75;
+
+export function estimateSessionCalories(sessionType: string, durationMinutes: number, bodyWeightKg: number | null): number {
+  const met = MET_BY_SESSION_TYPE[sessionType] ?? MET_BY_SESSION_TYPE.annet;
+  const weight = bodyWeightKg ?? DEFAULT_BODY_WEIGHT_KG;
+  return Math.max(0, Math.round(met * weight * (durationMinutes / 60)));
+}
