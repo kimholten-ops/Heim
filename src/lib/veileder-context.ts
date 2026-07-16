@@ -92,6 +92,50 @@ export async function buildTrainingContext(supabase: Sb, memberId: string): Prom
   return lines.join("\n");
 }
 
+// ---------- Trening: én ferdig økt (til treningscoachen) ----------
+type CoachSetRow = { exercise_id: string; weight_kg: number | null; reps: number | null };
+
+export async function buildSessionBlock(supabase: Sb, sessionId: string): Promise<string> {
+  const { data: session } = await supabase
+    .from("workout_sessions")
+    .select("type, started_at, finished_at, distance_km, notes")
+    .eq("id", sessionId).maybeSingle();
+  if (!session) return "Denne økta: fant ingen data.";
+
+  const durationMin = session.finished_at
+    ? Math.max(0, Math.round((new Date(session.finished_at).getTime() - new Date(session.started_at).getTime()) / 60000))
+    : null;
+  const header = `Denne økta (${session.type}${durationMin != null ? `, ${durationMin} min` : ""}${session.distance_km ? `, ${session.distance_km} km` : ""}):`;
+
+  if (session.type !== "styrke") {
+    const lines = [header];
+    if (session.notes) lines.push(`Notater: ${session.notes}`);
+    return lines.join("\n");
+  }
+
+  const { data: setsRaw } = await supabase
+    .from("workout_sets").select("exercise_id, weight_kg, reps")
+    .eq("session_id", sessionId).eq("completed", true).order("set_number");
+  const sets = (setsRaw ?? []) as CoachSetRow[];
+  if (sets.length === 0) return `${header}\nIngen fullførte sett logget.`;
+
+  const { data: exerciseRows } = await supabase.from("exercises").select("id, name_no")
+    .in("id", [...new Set(sets.map((s) => s.exercise_id))]);
+  const nameById = new Map((exerciseRows ?? []).map((e) => [e.id, e.name_no]));
+
+  const byExercise = new Map<string, CoachSetRow[]>();
+  for (const s of sets) byExercise.set(s.exercise_id, [...(byExercise.get(s.exercise_id) ?? []), s]);
+
+  const lines = [header];
+  for (const [exerciseId, exSets] of byExercise) {
+    const name = nameById.get(exerciseId) ?? exerciseId;
+    const setsStr = exSets.map((s) => `${s.weight_kg ?? "—"} kg x ${s.reps ?? "—"}`).join(", ");
+    lines.push(`- ${name}: ${setsStr}`);
+  }
+  if (session.notes) lines.push(`Notater: ${session.notes}`);
+  return lines.join("\n");
+}
+
 // ---------- Trening: kun inneværende uke (til ukesgjennomgangen) ----------
 export async function buildWeekTrainingContext(supabase: Sb, memberId: string): Promise<string> {
   const weekStart = isoWeekStart(todayISO());

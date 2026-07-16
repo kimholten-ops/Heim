@@ -9,7 +9,7 @@ import { callAI, aiEnabled, type AIResult } from "@/lib/ai";
 // oppskriftsimport og ukesmeny.
 type Sb = SupabaseClient<Database>;
 
-export type VeilederKind = "chat" | "ukesprogram" | "gjennomgang" | "maltid";
+export type VeilederKind = "chat" | "ukesprogram" | "gjennomgang" | "maltid" | "trening";
 
 export const SYSTEM_PROMPT = `Du er en rolig, jordnær kosthold- og treningsveileder i familieappen Heim.
 Du hjelper voksne med trening (styrke, progresjon, øktplanlegging) og

@@ -161,9 +161,9 @@ export type Database = {
         Relationships: [];
       };
       workout_sessions: {
-        Row:    { id: string; member_id: string; template_id: string | null; started_at: string; finished_at: string | null; notes: string | null; calendar_event_id: string | null }
-        Insert: { id?: string; member_id: string; template_id?: string | null; started_at?: string; finished_at?: string | null; notes?: string | null; calendar_event_id?: string | null }
-        Update: { id?: string; member_id?: string; template_id?: string | null; started_at?: string; finished_at?: string | null; notes?: string | null; calendar_event_id?: string | null }
+        Row:    { id: string; member_id: string; template_id: string | null; started_at: string; finished_at: string | null; notes: string | null; calendar_event_id: string | null; type: "styrke" | "cardio" | "yoga" | "mobilitet" | "annet"; distance_km: number | null; ai_review: string | null }
+        Insert: { id?: string; member_id: string; template_id?: string | null; started_at?: string; finished_at?: string | null; notes?: string | null; calendar_event_id?: string | null; type?: "styrke" | "cardio" | "yoga" | "mobilitet" | "annet"; distance_km?: number | null; ai_review?: string | null }
+        Update: { id?: string; member_id?: string; template_id?: string | null; started_at?: string; finished_at?: string | null; notes?: string | null; calendar_event_id?: string | null; type?: "styrke" | "cardio" | "yoga" | "mobilitet" | "annet"; distance_km?: number | null; ai_review?: string | null }
         Relationships: [];
       };
       workout_sets: {
@@ -197,9 +197,9 @@ export type Database = {
         Relationships: [];
       };
       ai_usage: {
-        Row:    { id: string; member_id: string; kind: "chat" | "ukesprogram" | "gjennomgang" | "maltid" | "smartadd" | "oppskrift" | "ukesmeny"; input_tokens: number; output_tokens: number; cache_read_tokens: number; created_at: string }
-        Insert: { id?: string; member_id: string; kind: "chat" | "ukesprogram" | "gjennomgang" | "maltid" | "smartadd" | "oppskrift" | "ukesmeny"; input_tokens: number; output_tokens: number; cache_read_tokens?: number; created_at?: string }
-        Update: { id?: string; member_id?: string; kind?: "chat" | "ukesprogram" | "gjennomgang" | "maltid"; input_tokens?: number; output_tokens?: number; cache_read_tokens?: number; created_at?: string }
+        Row:    { id: string; member_id: string; kind: "chat" | "ukesprogram" | "gjennomgang" | "maltid" | "smartadd" | "oppskrift" | "ukesmeny" | "trening"; input_tokens: number; output_tokens: number; cache_read_tokens: number; created_at: string }
+        Insert: { id?: string; member_id: string; kind: "chat" | "ukesprogram" | "gjennomgang" | "maltid" | "smartadd" | "oppskrift" | "ukesmeny" | "trening"; input_tokens: number; output_tokens: number; cache_read_tokens?: number; created_at?: string }
+        Update: { id?: string; member_id?: string; kind?: "chat" | "ukesprogram" | "gjennomgang" | "maltid" | "smartadd" | "oppskrift" | "ukesmeny" | "trening"; input_tokens?: number; output_tokens?: number; cache_read_tokens?: number; created_at?: string }
         Relationships: [];
       };
       ai_weekly_reviews: {

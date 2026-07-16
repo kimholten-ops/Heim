@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { X, Plus, Check, Search, Timer, ChevronLeft } from "lucide-react";
+import { X, Plus, Check, Search, Timer, ChevronLeft, Sparkles } from "lucide-react";
 import { Card, Sheet, StatCard } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import type { Exercise } from "@/lib/exercises";
@@ -11,10 +11,12 @@ import { formatDuration, tonnage } from "@/lib/exercises";
 
 type SetRow = { id?: string; set_number: number; weight_kg: number | null; reps: number | null; completed: boolean };
 type Target = { sets: number; reps: string | null };
+type SessionType = "styrke" | "cardio" | "yoga" | "mobilitet" | "annet";
 
 const REST_OPTIONS = [60, 90, 120];
+const TYPE_LABELS: Record<SessionType, string> = { styrke: "Styrke", cardio: "Cardio", yoga: "Yoga", mobilitet: "Mobilitet", annet: "Annet" };
 
-export default function ActiveSessionClient({ memberId }: { memberId: string }) {
+export default function ActiveSessionClient({ memberId, aiCoachEnabled }: { memberId: string; aiCoachEnabled: boolean }) {
   const [supabase] = useState(() => createClient());
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -22,6 +24,9 @@ export default function ActiveSessionClient({ memberId }: { memberId: string }) 
 
   const [loading, setLoading] = useState(true);
   const [startedAt, setStartedAt] = useState<string | null>(null);
+  const [sessionType, setSessionType] = useState<SessionType>("styrke");
+  const [distanceInput, setDistanceInput] = useState("");
+  const [notesInput, setNotesInput] = useState("");
   const [exerciseIds, setExerciseIds] = useState<string[]>([]);
   const [exerciseMap, setExerciseMap] = useState<Record<string, Exercise>>({});
   const [targets, setTargets] = useState<Record<string, Target>>({});
@@ -33,6 +38,11 @@ export default function ActiveSessionClient({ memberId }: { memberId: string }) 
     const { data: session } = await supabase.from("workout_sessions").select("*").eq("id", sessionId).maybeSingle();
     if (!session) { router.replace("/app/helse"); return; }
     setStartedAt(session.started_at);
+    setSessionType(session.type);
+    setDistanceInput(session.distance_km != null ? String(session.distance_km) : "");
+    setNotesInput(session.notes ?? "");
+
+    if (session.type !== "styrke") { setLoading(false); return; }
 
     let orderedIds: string[] = [];
     const targetMap: Record<string, Target> = {};
@@ -197,20 +207,46 @@ export default function ActiveSessionClient({ memberId }: { memberId: string }) 
 
   /* ── Avslutt økt ── */
   const [finishing, setFinishing] = useState(false);
-  const [summary, setSummary] = useState<{ duration: string; sets: number; tonnage: number } | null>(null);
+  const [summary, setSummary] = useState<{ duration: string; sets: number | null; tonnage: number | null; distance: number | null } | null>(null);
+  const [coachText, setCoachText] = useState<string | null>(null);
+  const [coachLoading, setCoachLoading] = useState(false);
 
   async function finishSession() {
     if (!sessionId || !startedAt) return;
     setFinishing(true);
     const finishedAt = new Date().toISOString();
-    await supabase.from("workout_sessions").update({ finished_at: finishedAt }).eq("id", sessionId);
-    const allSets = Object.values(setsByExercise).flat();
-    setSummary({
-      duration: formatDuration(startedAt, finishedAt),
-      sets: allSets.filter((s) => s.completed).length,
-      tonnage: tonnage(allSets),
-    });
+    const distanceKm = distanceInput.trim() ? Number(distanceInput.replace(",", ".")) : null;
+    const patch: { finished_at: string; distance_km?: number | null; notes?: string | null } = { finished_at: finishedAt };
+    if (sessionType !== "styrke") {
+      patch.distance_km = distanceKm;
+      patch.notes = notesInput.trim() || null;
+    }
+    await supabase.from("workout_sessions").update(patch).eq("id", sessionId);
+
+    if (sessionType === "styrke") {
+      const allSets = Object.values(setsByExercise).flat();
+      setSummary({ duration: formatDuration(startedAt, finishedAt), sets: allSets.filter((s) => s.completed).length, tonnage: tonnage(allSets), distance: null });
+    } else {
+      setSummary({ duration: formatDuration(startedAt, finishedAt), sets: null, tonnage: null, distance: distanceKm });
+    }
     setFinishing(false);
+
+    // AI-coachen er en bonus etter at treningsdataen uansett er lagret — feil
+    // her (avslått/rate-limitert/utilgjengelig) skal aldri blokkere flyten.
+    if (aiCoachEnabled) {
+      setCoachLoading(true);
+      try {
+        const res = await fetch("/api/veileder/trening", {
+          method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sessionId }),
+        });
+        const json = await res.json();
+        if (res.ok) setCoachText(json.text ?? null);
+      } catch {
+        // stille
+      } finally {
+        setCoachLoading(false);
+      }
+    }
   }
 
   if (loading) {
@@ -223,10 +259,33 @@ export default function ActiveSessionClient({ memberId }: { memberId: string }) 
         <button onClick={() => router.push("/app/helse")} className="text-text-3 hover:text-fg p-1 -ml-1">
           <ChevronLeft size={20} />
         </button>
-        <h1 className="text-[19px] font-[700] text-fg">Pågående økt</h1>
+        <h1 className="text-[19px] font-[700] text-fg">{sessionType === "styrke" ? "Pågående økt" : TYPE_LABELS[sessionType]}</h1>
       </div>
 
+      {sessionType !== "styrke" && (
+        <div className="px-[18px] space-y-3">
+          <Card className="p-4 space-y-3">
+            <p className="text-[13px] text-text-3">Startet {new Date(startedAt!).toLocaleTimeString("nb-NO", { hour: "2-digit", minute: "2-digit" })}</p>
+            {sessionType === "cardio" && (
+              <div>
+                <p className="text-[11px] font-[600] text-text-3 mb-1.5 uppercase tracking-wide12">Distanse (valgfritt)</p>
+                <input type="number" inputMode="decimal" placeholder="f.eks. 5.2" value={distanceInput}
+                  onChange={(e) => setDistanceInput(e.target.value)}
+                  className="w-full rounded-[10px] border border-border px-3 py-2 text-[14.5px] outline-none focus:border-accent" />
+              </div>
+            )}
+            <div>
+              <p className="text-[11px] font-[600] text-text-3 mb-1.5 uppercase tracking-wide12">Notater (valgfritt)</p>
+              <textarea rows={3} placeholder="Hvordan gikk det?" value={notesInput}
+                onChange={(e) => setNotesInput(e.target.value)}
+                className="w-full rounded-[10px] border border-border px-3 py-2 text-[14.5px] outline-none focus:border-accent resize-none" />
+            </div>
+          </Card>
+        </div>
+      )}
+
       {/* Hviletimer */}
+      {sessionType === "styrke" && (
       <div className="px-[18px] mb-3">
         <div className="flex items-center gap-2 bg-surface border border-border rounded-[13px] px-3 py-2.5">
           <Timer size={15} className={cn(restEndAt !== null ? "text-accent" : "text-text-3")} />
@@ -245,7 +304,9 @@ export default function ActiveSessionClient({ memberId }: { memberId: string }) 
           </div>
         </div>
       </div>
+      )}
 
+      {sessionType === "styrke" && (
       <div className="px-[18px] space-y-3">
         {exerciseIds.map((exId) => {
           const ex = exerciseMap[exId];
@@ -296,6 +357,7 @@ export default function ActiveSessionClient({ memberId }: { memberId: string }) 
           <Plus size={15} strokeWidth={2.2} /> Legg til øvelse
         </button>
       </div>
+      )}
 
       {/* Sticky bunn: avslutt */}
       <div className="fixed bottom-0 left-0 right-0 z-30 bg-white/90 backdrop-blur-sm border-t border-border px-[18px] py-3"
@@ -336,8 +398,21 @@ export default function ActiveSessionClient({ memberId }: { memberId: string }) 
         {summary && (
           <div className="flex gap-2 mb-5">
             <StatCard label="Varighet" value={summary.duration} />
-            <StatCard label="Sett" value={String(summary.sets)} />
-            <StatCard label="Tonnasje" value={`${summary.tonnage.toLocaleString("nb-NO")} kg`} />
+            {summary.sets != null && <StatCard label="Sett" value={String(summary.sets)} />}
+            {summary.tonnage != null && <StatCard label="Tonnasje" value={`${summary.tonnage.toLocaleString("nb-NO")} kg`} />}
+            {summary.distance != null && <StatCard label="Distanse" value={`${summary.distance} km`} />}
+          </div>
+        )}
+        {(coachLoading || coachText) && (
+          <div className="bg-accent-weak rounded-[13px] p-3 mb-5">
+            <p className="text-[11px] font-[600] text-accent uppercase tracking-wide12 mb-1.5 flex items-center gap-1.5">
+              <Sparkles size={12} /> AI-coach
+            </p>
+            {coachLoading ? (
+              <p className="text-[13.5px] text-text-3">Vurderer økta…</p>
+            ) : (
+              <p className="text-[13.5px] text-fg whitespace-pre-wrap">{coachText}</p>
+            )}
           </div>
         )}
         <button onClick={() => router.push("/app/helse")}

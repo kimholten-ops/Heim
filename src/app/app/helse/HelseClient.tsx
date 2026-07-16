@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useHousehold } from "@/components/HouseholdContext";
 import {
   Plus, X, Dumbbell, ChevronRight, Search, ArrowUp, ArrowDown,
-  Pencil, Calendar, Play, Clock,
+  Pencil, Calendar, Play, Clock, HeartPulse, Flower2, Move, Activity, Sparkles,
 } from "lucide-react";
 import { Card, SectionLabel, EmptyState, Sheet } from "@/components/ui";
 import { cn } from "@/lib/utils";
@@ -20,11 +20,16 @@ type TemplateExercise = {
   id?: string; exercise_id: string; position: number;
   target_sets: number | null; target_reps: string | null; notes: string | null;
 };
+export type SessionType = "styrke" | "cardio" | "yoga" | "mobilitet" | "annet";
 type SessionRow = {
   id: string; template_id: string | null; started_at: string; finished_at: string | null;
   notes: string | null; calendar_event_id: string | null;
+  type: SessionType; distance_km: number | null; ai_review: string | null;
   workout_sets: { reps: number | null; weight_kg: number | null; completed: boolean }[];
 };
+
+const TYPE_LABELS: Record<SessionType, string> = { styrke: "Styrke", cardio: "Cardio", yoga: "Yoga", mobilitet: "Mobilitet", annet: "Annet" };
+const TYPE_ICONS: Record<SessionType, typeof Dumbbell> = { styrke: Dumbbell, cardio: HeartPulse, yoga: Flower2, mobilitet: Move, annet: Activity };
 
 export default function HelseClient({ memberId, householdId, veilederEnabled }: { memberId: string; householdId: string; veilederEnabled: boolean }) {
   const [supabase] = useState(() => createClient());
@@ -46,7 +51,7 @@ export default function HelseClient({ memberId, householdId, veilederEnabled }: 
       supabase.from("workout_templates").select("id, name").eq("member_id", memberId).order("created_at"),
       supabase.from("workout_template_exercises").select("*"),
       supabase.from("workout_sessions")
-        .select("id, template_id, started_at, finished_at, notes, calendar_event_id, workout_sets(reps, weight_kg, completed)")
+        .select("id, template_id, started_at, finished_at, notes, calendar_event_id, type, distance_km, ai_review, workout_sets(reps, weight_kg, completed)")
         .eq("member_id", memberId).order("started_at", { ascending: false }).limit(40),
     ]);
     setExercises((ex ?? []) as Exercise[]);
@@ -69,10 +74,11 @@ export default function HelseClient({ memberId, householdId, veilederEnabled }: 
   /* ── Start økt ── */
   const [showStart, setShowStart] = useState(false);
   const [starting, setStarting] = useState(false);
-  async function startSession(templateId: string | null) {
+  const [startType, setStartType] = useState<SessionType>("styrke");
+  async function startSession(templateId: string | null, type: SessionType) {
     setStarting(true);
     const { data } = await supabase.from("workout_sessions")
-      .insert({ member_id: memberId, template_id: templateId, started_at: new Date().toISOString() })
+      .insert({ member_id: memberId, template_id: templateId, started_at: new Date().toISOString(), type })
       .select().single();
     setStarting(false);
     if (data) router.push(`/app/helse/okt?session=${data.id}`);
@@ -292,16 +298,20 @@ export default function HelseClient({ memberId, householdId, veilederEnabled }: 
             <Card className="mb-4">
               {finished.slice(0, 10).map((s, i) => {
                 const completedSets = s.workout_sets.filter((set) => set.completed);
+                const isStyrke = s.type === "styrke";
+                const Icon = TYPE_ICONS[s.type] ?? Dumbbell;
                 return (
                   <button key={s.id} onClick={() => setViewSession(s)}
                     className={cn("w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-surface-2 transition-colors", i > 0 && "border-t border-border")}>
+                    <Icon size={15} className="text-text-3 flex-shrink-0" strokeWidth={2} />
                     <div className="flex-1 min-w-0">
                       <p className="text-[14.5px] font-[550] text-fg">
-                        {templates.find((t) => t.id === s.template_id)?.name ?? "Tom økt"}
+                        {isStyrke ? (templates.find((t) => t.id === s.template_id)?.name ?? "Tom økt") : TYPE_LABELS[s.type]}
                       </p>
                       <p className="text-[12px] text-text-3 flex items-center gap-1.5">
                         <Clock size={11} /> {new Date(s.started_at).toLocaleDateString("nb-NO", { day: "numeric", month: "short" })}
-                        {" · "}{formatDuration(s.started_at, s.finished_at)}{" · "}{completedSets.length} sett
+                        {" · "}{formatDuration(s.started_at, s.finished_at)}
+                        {isStyrke ? <>{" · "}{completedSets.length} sett</> : s.distance_km ? <>{" · "}{s.distance_km} km</> : null}
                       </p>
                     </div>
                     <ChevronRight size={16} className="text-text-3 flex-shrink-0" />
@@ -334,19 +344,40 @@ export default function HelseClient({ memberId, householdId, veilederEnabled }: 
       </div>
 
       {/* ── Start-økt sheet ── */}
-      <Sheet open={showStart} onClose={() => setShowStart(false)}>
-        <h2 className="text-[19px] font-[700] text-fg mb-4">Start økt</h2>
+      <Sheet open={showStart} onClose={() => { setShowStart(false); setStartType("styrke"); }}>
+        <h2 className="text-[19px] font-[700] text-fg mb-3">Start økt</h2>
+        <div className="flex gap-1.5 overflow-x-auto pb-1 mb-3 scrollbar-none">
+          {(Object.keys(TYPE_LABELS) as SessionType[]).map((t) => {
+            const Icon = TYPE_ICONS[t];
+            return (
+              <button key={t} type="button" onClick={() => setStartType(t)}
+                className={cn("whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-chip border text-[12.5px] font-[600] flex-shrink-0 transition-all",
+                  startType === t ? "bg-fg text-white border-fg" : "border-border text-fg")}>
+                <Icon size={13} /> {TYPE_LABELS[t]}
+              </button>
+            );
+          })}
+        </div>
         <div className="space-y-2">
-          <button onClick={() => startSession(null)} disabled={starting}
-            className="w-full flex items-center gap-3 px-4 py-3 bg-surface-2 rounded-[13px] text-left hover:bg-border/40 transition-colors disabled:opacity-50">
-            <Dumbbell size={16} className="text-text-3" /> <span className="text-[14.5px] font-[550] text-fg">Tom økt</span>
-          </button>
-          {templates.map((t) => (
-            <button key={t.id} onClick={() => startSession(t.id)} disabled={starting}
-              className="w-full flex items-center gap-3 px-4 py-3 bg-surface-2 rounded-[13px] text-left hover:bg-border/40 transition-colors disabled:opacity-50">
-              <Dumbbell size={16} className="text-text-3" /> <span className="text-[14.5px] font-[550] text-fg">{t.name}</span>
+          {startType === "styrke" ? (
+            <>
+              <button onClick={() => startSession(null, "styrke")} disabled={starting}
+                className="w-full flex items-center gap-3 px-4 py-3 bg-surface-2 rounded-[13px] text-left hover:bg-border/40 transition-colors disabled:opacity-50">
+                <Dumbbell size={16} className="text-text-3" /> <span className="text-[14.5px] font-[550] text-fg">Tom økt</span>
+              </button>
+              {templates.map((t) => (
+                <button key={t.id} onClick={() => startSession(t.id, "styrke")} disabled={starting}
+                  className="w-full flex items-center gap-3 px-4 py-3 bg-surface-2 rounded-[13px] text-left hover:bg-border/40 transition-colors disabled:opacity-50">
+                  <Dumbbell size={16} className="text-text-3" /> <span className="text-[14.5px] font-[550] text-fg">{t.name}</span>
+                </button>
+              ))}
+            </>
+          ) : (
+            <button onClick={() => startSession(null, startType)} disabled={starting}
+              className="w-full flex items-center justify-center gap-2 py-3 bg-accent text-white rounded-[13px] font-[600] text-[15px] disabled:opacity-40 hover:opacity-90 transition-all">
+              {starting ? "Starter…" : `Start ${TYPE_LABELS[startType].toLowerCase()}-økt`}
             </button>
-          ))}
+          )}
         </div>
       </Sheet>
 
@@ -471,17 +502,31 @@ export default function HelseClient({ memberId, householdId, veilederEnabled }: 
         {viewSession && (
           <>
             <h2 className="text-[19px] font-[700] text-fg mb-1 flex-shrink-0">
-              {templates.find((t) => t.id === viewSession.template_id)?.name ?? "Tom økt"}
+              {viewSession.type === "styrke" ? (templates.find((t) => t.id === viewSession.template_id)?.name ?? "Tom økt") : TYPE_LABELS[viewSession.type]}
             </h2>
             <p className="text-[13px] text-text-3 mb-4 flex-shrink-0">
               {new Date(viewSession.started_at).toLocaleDateString("nb-NO", { weekday: "long", day: "numeric", month: "long" })}
               {" · "}{formatDuration(viewSession.started_at, viewSession.finished_at)}
-              {" · "}{tonnage(viewSession.workout_sets).toLocaleString("nb-NO")} kg totalt
+              {viewSession.type === "styrke"
+                ? <>{" · "}{tonnage(viewSession.workout_sets).toLocaleString("nb-NO")} kg totalt</>
+                : viewSession.distance_km ? <>{" · "}{viewSession.distance_km} km</> : null}
             </p>
-            <div className="overflow-y-auto space-y-1">
-              <p className="text-[13px] text-text-2">
-                {viewSession.workout_sets.filter((s) => s.completed).length} fullførte sett logget denne økten.
-              </p>
+            <div className="overflow-y-auto space-y-3">
+              {viewSession.type === "styrke" ? (
+                <p className="text-[13px] text-text-2">
+                  {viewSession.workout_sets.filter((s) => s.completed).length} fullførte sett logget denne økten.
+                </p>
+              ) : viewSession.notes ? (
+                <p className="text-[13px] text-text-2">{viewSession.notes}</p>
+              ) : null}
+              {viewSession.ai_review && (
+                <div className="bg-accent-weak rounded-[13px] p-3">
+                  <p className="text-[11px] font-[600] text-accent uppercase tracking-wide12 mb-1.5 flex items-center gap-1.5">
+                    <Sparkles size={12} /> AI-coach
+                  </p>
+                  <p className="text-[13.5px] text-fg whitespace-pre-wrap">{viewSession.ai_review}</p>
+                </div>
+              )}
             </div>
           </>
         )}
