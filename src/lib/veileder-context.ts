@@ -36,14 +36,14 @@ export async function buildProfileBlock(supabase: Sb, memberId: string): Promise
 }
 
 // ---------- Trening: aggregert siste 4 uker ----------
-type SetRow = { exercise_id: string; weight_kg: number | null; reps: number | null; completed: boolean };
+type SetRow = { exercise_id: string; weight_kg: number | null; reps: number | null; completed: boolean; rpe: number | null };
 type SessionRow = { id: string; started_at: string; finished_at: string | null; workout_sets: SetRow[] };
 
 export async function buildTrainingContext(supabase: Sb, memberId: string): Promise<string> {
   const since = addDays(todayISO(), -28);
   const { data } = await supabase
     .from("workout_sessions")
-    .select("id, started_at, finished_at, workout_sets(exercise_id, weight_kg, reps, completed)")
+    .select("id, started_at, finished_at, workout_sets(exercise_id, weight_kg, reps, completed, rpe)")
     .eq("member_id", memberId)
     .gte("started_at", `${since}T00:00:00`)
     .order("started_at");
@@ -61,14 +61,14 @@ export async function buildTrainingContext(supabase: Sb, memberId: string): Prom
     ? finished[Math.floor(finished.length / 2)].started_at
     : finished[0].started_at;
 
-  const byExercise = new Map<string, { early: number[]; late: number[]; best: { weight: number; reps: number } }>();
+  const byExercise = new Map<string, { early: number[]; late: number[]; best: { weight: number; reps: number; rpe: number | null } }>();
   for (const s of finished) {
     const isLate = s.started_at >= midpoint;
     for (const set of s.workout_sets) {
       if (!set.completed || set.weight_kg == null) continue;
-      const entry = byExercise.get(set.exercise_id) ?? { early: [], late: [], best: { weight: 0, reps: 0 } };
+      const entry = byExercise.get(set.exercise_id) ?? { early: [], late: [], best: { weight: 0, reps: 0, rpe: null } };
       (isLate ? entry.late : entry.early).push(set.weight_kg);
-      if (set.weight_kg > entry.best.weight) entry.best = { weight: set.weight_kg, reps: set.reps ?? 0 };
+      if (set.weight_kg > entry.best.weight) entry.best = { weight: set.weight_kg, reps: set.reps ?? 0, rpe: set.rpe };
       byExercise.set(set.exercise_id, entry);
     }
   }
@@ -86,14 +86,15 @@ export async function buildTrainingContext(supabase: Sb, memberId: string): Prom
       const pct = (lateAvg - earlyAvg) / earlyAvg;
       trend = pct > 0.02 ? "opp" : pct < -0.02 ? "ned" : "flat";
     }
-    lines.push(`- ${name}: beste sett ${e.best.weight} kg x ${e.best.reps} reps, trend ${trend}`);
+    const rpeStr = e.best.rpe != null ? ` @RPE ${e.best.rpe}` : "";
+    lines.push(`- ${name}: beste sett ${e.best.weight} kg x ${e.best.reps} reps${rpeStr}, trend ${trend}`);
     count++;
   }
   return lines.join("\n");
 }
 
 // ---------- Trening: én ferdig økt (til treningscoachen) ----------
-type CoachSetRow = { exercise_id: string; weight_kg: number | null; reps: number | null };
+type CoachSetRow = { exercise_id: string; weight_kg: number | null; reps: number | null; rpe: number | null };
 
 export async function buildSessionBlock(supabase: Sb, sessionId: string): Promise<string> {
   const { data: session } = await supabase
@@ -114,7 +115,7 @@ export async function buildSessionBlock(supabase: Sb, sessionId: string): Promis
   }
 
   const { data: setsRaw } = await supabase
-    .from("workout_sets").select("exercise_id, weight_kg, reps")
+    .from("workout_sets").select("exercise_id, weight_kg, reps, rpe")
     .eq("session_id", sessionId).eq("completed", true).order("set_number");
   const sets = (setsRaw ?? []) as CoachSetRow[];
   if (sets.length === 0) return `${header}\nIngen fullførte sett logget.`;
@@ -129,7 +130,7 @@ export async function buildSessionBlock(supabase: Sb, sessionId: string): Promis
   const lines = [header];
   for (const [exerciseId, exSets] of byExercise) {
     const name = nameById.get(exerciseId) ?? exerciseId;
-    const setsStr = exSets.map((s) => `${s.weight_kg ?? "—"} kg x ${s.reps ?? "—"}`).join(", ");
+    const setsStr = exSets.map((s) => `${s.weight_kg ?? "—"} kg x ${s.reps ?? "—"}${s.rpe != null ? ` @RPE ${s.rpe}` : ""}`).join(", ");
     lines.push(`- ${name}: ${setsStr}`);
   }
   if (session.notes) lines.push(`Notater: ${session.notes}`);

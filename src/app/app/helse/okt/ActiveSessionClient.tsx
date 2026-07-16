@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import type { Exercise } from "@/lib/exercises";
 import { formatDuration, tonnage } from "@/lib/exercises";
 
-type SetRow = { id?: string; set_number: number; weight_kg: number | null; reps: number | null; completed: boolean };
+type SetRow = { id?: string; set_number: number; weight_kg: number | null; reps: number | null; completed: boolean; rpe: number | null };
 type Target = { sets: number; reps: string | null };
 type SessionType = "styrke" | "cardio" | "yoga" | "mobilitet" | "annet";
 
@@ -101,7 +101,7 @@ export default function ActiveSessionClient({ memberId, aiCoachEnabled, stravaEn
     for (const id of orderedIds) {
       const dbSets = (existingSets ?? []).filter((s) => s.exercise_id === id);
       if (dbSets.length > 0) {
-        rows[id] = dbSets.map((s) => ({ id: s.id, set_number: s.set_number, weight_kg: s.weight_kg, reps: s.reps, completed: s.completed }));
+        rows[id] = dbSets.map((s) => ({ id: s.id, set_number: s.set_number, weight_kg: s.weight_kg, reps: s.reps, completed: s.completed, rpe: s.rpe }));
       } else {
         const targetCount = targetMap[id]?.sets ?? 3;
         const prefill = prefillByExercise[id] ?? [];
@@ -110,6 +110,7 @@ export default function ActiveSessionClient({ memberId, aiCoachEnabled, stravaEn
           weight_kg: prefill[i]?.weight_kg ?? null,
           reps: prefill[i]?.reps ?? null,
           completed: false,
+          rpe: null,
         }));
       }
     }
@@ -137,7 +138,7 @@ export default function ActiveSessionClient({ memberId, aiCoachEnabled, stravaEn
         ...prev,
         [exerciseId]: [...rows, {
           set_number: rows.length + 1,
-          weight_kg: last?.weight_kg ?? null, reps: last?.reps ?? null, completed: false,
+          weight_kg: last?.weight_kg ?? null, reps: last?.reps ?? null, completed: false, rpe: null,
         }],
       };
     });
@@ -150,13 +151,13 @@ export default function ActiveSessionClient({ memberId, aiCoachEnabled, stravaEn
     setSaving(`${exerciseId}:${index}`);
     if (row.id) {
       await supabase.from("workout_sets").update({
-        completed: nextCompleted, weight_kg: row.weight_kg, reps: row.reps,
+        completed: nextCompleted, weight_kg: row.weight_kg, reps: row.reps, rpe: row.rpe,
       }).eq("id", row.id);
       updateSetField(exerciseId, index, { completed: nextCompleted });
     } else if (nextCompleted) {
       const { data } = await supabase.from("workout_sets").insert({
         session_id: sessionId, exercise_id: exerciseId, set_number: row.set_number,
-        weight_kg: row.weight_kg, reps: row.reps, completed: true,
+        weight_kg: row.weight_kg, reps: row.reps, rpe: row.rpe, completed: true,
       }).select().single();
       if (data) updateSetField(exerciseId, index, { id: data.id, completed: true });
       if (restEndAt === null) startRest(90);
@@ -196,7 +197,7 @@ export default function ActiveSessionClient({ memberId, aiCoachEnabled, stravaEn
   function addExercise(ex: Exercise) {
     setExerciseMap((prev) => ({ ...prev, [ex.id]: ex }));
     setExerciseIds((prev) => (prev.includes(ex.id) ? prev : [...prev, ex.id]));
-    setSetsByExercise((prev) => (prev[ex.id] ? prev : { ...prev, [ex.id]: Array.from({ length: 3 }, (_, i) => ({ set_number: i + 1, weight_kg: null, reps: null, completed: false })) }));
+    setSetsByExercise((prev) => (prev[ex.id] ? prev : { ...prev, [ex.id]: Array.from({ length: 3 }, (_, i) => ({ set_number: i + 1, weight_kg: null, reps: null, completed: false, rpe: null })) }));
     setShowAdd(false);
   }
   const filteredAdd = allExercises.filter((e) => {
@@ -339,11 +340,11 @@ export default function ActiveSessionClient({ memberId, aiCoachEnabled, stravaEn
                 {target && <p className="text-[12px] text-text-3 mt-[1px]">{target.sets} × {target.reps ?? "—"}</p>}
               </div>
               <div className="px-4 py-2.5">
-                <div className="grid grid-cols-[20px_1fr_1fr_32px] gap-2 text-[10.5px] font-[600] text-text-3 uppercase tracking-wide12 mb-1.5">
-                  <span>#</span><span>Kg</span><span>Reps</span><span />
+                <div className="grid grid-cols-[16px_1fr_1fr_38px_28px] gap-1.5 text-[10.5px] font-[600] text-text-3 uppercase tracking-wide12 mb-1.5">
+                  <span>#</span><span>Kg</span><span>Reps</span><span>RPE</span><span />
                 </div>
                 {rows.map((row, i) => (
-                  <div key={i} className="grid grid-cols-[20px_1fr_1fr_32px] gap-2 items-center py-[3px]">
+                  <div key={i} className="grid grid-cols-[16px_1fr_1fr_38px_28px] gap-1.5 items-center py-[3px]">
                     <span className="text-[13px] text-text-3">{row.set_number}</span>
                     <input type="number" inputMode="decimal" value={row.weight_kg ?? ""} placeholder="—"
                       onChange={(e) => updateSetField(exId, i, { weight_kg: e.target.value === "" ? null : Number(e.target.value) })}
@@ -353,6 +354,13 @@ export default function ActiveSessionClient({ memberId, aiCoachEnabled, stravaEn
                       onChange={(e) => updateSetField(exId, i, { reps: e.target.value === "" ? null : Number(e.target.value) })}
                       disabled={row.completed}
                       className="w-full rounded-[9px] border border-border px-2 py-1.5 text-[14px] outline-none focus:border-accent disabled:bg-surface-2 disabled:text-text-2" />
+                    <input type="number" inputMode="numeric" min={1} max={10} value={row.rpe ?? ""} placeholder="—"
+                      onChange={(e) => {
+                        const v = e.target.value === "" ? null : Math.min(10, Math.max(1, Number(e.target.value)));
+                        updateSetField(exId, i, { rpe: v });
+                      }}
+                      disabled={row.completed}
+                      className="w-full rounded-[9px] border border-border px-1.5 py-1.5 text-[14px] text-center outline-none focus:border-accent disabled:bg-surface-2 disabled:text-text-2" />
                     <button onClick={() => toggleComplete(exId, i)}
                       disabled={saving === `${exId}:${i}`}
                       className={cn(

@@ -19,6 +19,7 @@ export type WorkoutSet = {
   reps: number | null;
   weight_kg: number | null;
   completed: boolean;
+  rpe: number | null;
 };
 
 // Epley-formelen: est. 1RM = vekt × (1 + reps / 30).

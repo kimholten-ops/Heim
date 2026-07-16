@@ -173,9 +173,9 @@ export type Database = {
         Relationships: [];
       };
       workout_sets: {
-        Row:    { id: string; session_id: string; exercise_id: string; set_number: number; reps: number | null; weight_kg: number | null; completed: boolean }
-        Insert: { id?: string; session_id: string; exercise_id: string; set_number: number; reps?: number | null; weight_kg?: number | null; completed?: boolean }
-        Update: { id?: string; session_id?: string; exercise_id?: string; set_number?: number; reps?: number | null; weight_kg?: number | null; completed?: boolean }
+        Row:    { id: string; session_id: string; exercise_id: string; set_number: number; reps: number | null; weight_kg: number | null; completed: boolean; rpe: number | null }
+        Insert: { id?: string; session_id: string; exercise_id: string; set_number: number; reps?: number | null; weight_kg?: number | null; completed?: boolean; rpe?: number | null }
+        Update: { id?: string; session_id?: string; exercise_id?: string; set_number?: number; reps?: number | null; weight_kg?: number | null; completed?: boolean; rpe?: number | null }
         Relationships: [];
       };
       matvarer: {
