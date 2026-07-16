@@ -4,7 +4,11 @@ import { getAIGatedMember, callAI, aiErrorResponse, parseAIJson } from "@/lib/ai
 
 export const runtime = "nodejs";
 
-type UkesmenyDag = { date: string; recipe_id: string | null; fritekst: string | null; begrunnelse: string | null };
+type UkesmenyIngrediens = { name: string; amount?: string; unit?: string };
+type UkesmenyDag = {
+  date: string; recipe_id: string | null; fritekst: string | null; begrunnelse: string | null;
+  ingredienser: UkesmenyIngrediens[] | null; fremgangsmate: string | null;
+};
 
 function addDaysIso(iso: string, n: number): string {
   const d = new Date(iso + "T00:00:00Z");
@@ -19,9 +23,13 @@ function buildSystemPrompt(varyProteins: boolean, quickWeekdays: boolean): strin
   ].filter(Boolean).join(" ");
   return (
     "Du foreslår en ukesmeny for en norsk husholdning, basert på husholdningens oppskriftsbank og hva de har spist siste 14 dager. " +
-    'Returner KUN gyldig JSON: {"dager":[{"date":"YYYY-MM-DD","recipe_id":string|null,"fritekst":string|null,"begrunnelse":string|null}]} ' +
+    'Returner KUN gyldig JSON: {"dager":[{"date":"YYYY-MM-DD","recipe_id":string|null,"fritekst":string|null,' +
+    '"begrunnelse":string|null,"ingredienser":[{"name":string,"amount":string|null,"unit":string|null}]|null,"fremgangsmate":string|null}]} ' +
     "med nøyaktig 7 dager, én per dato i uken du får oppgitt. Bruk KUN recipe_id-er som finnes i oppskriftsbanken — " +
     "hvis ingen oppskrift passer en dag, sett recipe_id til null og bruk fritekst i stedet. " +
+    "For hver dag der recipe_id er null MÅ du også fylle ut ingredienser (med mengde og enhet der det er naturlig) og " +
+    "fremgangsmate (nummererte steg adskilt med linjeskift), slik at fritekst-forslaget er en komplett oppskrift — " +
+    "ikke bare et navn. Når recipe_id er satt, sett ingredienser og fremgangsmate til null (oppskriften finnes allerede). " +
     "Unngå å foreslå retter som står i listen over nylig spist. " + constraints +
     " begrunnelse skal være en kort setning. Ingen forklaring, ingen markdown."
   );
@@ -38,11 +46,36 @@ function validateUkesmeny(validIds: Set<string>, weekDates: Set<string>) {
       if (typeof d !== "object" || d === null) continue;
       const r = d as Record<string, unknown>;
       if (typeof r.date !== "string" || !weekDates.has(r.date)) continue;
+      const recipeId = typeof r.recipe_id === "string" && validIds.has(r.recipe_id) ? r.recipe_id : null;
+
+      // Ingredienser/fremgangsmåte er kun relevant når det IKKE er en kjent
+      // oppskrift — den har allerede sine egne, og vi vil ikke risikere at
+      // AI-en hallusinerer avvikende data for en eksisterende oppskrift.
+      let ingredienser: UkesmenyIngrediens[] | null = null;
+      let fremgangsmate: string | null = null;
+      if (!recipeId) {
+        const rawIngredienser = Array.isArray(r.ingredienser) ? r.ingredienser : [];
+        const parsed: UkesmenyIngrediens[] = [];
+        for (const ing of rawIngredienser) {
+          if (typeof ing !== "object" || ing === null) continue;
+          const io = ing as Record<string, unknown>;
+          if (typeof io.name !== "string" || !io.name.trim()) continue;
+          parsed.push({
+            name: io.name.trim(),
+            amount: typeof io.amount === "string" ? io.amount : undefined,
+            unit: typeof io.unit === "string" ? io.unit : undefined,
+          });
+        }
+        ingredienser = parsed.length ? parsed : null;
+        fremgangsmate = typeof r.fremgangsmate === "string" && r.fremgangsmate.trim() ? r.fremgangsmate.trim() : null;
+      }
+
       dager.push({
         date: r.date,
-        recipe_id: typeof r.recipe_id === "string" && validIds.has(r.recipe_id) ? r.recipe_id : null,
+        recipe_id: recipeId,
         fritekst: typeof r.fritekst === "string" && r.fritekst.trim() ? r.fritekst.trim() : null,
         begrunnelse: typeof r.begrunnelse === "string" && r.begrunnelse.trim() ? r.begrunnelse.trim() : null,
+        ingredienser, fremgangsmate,
       });
     }
     return dager.length ? dager : null;

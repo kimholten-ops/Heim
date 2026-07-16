@@ -18,7 +18,10 @@ type Meal = {
   notes: string | null; recipe_id: string | null;
 };
 type Ingredient = { name: string; amount?: string; unit?: string };
-type UkesmenyDag = { date: string; recipe_id: string | null; fritekst: string | null; begrunnelse: string | null };
+type UkesmenyDag = {
+  date: string; recipe_id: string | null; fritekst: string | null; begrunnelse: string | null;
+  ingredienser: Ingredient[] | null; fremgangsmate: string | null;
+};
 
 const DAY_NAMES = ["Man","Tir","Ons","Tor","Fre","Lør","Søn"];
 const PALETTE = ["#0d9488","#f59e0b","#7c5cff","#f97316","#12936b","#ef4444","#3b82f6","#ec4899"];
@@ -175,7 +178,44 @@ export default function MaaltiderClient({
       .map(i => [i.amount, i.unit, i.name].filter(Boolean).join(" ").trim());
   }
 
-  async function openAddToList(lines: string[], label: string) {
+  function parseAmountNumber(raw?: string): number | null {
+    if (!raw) return null;
+    const m = raw.replace(",", ".").match(/-?\d+(\.\d+)?/);
+    return m ? parseFloat(m[0]) : null;
+  }
+
+  function formatAmountNumber(n: number): string {
+    return String(Math.round(n * 100) / 100).replace(".", ",");
+  }
+
+  // Slår sammen samme ingrediens (navn+enhet) på tvers av flere retter til én
+  // linje — uten dette dukket f.eks. "tomat" opp flere ganger på handlelisten
+  // når to middager i uken begge brukte den.
+  function mergeIngredients(items: Ingredient[]): Ingredient[] {
+    const order: string[] = [];
+    const byKey = new Map<string, { name: string; unit?: string; sum: number | null; rawAmounts: string[] }>();
+    for (const ing of items) {
+      if (!ing.name?.trim()) continue;
+      const key = `${ing.name.trim().toLowerCase()}|${(ing.unit ?? "").trim().toLowerCase()}`;
+      const amt = parseAmountNumber(ing.amount);
+      const entry = byKey.get(key);
+      if (!entry) {
+        byKey.set(key, { name: ing.name.trim(), unit: ing.unit, sum: amt, rawAmounts: ing.amount ? [ing.amount] : [] });
+        order.push(key);
+      } else {
+        entry.sum = entry.sum !== null && amt !== null ? entry.sum + amt : null;
+        if (ing.amount) entry.rawAmounts.push(ing.amount);
+      }
+    }
+    return order.map(key => {
+      const e = byKey.get(key)!;
+      const amount = e.sum !== null ? formatAmountNumber(e.sum) : (e.rawAmounts.length ? e.rawAmounts.join(" + ") : undefined);
+      return { name: e.name, unit: e.unit, amount };
+    });
+  }
+
+  async function openAddToList(items: Ingredient[], label: string) {
+    const lines = ingredientLines(mergeIngredients(items));
     if (lines.length === 0) return;
     setAddToList({ lines, label });
     setNewListName(""); setAddToListDone(false);
@@ -214,12 +254,15 @@ export default function MaaltiderClient({
       const d = new Date(m.date);
       return d >= weekStart && d <= addDays(weekStart, 6) && m.recipe_id;
     });
-    const lines = weekMeals.flatMap(m => {
+    const allIngredients = weekMeals.flatMap(m => {
       const recipe = recipes.find(r => r.id === m.recipe_id);
-      return recipe ? ingredientLines(recipe.ingredients) : [];
+      return recipe ? recipe.ingredients : [];
     });
-    if (lines.length === 0) { alert("Ingen av middagene denne uken har oppskrift med ingredienser."); return; }
-    openAddToList(lines, `Ukesplanen (${fmtWeek(weekStart)})`);
+    if (ingredientLines(mergeIngredients(allIngredients)).length === 0) {
+      alert("Ingen av middagene denne uken har oppskrift med ingredienser.");
+      return;
+    }
+    openAddToList(allIngredients, `Ukesplanen (${fmtWeek(weekStart)})`);
   }
 
   // ── Recipe form ──
@@ -318,11 +361,31 @@ export default function MaaltiderClient({
     setUkesmenyApplying(true);
     for (const d of ukesmenyPlan) {
       if (!d.recipe_id && !d.fritekst) continue;
-      const recipe = d.recipe_id ? recipes.find(r => r.id === d.recipe_id) : null;
+      let recipeId = d.recipe_id;
+      let recipe = recipeId ? recipes.find(r => r.id === recipeId) : null;
+
+      // Fritekst-forslag som fikk egne AI-genererte ingredienser blir en ekte
+      // oppskrift her — da kan den gjenbrukes senere og telle med i
+      // "Lag handleliste for uken", i stedet for å bare være et navn.
+      if (!recipeId && d.fritekst && d.ingredienser && d.ingredienser.length > 0) {
+        const { data } = await supabase.from("recipes").insert({
+          household_id: householdId, title: d.fritekst,
+          body: d.fremgangsmate || null, url: null, image_url: null,
+          servings: null, total_time_minutes: null,
+          ingredients: d.ingredienser, times_used: 0,
+        }).select().single();
+        if (data) {
+          const created = data as Recipe;
+          recipeId = created.id;
+          recipe = created;
+          setRecipes(prev => [created, ...prev]);
+        }
+      }
+
       const payload = {
         household_id: householdId, date: d.date,
         title: d.fritekst || recipe?.title || null,
-        recipe_id: d.recipe_id || null,
+        recipe_id: recipeId || null,
       };
       const existing = meals.find(m => m.date === d.date);
       if (existing) {
@@ -678,7 +741,7 @@ export default function MaaltiderClient({
               <div className="mb-4">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-[11px] font-[600] text-text-3 uppercase tracking-wide12">Ingredienser</p>
-                  <button onClick={() => openAddToList(ingredientLines(viewRecipe.ingredients), viewRecipe.title)}
+                  <button onClick={() => openAddToList(viewRecipe.ingredients, viewRecipe.title)}
                     className="flex items-center gap-1 text-[12.5px] font-[600] text-accent hover:opacity-80 transition-opacity">
                     <ShoppingCart size={12} strokeWidth={2} /> Legg til handleliste
                   </button>
@@ -888,6 +951,8 @@ export default function MaaltiderClient({
                   const recipe = d.recipe_id ? recipes.find(r => r.id === d.recipe_id) : null;
                   const displayTitle = d.fritekst || recipe?.title;
                   const dayIdx = weekDays.findIndex(day => toDateStr(day) === d.date);
+                  const ingredientsForDay = recipe ? recipe.ingredients : d.ingredienser;
+                  const bodyForDay = recipe ? recipe.body : d.fremgangsmate;
                   return (
                     <div key={d.date} className="bg-surface-2 rounded-[13px] p-3">
                       <div className="flex items-start justify-between gap-2">
@@ -897,6 +962,15 @@ export default function MaaltiderClient({
                           </p>
                           <p className="text-[14.5px] font-[600] text-fg truncate">{displayTitle || "Ingenting foreslått"}</p>
                           {d.begrunnelse && <p className="text-[12px] text-text-3 mt-[2px]">{d.begrunnelse}</p>}
+                          {ingredientsForDay && ingredientsForDay.length > 0 && (
+                            <p className="text-[12px] text-text-3 mt-1">{ingredientLines(ingredientsForDay).join(", ")}</p>
+                          )}
+                          {bodyForDay && (
+                            <details className="mt-1">
+                              <summary className="text-[12px] text-accent font-[550] cursor-pointer select-none">Fremgangsmåte</summary>
+                              <p className="text-[12px] text-text-3 mt-1 whitespace-pre-wrap">{bodyForDay}</p>
+                            </details>
+                          )}
                         </div>
                         <button type="button"
                           onClick={() => { setUkesmenySwapDay(ukesmenySwapDay === d.date ? null : d.date); setUkesmenySwapSearch(""); }}
@@ -912,7 +986,7 @@ export default function MaaltiderClient({
                             className="w-full rounded-[10px] border border-border bg-white px-3 py-2 text-[13.5px] placeholder:text-text-3 outline-none focus:border-accent mb-2" />
                           <div className="flex flex-wrap gap-2 mb-2">
                             <button type="button"
-                              onClick={() => { updateUkesmenyDay(d.date, { recipe_id: null }); setUkesmenySwapDay(null); }}
+                              onClick={() => { updateUkesmenyDay(d.date, { recipe_id: null, ingredienser: null, fremgangsmate: null }); setUkesmenySwapDay(null); }}
                               className="px-3 py-1.5 rounded-chip border border-border text-[13px] font-[550] text-fg hover:bg-surface-2">
                               Ingen oppskrift
                             </button>
@@ -921,7 +995,7 @@ export default function MaaltiderClient({
                               .slice(0, 20)
                               .map(r => (
                                 <button key={r.id} type="button"
-                                  onClick={() => { updateUkesmenyDay(d.date, { recipe_id: r.id, fritekst: null }); setUkesmenySwapDay(null); }}
+                                  onClick={() => { updateUkesmenyDay(d.date, { recipe_id: r.id, fritekst: null, ingredienser: null, fremgangsmate: null }); setUkesmenySwapDay(null); }}
                                   className="px-3 py-1.5 rounded-chip border border-border text-[13px] font-[550] text-fg hover:bg-surface-2">
                                   {r.title}
                                 </button>
@@ -929,7 +1003,7 @@ export default function MaaltiderClient({
                           </div>
                           <input type="text" placeholder="…eller skriv fritt (f.eks. Tacos)"
                             defaultValue={d.fritekst ?? ""}
-                            onBlur={e => { const v = e.target.value.trim(); if (v) { updateUkesmenyDay(d.date, { fritekst: v, recipe_id: null }); setUkesmenySwapDay(null); } }}
+                            onBlur={e => { const v = e.target.value.trim(); if (v) { updateUkesmenyDay(d.date, { fritekst: v, recipe_id: null, ingredienser: null, fremgangsmate: null }); setUkesmenySwapDay(null); } }}
                             className="w-full rounded-[10px] border border-border px-3 py-2 text-[13.5px] placeholder:text-text-3 outline-none focus:border-accent" />
                         </div>
                       )}
