@@ -161,9 +161,15 @@ export type Database = {
         Relationships: [];
       };
       workout_sessions: {
-        Row:    { id: string; member_id: string; template_id: string | null; started_at: string; finished_at: string | null; notes: string | null; calendar_event_id: string | null; type: "styrke" | "cardio" | "yoga" | "mobilitet" | "annet"; distance_km: number | null; ai_review: string | null }
-        Insert: { id?: string; member_id: string; template_id?: string | null; started_at?: string; finished_at?: string | null; notes?: string | null; calendar_event_id?: string | null; type?: "styrke" | "cardio" | "yoga" | "mobilitet" | "annet"; distance_km?: number | null; ai_review?: string | null }
-        Update: { id?: string; member_id?: string; template_id?: string | null; started_at?: string; finished_at?: string | null; notes?: string | null; calendar_event_id?: string | null; type?: "styrke" | "cardio" | "yoga" | "mobilitet" | "annet"; distance_km?: number | null; ai_review?: string | null }
+        Row:    { id: string; member_id: string; template_id: string | null; started_at: string; finished_at: string | null; notes: string | null; calendar_event_id: string | null; type: "styrke" | "cardio" | "yoga" | "mobilitet" | "annet"; distance_km: number | null; ai_review: string | null; strava_activity_id: number | null }
+        Insert: { id?: string; member_id: string; template_id?: string | null; started_at?: string; finished_at?: string | null; notes?: string | null; calendar_event_id?: string | null; type?: "styrke" | "cardio" | "yoga" | "mobilitet" | "annet"; distance_km?: number | null; ai_review?: string | null; strava_activity_id?: number | null }
+        Update: { id?: string; member_id?: string; template_id?: string | null; started_at?: string; finished_at?: string | null; notes?: string | null; calendar_event_id?: string | null; type?: "styrke" | "cardio" | "yoga" | "mobilitet" | "annet"; distance_km?: number | null; ai_review?: string | null; strava_activity_id?: number | null }
+        Relationships: [];
+      };
+      strava_connections: {
+        Row:    { member_id: string; athlete_id: number; access_token: string; refresh_token: string; expires_at: string; connected_at: string }
+        Insert: { member_id: string; athlete_id: number; access_token: string; refresh_token: string; expires_at: string; connected_at?: string }
+        Update: { member_id?: string; athlete_id?: number; access_token?: string; refresh_token?: string; expires_at?: string; connected_at?: string }
         Relationships: [];
       };
       workout_sets: {

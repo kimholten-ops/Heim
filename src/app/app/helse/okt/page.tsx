@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { veilederEnabled } from "@/lib/veileder";
+import { stravaEnabled } from "@/lib/strava";
 import ActiveSessionClient from "./ActiveSessionClient";
 
 export default async function OktPage() {
@@ -24,7 +25,7 @@ export default async function OktPage() {
 
   return (
     <Suspense>
-      <ActiveSessionClient memberId={me.id} aiCoachEnabled={aiCoachEnabled} />
+      <ActiveSessionClient memberId={me.id} aiCoachEnabled={aiCoachEnabled} stravaEnabled={stravaEnabled()} />
     </Suspense>
   );
 }

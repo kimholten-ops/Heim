@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { X, Plus, Check, Search, Timer, ChevronLeft, Sparkles } from "lucide-react";
+import { X, Plus, Check, Search, Timer, ChevronLeft, Sparkles, Upload } from "lucide-react";
 import { Card, Sheet, StatCard } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import type { Exercise } from "@/lib/exercises";
@@ -16,7 +16,7 @@ type SessionType = "styrke" | "cardio" | "yoga" | "mobilitet" | "annet";
 const REST_OPTIONS = [60, 90, 120];
 const TYPE_LABELS: Record<SessionType, string> = { styrke: "Styrke", cardio: "Cardio", yoga: "Yoga", mobilitet: "Mobilitet", annet: "Annet" };
 
-export default function ActiveSessionClient({ memberId, aiCoachEnabled }: { memberId: string; aiCoachEnabled: boolean }) {
+export default function ActiveSessionClient({ memberId, aiCoachEnabled, stravaEnabled }: { memberId: string; aiCoachEnabled: boolean; stravaEnabled: boolean }) {
   const [supabase] = useState(() => createClient());
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -210,6 +210,26 @@ export default function ActiveSessionClient({ memberId, aiCoachEnabled }: { memb
   const [summary, setSummary] = useState<{ duration: string; sets: number | null; tonnage: number | null; distance: number | null } | null>(null);
   const [coachText, setCoachText] = useState<string | null>(null);
   const [coachLoading, setCoachLoading] = useState(false);
+  const [stravaExporting, setStravaExporting] = useState(false);
+  const [stravaUrl, setStravaUrl] = useState<string | null>(null);
+  const [stravaError, setStravaError] = useState<string | null>(null);
+
+  async function exportToStrava() {
+    if (!sessionId) return;
+    setStravaExporting(true); setStravaError(null);
+    try {
+      const res = await fetch("/api/strava/export", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sessionId }),
+      });
+      const json = await res.json();
+      if (res.ok) setStravaUrl(json.url);
+      else setStravaError(json.error ?? "Klarte ikke dele til Strava.");
+    } catch {
+      setStravaError("Klarte ikke dele til Strava.");
+    } finally {
+      setStravaExporting(false);
+    }
+  }
 
   async function finishSession() {
     if (!sessionId || !startedAt) return;
@@ -412,6 +432,27 @@ export default function ActiveSessionClient({ memberId, aiCoachEnabled }: { memb
               <p className="text-[13.5px] text-text-3">Vurderer økta…</p>
             ) : (
               <p className="text-[13.5px] text-fg whitespace-pre-wrap">{coachText}</p>
+            )}
+          </div>
+        )}
+        {stravaEnabled && (
+          <div className="mb-5">
+            {stravaUrl ? (
+              <a href={stravaUrl} target="_blank" rel="noopener noreferrer"
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-[13px] border border-border text-fg text-[14px] font-[600] hover:bg-surface-2 transition-colors">
+                Se på Strava
+              </a>
+            ) : (
+              <button onClick={exportToStrava} disabled={stravaExporting}
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-[13px] border border-border text-fg text-[14px] font-[600] disabled:opacity-40 hover:bg-surface-2 transition-colors">
+                <Upload size={14} /> {stravaExporting ? "Deler…" : "Del til Strava"}
+              </button>
+            )}
+            {stravaError && (
+              <p className="text-[12px] text-rose-500 mt-1.5 text-center">
+                {stravaError}
+                {stravaError.includes("Ikke koblet") && <> — <a href="/app/helse" className="underline">koble til på Helse-siden</a></>}
+              </p>
             )}
           </div>
         )}

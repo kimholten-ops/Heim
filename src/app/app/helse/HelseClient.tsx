@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useHousehold } from "@/components/HouseholdContext";
 import {
   Plus, X, Dumbbell, ChevronRight, Search, ArrowUp, ArrowDown,
-  Pencil, Calendar, Play, Clock, HeartPulse, Flower2, Move, Activity, Sparkles,
+  Pencil, Calendar, Play, Clock, HeartPulse, Flower2, Move, Activity, Sparkles, Link2, Unplug, Upload,
 } from "lucide-react";
 import { Card, SectionLabel, EmptyState, Sheet } from "@/components/ui";
 import { cn } from "@/lib/utils";
@@ -24,18 +24,49 @@ export type SessionType = "styrke" | "cardio" | "yoga" | "mobilitet" | "annet";
 type SessionRow = {
   id: string; template_id: string | null; started_at: string; finished_at: string | null;
   notes: string | null; calendar_event_id: string | null;
-  type: SessionType; distance_km: number | null; ai_review: string | null;
+  type: SessionType; distance_km: number | null; ai_review: string | null; strava_activity_id: number | null;
   workout_sets: { reps: number | null; weight_kg: number | null; completed: boolean }[];
 };
 
 const TYPE_LABELS: Record<SessionType, string> = { styrke: "Styrke", cardio: "Cardio", yoga: "Yoga", mobilitet: "Mobilitet", annet: "Annet" };
 const TYPE_ICONS: Record<SessionType, typeof Dumbbell> = { styrke: Dumbbell, cardio: HeartPulse, yoga: Flower2, mobilitet: Move, annet: Activity };
 
-export default function HelseClient({ memberId, householdId, veilederEnabled }: { memberId: string; householdId: string; veilederEnabled: boolean }) {
+export default function HelseClient({ memberId, householdId, veilederEnabled, stravaEnabled }: { memberId: string; householdId: string; veilederEnabled: boolean; stravaEnabled: boolean }) {
   const [supabase] = useState(() => createClient());
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { members } = useHousehold();
   const myName = members.find((m) => m.id === memberId)?.name ?? "Du";
+
+  /* ── Strava ── */
+  const [stravaConnected, setStravaConnected] = useState<boolean | null>(null);
+  const [stravaMsg, setStravaMsg] = useState<string | null>(null);
+  const [disconnectingStrava, setDisconnectingStrava] = useState(false);
+
+  useEffect(() => {
+    if (!stravaEnabled) return;
+    (async () => {
+      const { data } = await supabase.from("strava_connections").select("member_id").eq("member_id", memberId).maybeSingle();
+      setStravaConnected(!!data);
+    })();
+  }, [stravaEnabled, memberId, supabase]);
+
+  useEffect(() => {
+    const status = searchParams.get("strava");
+    if (!status) return;
+    if (status === "tilkoblet") { setStravaMsg("Koblet til Strava!"); setStravaConnected(true); }
+    else if (status === "avslatt") setStravaMsg("Strava-tilkobling avbrutt.");
+    else if (status === "feil") setStravaMsg("Klarte ikke koble til Strava. Prøv igjen.");
+    router.replace("/app/helse");
+  }, [searchParams, router]);
+
+  async function disconnectStrava() {
+    if (!confirm("Koble fra Strava?")) return;
+    setDisconnectingStrava(true);
+    await fetch("/api/strava/disconnect", { method: "POST" });
+    setStravaConnected(false);
+    setDisconnectingStrava(false);
+  }
 
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [templates, setTemplates] = useState<Template[]>([]);
@@ -51,7 +82,7 @@ export default function HelseClient({ memberId, householdId, veilederEnabled }: 
       supabase.from("workout_templates").select("id, name").eq("member_id", memberId).order("created_at"),
       supabase.from("workout_template_exercises").select("*"),
       supabase.from("workout_sessions")
-        .select("id, template_id, started_at, finished_at, notes, calendar_event_id, type, distance_km, ai_review, workout_sets(reps, weight_kg, completed)")
+        .select("id, template_id, started_at, finished_at, notes, calendar_event_id, type, distance_km, ai_review, strava_activity_id, workout_sets(reps, weight_kg, completed)")
         .eq("member_id", memberId).order("started_at", { ascending: false }).limit(40),
     ]);
     setExercises((ex ?? []) as Exercise[]);
@@ -218,6 +249,30 @@ export default function HelseClient({ memberId, householdId, veilederEnabled }: 
 
   /* ──Øktdetalj (les-modus) ── */
   const [viewSession, setViewSession] = useState<SessionRow | null>(null);
+  const [viewSessionExporting, setViewSessionExporting] = useState(false);
+  const [viewSessionStravaError, setViewSessionStravaError] = useState<string | null>(null);
+
+  async function exportViewSessionToStrava() {
+    if (!viewSession) return;
+    setViewSessionExporting(true); setViewSessionStravaError(null);
+    try {
+      const res = await fetch("/api/strava/export", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sessionId: viewSession.id }),
+      });
+      const json = await res.json();
+      if (res.ok) {
+        setViewSession((prev) => (prev ? { ...prev, strava_activity_id: json.activityId } : prev));
+        setSessions((prev) => prev.map((s) => (s.id === viewSession.id ? { ...s, strava_activity_id: json.activityId } : s)));
+        window.open(json.url, "_blank");
+      } else {
+        setViewSessionStravaError(json.error ?? "Klarte ikke dele til Strava.");
+      }
+    } catch {
+      setViewSessionStravaError("Klarte ikke dele til Strava.");
+    } finally {
+      setViewSessionExporting(false);
+    }
+  }
 
   return (
     <div className="max-w-[420px] mx-auto">
@@ -335,6 +390,34 @@ export default function HelseClient({ memberId, householdId, veilederEnabled }: 
             <ChevronRight size={18} className="text-text-3 flex-shrink-0" />
           </button>
         </div>
+
+        {/* Strava skjules helt hvis STRAVA_CLIENT_ID/SECRET mangler i miljøet
+            — appen fungerer 100 % uten. */}
+        {stravaEnabled && (
+          <Card className="mt-5 px-4 py-3.5 flex items-center gap-3">
+            <span className="w-[38px] h-[38px] rounded-[11px] bg-accent-weak text-accent flex items-center justify-center flex-shrink-0">
+              <Upload size={17} strokeWidth={2} />
+            </span>
+            <div className="flex-1 min-w-0">
+              <p className="text-[14.5px] font-[600] text-fg">Strava</p>
+              <p className="text-[12.5px] text-text-2 mt-[1px]">
+                {stravaConnected === null ? "Sjekker…" : stravaConnected ? "Koblet til — del økter herfra" : "Del fullførte økter til Strava"}
+              </p>
+              {stravaMsg && <p className="text-[12px] text-accent mt-[2px]">{stravaMsg}</p>}
+            </div>
+            {stravaConnected === true ? (
+              <button onClick={disconnectStrava} disabled={disconnectingStrava}
+                className="flex items-center gap-1.5 text-[12.5px] font-[600] text-text-3 hover:text-rose-500 px-2 py-1 disabled:opacity-40">
+                <Unplug size={13} /> Koble fra
+              </button>
+            ) : stravaConnected === false ? (
+              <a href="/api/strava/connect"
+                className="flex items-center gap-1.5 text-[12.5px] font-[600] text-accent px-2 py-1">
+                <Link2 size={13} /> Koble til
+              </a>
+            ) : null}
+          </Card>
+        )}
 
         <KostholdCard memberId={memberId} householdId={householdId} />
 
@@ -525,6 +608,27 @@ export default function HelseClient({ memberId, householdId, veilederEnabled }: 
                     <Sparkles size={12} /> AI-coach
                   </p>
                   <p className="text-[13.5px] text-fg whitespace-pre-wrap">{viewSession.ai_review}</p>
+                </div>
+              )}
+              {stravaEnabled && viewSession.finished_at && (
+                <div>
+                  {viewSession.strava_activity_id ? (
+                    <a href={`https://www.strava.com/activities/${viewSession.strava_activity_id}`} target="_blank" rel="noopener noreferrer"
+                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-[13px] border border-border text-fg text-[13.5px] font-[600] hover:bg-surface-2 transition-colors">
+                      Se på Strava
+                    </a>
+                  ) : (
+                    <button onClick={exportViewSessionToStrava} disabled={viewSessionExporting}
+                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-[13px] border border-border text-fg text-[13.5px] font-[600] disabled:opacity-40 hover:bg-surface-2 transition-colors">
+                      <Upload size={13} /> {viewSessionExporting ? "Deler…" : "Del til Strava"}
+                    </button>
+                  )}
+                  {viewSessionStravaError && (
+                    <p className="text-[12px] text-rose-500 mt-1.5 text-center">
+                      {viewSessionStravaError}
+                      {viewSessionStravaError.includes("Ikke koblet") && <> — koble til over</>}
+                    </p>
+                  )}
                 </div>
               )}
             </div>

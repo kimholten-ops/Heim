@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { veilederEnabled } from "@/lib/veileder";
+import { stravaEnabled } from "@/lib/strava";
 import HelseClient from "./HelseClient";
 
 export default async function HelsePage() {
@@ -23,5 +24,5 @@ export default async function HelsePage() {
   // kunne bruke av husholdningens delte AI-kvote.
   const showVeileder = veilederEnabled() && me.household_role === "medlem";
 
-  return <HelseClient memberId={me.id} householdId={hid} veilederEnabled={showVeileder} />;
+  return <HelseClient memberId={me.id} householdId={hid} veilederEnabled={showVeileder} stravaEnabled={stravaEnabled()} />;
 }
