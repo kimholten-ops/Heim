@@ -267,13 +267,39 @@ export async function POST(req: NextRequest) {
   if (!ipAllowed) return NextResponse.json({ error: "For mange importer fra denne tilkoblingen i dag. Prøv igjen i morgen." }, { status: 429 });
 
   let url = "";
+  let pastedText = "";
   try {
     const body = await req.json();
     url = String(body?.url ?? "").trim();
+    pastedText = String(body?.text ?? "").trim();
   } catch {
     return NextResponse.json({ error: "Ugyldig forespørsel." }, { status: 400 });
   }
-  if (!url) return NextResponse.json({ error: "Mangler lenke." }, { status: 400 });
+  if (!url && !pastedText) return NextResponse.json({ error: "Mangler lenke eller tekst." }, { status: 400 });
+
+  // ── Limt inn tekst (f.eks. bildetekst fra et Instagram-innlegg) — det finnes
+  // ingen side å hente eller strukturert data å parse, så dette går rett på
+  // AI-tolkning. Uten AI (avslått/rate-limitert/utilgjengelig) er det ingen
+  // fallback utover manuelt skjema, siden regex-parserne over krever HTML.
+  if (!url && pastedText) {
+    const gated = await getAIGatedMember(supabase);
+    if (gated) {
+      const plainText = pastedText.slice(0, 12_000);
+      const result = await callAI({
+        supabase, memberId: gated.memberId, kind: "oppskrift",
+        system: buildOppskriftSystemPrompt(),
+        messages: [{ role: "user", content: plainText }],
+      });
+      if (!("error" in result)) {
+        const parsed = parseAIJson(result.text, validateImportedRecipe);
+        if (parsed) return NextResponse.json({ recipe: { ...parsed, url: null }, aiParsed: true });
+      }
+    }
+    return NextResponse.json(
+      { error: "no_structured_data", rawTextPreview: pastedText.slice(0, 500) },
+      { status: 422 }
+    );
+  }
 
   let html: string;
   try {

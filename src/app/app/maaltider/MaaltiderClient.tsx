@@ -98,9 +98,11 @@ export default function MaaltiderClient({
   const [rSaving, setRSaving] = useState(false);
   const [viewRecipe, setViewRecipe] = useState<Recipe | null>(null);
 
-  // Import from URL
+  // Import from URL or pasted text (f.eks. Instagram-bildetekst)
   const [showImport, setShowImport] = useState(false);
+  const [importMode, setImportMode] = useState<"url" | "text">("url");
   const [importUrl, setImportUrl] = useState("");
+  const [importText, setImportText] = useState("");
   const [importing, setImporting] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
   const [importNotice, setImportNotice] = useState<string | null>(null);
@@ -269,7 +271,7 @@ export default function MaaltiderClient({
   function openNewRecipe() {
     setEditRecipe(null); setRTitle(""); setRBody(""); setRUrl("");
     setRImageUrl(null); setRServings(""); setRTotalTime(""); setRIngredients([]);
-    setShowImport(false); setImportUrl(""); setImportError(null); setImportNotice(null);
+    setShowImport(false); setImportMode("url"); setImportUrl(""); setImportText(""); setImportError(null); setImportNotice(null);
     setShowRecipeForm(true);
   }
   function openEditRecipe(r: Recipe) {
@@ -278,24 +280,29 @@ export default function MaaltiderClient({
     setRServings(r.servings != null ? String(r.servings) : "");
     setRTotalTime(r.total_time_minutes != null ? String(r.total_time_minutes) : "");
     setRIngredients([...(r.ingredients ?? [])]);
-    setShowImport(false); setImportUrl(""); setImportError(null); setImportNotice(null);
+    setShowImport(false); setImportMode("url"); setImportUrl(""); setImportText(""); setImportError(null); setImportNotice(null);
     setShowRecipeForm(true);
   }
 
-  async function importFromUrl() {
-    if (!importUrl.trim()) return;
+  async function runImport() {
+    const isTextMode = importMode === "text";
+    if (isTextMode ? !importText.trim() : !importUrl.trim()) return;
     setImporting(true); setImportError(null); setImportNotice(null);
     try {
       const res = await fetch("/api/recipe-import", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ url: importUrl.trim() }),
+        body: JSON.stringify(isTextMode ? { text: importText.trim() } : { url: importUrl.trim() }),
       });
       const data = await res.json();
       if (!res.ok) {
-        setRUrl(importUrl.trim());
+        if (!isTextMode) setRUrl(importUrl.trim());
         if (data?.error === "no_structured_data") {
-          setImportError("Fant ingen strukturert oppskrift-data på denne siden. Fyll ut skjemaet under manuelt — lenken er allerede lagret som kilde.");
+          setImportError(
+            isTextMode
+              ? "Klarte ikke tolke teksten som en oppskrift. Fyll ut skjemaet under manuelt i stedet."
+              : "Fant ingen strukturert oppskrift-data på denne siden. Fyll ut skjemaet under manuelt — lenken er allerede lagret som kilde."
+          );
         } else {
           setImportError(data?.error ?? "Klarte ikke hente oppskriften.");
         }
@@ -304,7 +311,7 @@ export default function MaaltiderClient({
       const r = data.recipe;
       setRTitle(r.title ?? "");
       setRBody(r.body ?? "");
-      setRUrl(r.url ?? importUrl.trim());
+      setRUrl(r.url ?? (isTextMode ? "" : importUrl.trim()));
       setRImageUrl(r.image_url ?? null);
       setRServings(r.servings != null ? String(r.servings) : "");
       setRTotalTime(r.total_time_minutes != null ? String(r.total_time_minutes) : "");
@@ -312,7 +319,7 @@ export default function MaaltiderClient({
       if (data.aiParsed) setImportNotice("Tolket med AI — sjekk verdiene før du lagrer.");
       setShowImport(false);
     } catch {
-      setImportError("Klarte ikke hente oppskriften. Sjekk lenken og prøv igjen.");
+      setImportError(isTextMode ? "Klarte ikke tolke teksten. Prøv igjen." : "Klarte ikke hente oppskriften. Sjekk lenken og prøv igjen.");
     } finally {
       setImporting(false);
     }
@@ -785,21 +792,51 @@ export default function MaaltiderClient({
                 {!showImport ? (
                   <button type="button" onClick={() => setShowImport(true)}
                     className="w-full flex items-center justify-center gap-2 py-2.5 rounded-[13px] border border-dashed border-accent/40 text-accent text-[13.5px] font-[600] hover:bg-accent-weak transition-colors">
-                    <Wand2 size={14} strokeWidth={2} /> Importer fra lenke
+                    <Wand2 size={14} strokeWidth={2} /> Importer oppskrift
                   </button>
                 ) : (
                   <div className="bg-surface-2 rounded-[13px] p-3">
-                    <div className="flex gap-2">
-                      <input type="url" placeholder="Lim inn lenke til oppskrift" value={importUrl}
-                        onChange={e => setImportUrl(e.target.value)} autoFocus
-                        className="flex-1 rounded-[10px] border border-border bg-white px-3 py-2 text-[14px] placeholder:text-text-3 outline-none focus:border-accent" />
-                      <button type="button" onClick={importFromUrl} disabled={importing || !importUrl.trim()}
-                        className="px-4 rounded-[10px] bg-accent text-white text-[13.5px] font-[600] disabled:opacity-40 hover:opacity-90 transition-all">
-                        {importing ? "Henter…" : "Hent"}
-                      </button>
-                    </div>
+                    {aiEnabled && (
+                      <div className="flex gap-2 mb-2">
+                        <button type="button" onClick={() => setImportMode("url")}
+                          className={cn("px-3 py-1 rounded-chip border text-[12.5px] font-[550] transition-all",
+                            importMode === "url" ? "bg-fg text-white border-fg" : "border-border text-fg")}>
+                          Lenke
+                        </button>
+                        <button type="button" onClick={() => setImportMode("text")}
+                          className={cn("px-3 py-1 rounded-chip border text-[12.5px] font-[550] transition-all",
+                            importMode === "text" ? "bg-fg text-white border-fg" : "border-border text-fg")}>
+                          Lim inn tekst
+                        </button>
+                      </div>
+                    )}
+                    {importMode === "url" ? (
+                      <div className="flex gap-2">
+                        <input type="url" placeholder="Lim inn lenke til oppskrift" value={importUrl}
+                          onChange={e => setImportUrl(e.target.value)} autoFocus
+                          className="flex-1 rounded-[10px] border border-border bg-white px-3 py-2 text-[14px] placeholder:text-text-3 outline-none focus:border-accent" />
+                        <button type="button" onClick={runImport} disabled={importing || !importUrl.trim()}
+                          className="px-4 rounded-[10px] bg-accent text-white text-[13.5px] font-[600] disabled:opacity-40 hover:opacity-90 transition-all">
+                          {importing ? "Henter…" : "Hent"}
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <textarea rows={4} placeholder="Lim inn bildeteksten (f.eks. fra et Instagram-innlegg)" value={importText}
+                          onChange={e => setImportText(e.target.value)} autoFocus
+                          className="w-full rounded-[10px] border border-border bg-white px-3 py-2 text-[14px] placeholder:text-text-3 outline-none focus:border-accent resize-none" />
+                        <button type="button" onClick={runImport} disabled={importing || !importText.trim()}
+                          className="w-full py-2 rounded-[10px] bg-accent text-white text-[13.5px] font-[600] disabled:opacity-40 hover:opacity-90 transition-all">
+                          {importing ? "Tolker…" : "Tolk med AI"}
+                        </button>
+                      </div>
+                    )}
                     {importError && <p className="text-[12.5px] text-rose-500 mt-2">{importError}</p>}
-                    <p className="text-[11.5px] text-text-3 mt-2">Henter tittel, ingredienser og fremgangsmåte automatisk der det er mulig — sjekk gjerne over før du lagrer.</p>
+                    <p className="text-[11.5px] text-text-3 mt-2">
+                      {importMode === "url"
+                        ? "Henter tittel, ingredienser og fremgangsmåte automatisk der det er mulig — sjekk gjerne over før du lagrer."
+                        : "Instagram og andre sosiale medier kan ikke importeres via lenke — lim inn bildeteksten selv, så tolker AI den til en oppskrift."}
+                    </p>
                   </div>
                 )}
               </div>
