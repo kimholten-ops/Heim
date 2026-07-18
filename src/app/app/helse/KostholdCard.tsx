@@ -307,11 +307,11 @@ export default function KostholdCard({ memberId, householdId }: { memberId: stri
               </div>
               <div className="flex gap-2">
                 <input type="number" placeholder="Vekt (kg)" value={calcWeight} onChange={(e) => setCalcWeight(e.target.value)}
-                  className="flex-1 rounded-[10px] border border-border px-3 py-2 text-[13px] outline-none focus:border-accent" />
+                  className="flex-1 min-w-0 rounded-[10px] border border-border px-3 py-2 text-[13px] outline-none focus:border-accent" />
                 <input type="number" placeholder="Høyde (cm)" value={calcHeight} onChange={(e) => setCalcHeight(e.target.value)}
-                  className="flex-1 rounded-[10px] border border-border px-3 py-2 text-[13px] outline-none focus:border-accent" />
+                  className="flex-1 min-w-0 rounded-[10px] border border-border px-3 py-2 text-[13px] outline-none focus:border-accent" />
                 <input type="number" placeholder="Alder" value={calcAge} onChange={(e) => setCalcAge(e.target.value)}
-                  className="flex-1 rounded-[10px] border border-border px-3 py-2 text-[13px] outline-none focus:border-accent" />
+                  className="flex-1 min-w-0 rounded-[10px] border border-border px-3 py-2 text-[13px] outline-none focus:border-accent" />
               </div>
               <select value={calcActivity} onChange={(e) => setCalcActivity(Number(e.target.value))}
                 className="w-full rounded-[10px] border border-border px-3 py-2 text-[13px] outline-none focus:border-accent bg-white">
