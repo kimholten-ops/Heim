@@ -203,9 +203,9 @@ export type Database = {
         Relationships: [];
       };
       ai_usage: {
-        Row:    { id: string; member_id: string; kind: "chat" | "ukesprogram" | "gjennomgang" | "maltid" | "smartadd" | "oppskrift" | "ukesmeny" | "trening"; input_tokens: number; output_tokens: number; cache_read_tokens: number; created_at: string }
-        Insert: { id?: string; member_id: string; kind: "chat" | "ukesprogram" | "gjennomgang" | "maltid" | "smartadd" | "oppskrift" | "ukesmeny" | "trening"; input_tokens: number; output_tokens: number; cache_read_tokens?: number; created_at?: string }
-        Update: { id?: string; member_id?: string; kind?: "chat" | "ukesprogram" | "gjennomgang" | "maltid" | "smartadd" | "oppskrift" | "ukesmeny" | "trening"; input_tokens?: number; output_tokens?: number; cache_read_tokens?: number; created_at?: string }
+        Row:    { id: string; member_id: string; kind: "chat" | "ukesprogram" | "gjennomgang" | "maltid" | "smartadd" | "oppskrift" | "ukesmeny" | "trening" | "dagsplan"; input_tokens: number; output_tokens: number; cache_read_tokens: number; created_at: string }
+        Insert: { id?: string; member_id: string; kind: "chat" | "ukesprogram" | "gjennomgang" | "maltid" | "smartadd" | "oppskrift" | "ukesmeny" | "trening" | "dagsplan"; input_tokens: number; output_tokens: number; cache_read_tokens?: number; created_at?: string }
+        Update: { id?: string; member_id?: string; kind?: "chat" | "ukesprogram" | "gjennomgang" | "maltid" | "smartadd" | "oppskrift" | "ukesmeny" | "trening" | "dagsplan"; input_tokens?: number; output_tokens?: number; cache_read_tokens?: number; created_at?: string }
         Relationships: [];
       };
       ai_weekly_reviews: {

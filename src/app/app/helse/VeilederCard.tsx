@@ -22,7 +22,8 @@ const UNAVAILABLE = "Veilederen er utilgjengelig akkurat nå — prøv igjen sen
 
 const KIND_LABELS: Record<string, string> = {
   chat: "Chat", ukesprogram: "Ukesprogram", gjennomgang: "Gjennomgang", maltid: "Måltidsforslag",
-  smartadd: "Smart Add", oppskrift: "Oppskriftsimport", ukesmeny: "Ukesmeny",
+  smartadd: "Smart Add", oppskrift: "Oppskriftsimport", ukesmeny: "Ukesmeny", trening: "Treningscoach",
+  dagsplan: "Dagsplan",
 };
 
 export default function VeilederCard({ memberId }: { memberId: string }) {

@@ -26,6 +26,7 @@ export const MAX_TOKENS = {
   oppskrift: 1000,
   ukesmeny: 1800,
   trening: 650,
+  dagsplan: 900,
 } as const;
 
 export type AIKind = keyof typeof MAX_TOKENS;

@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/supabase";
 import { todayISO, addDays } from "@/lib/nutrition";
+import { estimateSessionCalories } from "@/lib/exercises";
 
 // Kompakt, aldri rå logg — bygger korte tekstblokker til veileder-konteksten.
 // Sender ALDRI: navn på andre medlemmer, vektlogg, eller data fra andre enn
@@ -225,4 +226,60 @@ export async function buildRemainingToday(supabase: Sb, memberId: string): Promi
     proteinLeft != null ? `Gjenstående protein: ~${proteinLeft} g.` : "",
   ].filter(Boolean);
   return { kcalLeft, proteinLeft, context: lines.join("\n") };
+}
+
+// ---------- Dagsplan: hvilke måltider trenger forslag + budsjett for dem ----------
+const DAGSPLAN_SLOTS = ["frokost", "lunsj", "middag", "kvelds"] as const;
+const SLOT_LABEL: Record<(typeof DAGSPLAN_SLOTS)[number], string> = {
+  frokost: "frokost", lunsj: "lunsj", middag: "middag", kvelds: "kvelds",
+};
+
+export async function buildDagsplanContext(
+  supabase: Sb, memberId: string, householdId: string
+): Promise<{ missingSlots: string[]; context: string }> {
+  const today = todayISO();
+
+  const [{ data: profile }, { data: logRows }, { data: meal }, { data: sessions }, { data: weights }] = await Promise.all([
+    supabase.from("health_profiles").select("kcal_target, protein_target_g").eq("member_id", memberId).maybeSingle(),
+    supabase.from("food_log_entries").select("slot, kcal, protein_g").eq("member_id", memberId).eq("date", today),
+    supabase.from("meals").select("title").eq("household_id", householdId).eq("date", today).maybeSingle(),
+    supabase.from("workout_sessions").select("type, started_at, finished_at")
+      .eq("member_id", memberId).gte("started_at", `${today}T00:00:00`).lt("started_at", `${addDays(today, 1)}T00:00:00`)
+      .not("finished_at", "is", null),
+    supabase.from("weight_entries").select("weight_kg").eq("member_id", memberId).order("date", { ascending: false }).limit(1),
+  ]);
+
+  const loggedSlots = new Set((logRows ?? []).map((r) => r.slot));
+  const loggedSum = (logRows ?? []).reduce((s, r) => ({ kcal: s.kcal + r.kcal, protein_g: s.protein_g + r.protein_g }), { kcal: 0, protein_g: 0 });
+
+  const missingSlots = DAGSPLAN_SLOTS.filter((slot) => {
+    if (loggedSlots.has(slot)) return false;
+    if (slot === "middag" && meal?.title) return false;
+    return true;
+  });
+
+  const bodyWeight = weights?.[0]?.weight_kg ?? null;
+  const trainingKcal = (sessions ?? []).reduce((sum, s) => {
+    const minutes = (new Date(s.finished_at!).getTime() - new Date(s.started_at).getTime()) / 60000;
+    return sum + estimateSessionCalories(s.type, minutes, bodyWeight);
+  }, 0);
+
+  const kcalTarget = profile?.kcal_target != null ? profile.kcal_target + trainingKcal : null;
+  const kcalBudget = kcalTarget != null ? Math.max(0, Math.round(kcalTarget - loggedSum.kcal)) : null;
+  const proteinBudget = profile?.protein_target_g != null ? Math.max(0, Math.round(profile.protein_target_g - loggedSum.protein_g)) : null;
+
+  const lines = [
+    "Dagsplan i dag:",
+    profile?.kcal_target != null ? `- Kalorimål: ${profile.kcal_target} kcal/dag${trainingKcal > 0 ? ` + ~${trainingKcal} kcal fra trening i dag` : ""}` : "- Ingen kalorimål satt.",
+    profile?.protein_target_g != null ? `- Proteinmål: ${profile.protein_target_g} g/dag` : "",
+    `- Allerede logget i dag: ${Math.round(loggedSum.kcal)} kcal, ${Math.round(loggedSum.protein_g)} g protein (${loggedSlots.size ? [...loggedSlots].join(", ") : "ingenting ennå"}).`,
+    meal?.title ? `- Middag i dag er allerede planlagt: ${meal.title}.` : "- Middag i dag er ikke planlagt ennå.",
+    missingSlots.length > 0
+      ? `- Trenger forslag til: ${missingSlots.map((s) => SLOT_LABEL[s]).join(", ")}.`
+      : "- Alle måltider er allerede logget eller planlagt for i dag.",
+    kcalBudget != null ? `- Gjenstående budsjett til disse måltidene totalt: ~${kcalBudget} kcal.` : "",
+    proteinBudget != null ? `- Gjenstående proteinbudsjett: ~${proteinBudget} g.` : "",
+  ].filter(Boolean);
+
+  return { missingSlots, context: lines.join("\n") };
 }

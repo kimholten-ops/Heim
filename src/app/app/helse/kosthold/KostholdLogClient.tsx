@@ -376,6 +376,31 @@ export default function KostholdLogClient({ memberId, householdId, veilederEnabl
 
   const showMaltidButton = veilederEnabled && isToday && !!kcalTarget && (kcalTarget - daySum.kcal) / kcalTarget < 0.4;
 
+  /* ── Dagsplan (måltidsplan for hele dagen: frokost, lunsj, kvelds, og
+     middag hvis den ikke allerede er planlagt) — samme mønster som
+     måltidsforslaget over, men dekker alle måltider som ennå ikke er
+     logget eller planlagt, ikke bare kvelds. ── */
+  const [showDagsplan, setShowDagsplan] = useState(false);
+  const [dagsplanText, setDagsplanText] = useState<string | null>(null);
+  const [dagsplanLoading, setDagsplanLoading] = useState(false);
+  const [dagsplanError, setDagsplanError] = useState<string | null>(null);
+
+  async function openDagsplanForslag() {
+    setShowDagsplan(true);
+    setDagsplanText(null); setDagsplanError(null); setDagsplanLoading(true);
+    try {
+      const res = await fetch("/api/veileder/dagsplan", { method: "POST" });
+      const json = await res.json();
+      if (res.ok) setDagsplanText(json.text);
+      else setDagsplanError(json.error ?? "Veilederen er utilgjengelig akkurat nå — prøv igjen senere.");
+    } catch {
+      setDagsplanError("Veilederen er utilgjengelig akkurat nå — prøv igjen senere.");
+    }
+    setDagsplanLoading(false);
+  }
+
+  const showDagsplanButton = veilederEnabled && isToday;
+
   const SLOT_LABEL: Record<string, string> = Object.fromEntries(SLOTS.map((s) => [s.key, s.label]));
 
   return (
@@ -402,6 +427,16 @@ export default function KostholdLogClient({ memberId, householdId, veilederEnabl
           <ChevronRight size={18} />
         </button>
       </div>
+
+      {showDagsplanButton && (
+        <div className="px-[18px] mb-3">
+          <button onClick={openDagsplanForslag}
+            className="w-full flex items-center gap-2 px-4 py-3 bg-accent-weak border border-accent/20 rounded-card text-left hover:opacity-90 transition-opacity">
+            <Sparkles size={15} className="text-accent flex-shrink-0" />
+            <span className="text-[13px] font-[600] text-accent">Foreslå måltidsplan for i dag</span>
+          </button>
+        </div>
+      )}
 
       <div className="px-[18px] space-y-3">
         {SLOTS.map(({ key, label }) => {
@@ -615,6 +650,17 @@ export default function KostholdLogClient({ memberId, householdId, veilederEnabl
           {maltidLoading && <p className="text-[13px] text-text-3 py-6 text-center">Ser på hva som gjenstår…</p>}
           {maltidError && <p className="text-[13px] text-rose-600">{maltidError}</p>}
           {maltidText && <p className="text-[14px] text-fg leading-[1.55] whitespace-pre-wrap">{maltidText}</p>}
+        </div>
+        <p className="text-[11px] text-text-3 mt-3 pt-2 border-t border-border flex-shrink-0">Veilederen kan ta feil — sjekk viktige råd med fagperson.</p>
+      </Sheet>
+
+      {/* ── Dagsplan-sheet ── */}
+      <Sheet open={showDagsplan} onClose={() => setShowDagsplan(false)} maxHeight>
+        <h2 className="text-[19px] font-[700] text-fg mb-3 flex-shrink-0">Måltidsplan for i dag</h2>
+        <div className="overflow-y-auto">
+          {dagsplanLoading && <p className="text-[13px] text-text-3 py-6 text-center">Ser på mål, logg og dagens trening…</p>}
+          {dagsplanError && <p className="text-[13px] text-rose-600">{dagsplanError}</p>}
+          {dagsplanText && <p className="text-[14px] text-fg leading-[1.55] whitespace-pre-wrap">{dagsplanText}</p>}
         </div>
         <p className="text-[11px] text-text-3 mt-3 pt-2 border-t border-border flex-shrink-0">Veilederen kan ta feil — sjekk viktige råd med fagperson.</p>
       </Sheet>
